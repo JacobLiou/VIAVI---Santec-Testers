@@ -1,0 +1,12 @@
+﻿################################################################################
+# 此 .gitignore 文件已由 Microsoft(R) Visual Studio 自动创建。
+################################################################################
+
+/TestEquipmentDrivers/.vs/TestEquipmentDrivers
+/TestEquipmentDrivers/DriverUnitTest/x64/Debug
+/TestEquipmentDrivers/DriverUnitTest/Debug
+/TestEquipmentDrivers/DriverTestApp/x64/Debug
+/TestEquipmentDrivers/DriverTestApp/Debug
+/TestEquipmentDrivers/EquipmentDriver/Debug
+/TestEquipmentDrivers/EquipmentDriver/x64/Debug
+/TestEquipmentDrivers/x64/Debug
