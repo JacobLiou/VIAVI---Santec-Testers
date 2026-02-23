@@ -25,21 +25,72 @@ bool CSantecTcpAdapter::Open(const std::string& address, int port, double timeou
     m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (m_socket == INVALID_SOCKET) return false;
 
-    DWORD timeoutMs = static_cast<DWORD>(timeout * 1000);
-    setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeoutMs, sizeof(timeoutMs));
-    setsockopt(m_socket, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeoutMs, sizeof(timeoutMs));
-
     sockaddr_in addr = {};
     addr.sin_family = AF_INET;
     addr.sin_port = htons(static_cast<u_short>(port));
-    inet_pton(AF_INET, address.c_str(), &addr.sin_addr);
-
-    if (connect(m_socket, (sockaddr*)&addr, sizeof(addr)) == SOCKET_ERROR)
+    if (inet_pton(AF_INET, address.c_str(), &addr.sin_addr) != 1)
     {
         closesocket(m_socket);
         m_socket = INVALID_SOCKET;
         return false;
     }
+
+    // Non-blocking connect with timeout (same pattern as BaseEquipmentDriver)
+    u_long nonBlocking = 1;
+    ioctlsocket(m_socket, FIONBIO, &nonBlocking);
+
+    int ret = connect(m_socket, (sockaddr*)&addr, sizeof(addr));
+    if (ret == SOCKET_ERROR)
+    {
+        int err = WSAGetLastError();
+        if (err != WSAEWOULDBLOCK)
+        {
+            closesocket(m_socket);
+            m_socket = INVALID_SOCKET;
+            return false;
+        }
+
+        fd_set writefds, exceptfds;
+        FD_ZERO(&writefds);
+        FD_ZERO(&exceptfds);
+        FD_SET(m_socket, &writefds);
+        FD_SET(m_socket, &exceptfds);
+
+        timeval tv;
+        tv.tv_sec = static_cast<long>(timeout);
+        tv.tv_usec = static_cast<long>((timeout - static_cast<long>(timeout)) * 1000000);
+
+        ret = select(0, NULL, &writefds, &exceptfds, &tv);
+        if (ret <= 0 || FD_ISSET(m_socket, &exceptfds) || !FD_ISSET(m_socket, &writefds))
+        {
+            closesocket(m_socket);
+            m_socket = INVALID_SOCKET;
+            return false;
+        }
+
+        int optError = 0;
+        int optLen = sizeof(optError);
+        getsockopt(m_socket, SOL_SOCKET, SO_ERROR, (char*)&optError, &optLen);
+        if (optError != 0)
+        {
+            closesocket(m_socket);
+            m_socket = INVALID_SOCKET;
+            return false;
+        }
+    }
+
+    // Restore blocking mode and set I/O timeouts
+    u_long blocking = 0;
+    ioctlsocket(m_socket, FIONBIO, &blocking);
+
+    DWORD timeoutMs = static_cast<DWORD>(timeout * 1000);
+    setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeoutMs, sizeof(timeoutMs));
+    setsockopt(m_socket, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeoutMs, sizeof(timeoutMs));
+
+    // Enable TCP keepalive
+    BOOL keepAlive = TRUE;
+    setsockopt(m_socket, SOL_SOCKET, SO_KEEPALIVE, (const char*)&keepAlive, sizeof(keepAlive));
+
     return true;
 }
 
@@ -83,7 +134,10 @@ void CSantecTcpAdapter::SendWrite(const std::string& command)
         throw std::runtime_error("Santec TCP adapter not connected.");
 
     std::string fullCmd = command + "\n";
-    send(m_socket, fullCmd.c_str(), static_cast<int>(fullCmd.size()), 0);
+    int sent = send(m_socket, fullCmd.c_str(), static_cast<int>(fullCmd.size()), 0);
+    if (sent == SOCKET_ERROR)
+        throw std::runtime_error(std::string("Santec TCP send failed: WSA ")
+            + std::to_string(WSAGetLastError()));
 }
 
 
@@ -139,30 +193,51 @@ bool CSantecDriver::Connect()
     {
     case COMM_TCP:
     {
-        // Use adapter if set, otherwise fall back to base class TCP
         if (m_adapter)
         {
-            if (!m_adapter->Open(m_config.ipAddress, m_config.port, m_config.timeout))
+            for (int attempt = 1; attempt <= m_config.reconnectAttempts; ++attempt)
             {
-                m_logger.Error("Santec adapter connection failed.");
-                return false;
+                m_logger.Info("Adapter connect attempt %d/%d", attempt, m_config.reconnectAttempts);
+
+                if (!m_adapter->Open(m_config.ipAddress, m_config.port, m_config.timeout))
+                {
+                    m_logger.Error("Adapter connection attempt %d failed.", attempt);
+                    if (attempt < m_config.reconnectAttempts)
+                        Sleep(static_cast<DWORD>(m_config.reconnectDelay * 1000));
+                    continue;
+                }
+
+                m_state = STATE_CONNECTED;
+
+                if (!ValidateConnection())
+                {
+                    m_logger.Error("Adapter validation failed (attempt %d).", attempt);
+                    m_adapter->Close();
+                    m_state = STATE_DISCONNECTED;
+                    if (attempt < m_config.reconnectAttempts)
+                        Sleep(static_cast<DWORD>(m_config.reconnectDelay * 1000));
+                    continue;
+                }
+
+                m_logger.Info("Santec connected and validated via adapter.");
+                return true;
             }
-            m_state = STATE_CONNECTED;
-            m_logger.Info("Santec connected via adapter.");
-            return true;
+
+            m_state = STATE_ERROR;
+            m_logger.Error("All adapter connection attempts exhausted.");
+            return false;
         }
+
+        // No adapter: use base class TCP (includes ConnectSocket + ValidateConnection)
         return CBaseEquipmentDriver::Connect();
     }
     case COMM_GPIB:
-        // TODO: Implement GPIB connection (requires pyvisa/NI-VISA equivalent)
         m_logger.Warning("GPIB communication not yet implemented for Santec.");
         return false;
     case COMM_USB:
-        // TODO: Implement USB connection
         m_logger.Warning("USB communication not yet implemented for Santec.");
         return false;
     case COMM_DLL:
-        // TODO: Implement DLL-based connection (LoadLibrary + GetProcAddress)
         m_logger.Warning("DLL communication not yet implemented for Santec.");
         return false;
     default:
@@ -185,6 +260,48 @@ void CSantecDriver::Disconnect()
     }
 }
 
+bool CSantecDriver::IsConnected() const
+{
+    if (m_adapter)
+        return m_state == STATE_CONNECTED && m_adapter->IsOpen();
+    return CBaseEquipmentDriver::IsConnected();
+}
+
+// ---------------------------------------------------------------------------
+// Post-connection validation
+// ---------------------------------------------------------------------------
+
+bool CSantecDriver::ValidateConnection()
+{
+    m_logger.Info("Validating Santec connection...");
+    try
+    {
+        // Try a standard SCPI identity query to confirm the device is responsive.
+        // TODO: Replace with confirmed Santec command once protocol docs are available.
+        std::string response;
+        if (m_adapter && m_adapter->IsOpen())
+            response = m_adapter->SendQuery("*IDN?");
+        else if (m_socket != INVALID_SOCKET)
+            response = SendCommand("*IDN?");
+        else
+            return false;
+
+        if (response.empty())
+        {
+            m_logger.Error("Validation failed: no response from *IDN?");
+            return false;
+        }
+
+        m_logger.Info("Santec validation OK (*IDN? -> %s)", response.c_str());
+        return true;
+    }
+    catch (const std::exception& e)
+    {
+        m_logger.Error("Validation failed: %s", e.what());
+        return false;
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Error Handling (placeholder)
 // ---------------------------------------------------------------------------
@@ -192,7 +309,6 @@ void CSantecDriver::Disconnect()
 ErrorInfo CSantecDriver::CheckError()
 {
     // TODO: Implement with actual Santec error query command
-    // Common SCPI pattern: SYST:ERR? or :ERR?
     ErrorInfo info;
     try
     {
@@ -261,7 +377,6 @@ void CSantecDriver::ConfigureWavelengths(const std::vector<double>& wavelengths)
         (int)wavelengths.size());
 
     // TODO: Implement with actual Santec wavelength commands
-    // Possible: :WAV <value> or :SOURCE:WAV <value>
 }
 
 void CSantecDriver::ConfigureChannels(const std::vector<int>& channels)
@@ -330,7 +445,6 @@ std::vector<MeasurementResult> CSantecDriver::GetResults()
 
     std::vector<MeasurementResult> results;
 
-    // Placeholder: generate empty results matching configured channels/wavelengths
     for (size_t ci = 0; ci < m_channels.size(); ++ci)
     {
         for (size_t wi = 0; wi < m_wavelengths.size(); ++wi)
@@ -338,8 +452,8 @@ std::vector<MeasurementResult> CSantecDriver::GetResults()
             MeasurementResult result;
             result.channel = m_channels[ci];
             result.wavelength = m_wavelengths[wi];
-            result.insertionLoss = 0.0;  // TODO: Parse from device
-            result.returnLoss = 0.0;     // TODO: Parse from device
+            result.insertionLoss = 0.0;
+            result.returnLoss = 0.0;
             result.rawDataCount = 0;
             results.push_back(result);
         }

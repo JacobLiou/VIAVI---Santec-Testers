@@ -63,6 +63,7 @@ public:
     // IEquipmentDriver overrides (all skeleton/placeholder)
     virtual bool Connect() override;
     virtual void Disconnect() override;
+    virtual bool IsConnected() const override;
     virtual bool Initialize() override;
     virtual DeviceInfo GetDeviceInfo() override;
     virtual ErrorInfo CheckError() override;
@@ -74,6 +75,9 @@ public:
 
     // Set a custom communication adapter (for GPIB/USB/DLL support)
     void SetCommAdapter(ISantecCommAdapter* adapter, bool takeOwnership = true);
+
+protected:
+    virtual bool ValidateConnection() override;
 
 private:
     bool WaitForCompletion(const std::string& operationName);

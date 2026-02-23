@@ -19,6 +19,164 @@ CBaseEquipmentDriver::~CBaseEquipmentDriver()
 }
 
 // ---------------------------------------------------------------------------
+// Non-blocking connect with timeout (select-based)
+// ---------------------------------------------------------------------------
+
+bool CBaseEquipmentDriver::ConnectSocket(SOCKET sock, const sockaddr_in& addr, double timeoutSec)
+{
+    u_long nonBlocking = 1;
+    ioctlsocket(sock, FIONBIO, &nonBlocking);
+
+    int ret = connect(sock, (const sockaddr*)&addr, sizeof(addr));
+    if (ret == 0)
+    {
+        u_long blocking = 0;
+        ioctlsocket(sock, FIONBIO, &blocking);
+        return true;
+    }
+
+    int err = WSAGetLastError();
+    if (err != WSAEWOULDBLOCK)
+    {
+        m_logger.Error("connect() failed immediately: WSA %d", err);
+        return false;
+    }
+
+    fd_set writefds, exceptfds;
+    FD_ZERO(&writefds);
+    FD_ZERO(&exceptfds);
+    FD_SET(sock, &writefds);
+    FD_SET(sock, &exceptfds);
+
+    timeval tv;
+    tv.tv_sec = static_cast<long>(timeoutSec);
+    tv.tv_usec = static_cast<long>((timeoutSec - tv.tv_sec) * 1000000);
+
+    ret = select(0, NULL, &writefds, &exceptfds, &tv);
+    if (ret == 0)
+    {
+        m_logger.Error("Connection timed out after %.1f seconds.", timeoutSec);
+        return false;
+    }
+    if (ret == SOCKET_ERROR)
+    {
+        m_logger.Error("select() failed: WSA %d", WSAGetLastError());
+        return false;
+    }
+
+    if (FD_ISSET(sock, &exceptfds))
+    {
+        int optError = 0;
+        int optLen = sizeof(optError);
+        getsockopt(sock, SOL_SOCKET, SO_ERROR, (char*)&optError, &optLen);
+        m_logger.Error("Connection failed: socket error %d", optError);
+        return false;
+    }
+
+    if (!FD_ISSET(sock, &writefds))
+    {
+        m_logger.Error("Connection failed: socket not writable after select.");
+        return false;
+    }
+
+    int optError = 0;
+    int optLen = sizeof(optError);
+    getsockopt(sock, SOL_SOCKET, SO_ERROR, (char*)&optError, &optLen);
+    if (optError != 0)
+    {
+        m_logger.Error("Connection failed: SO_ERROR = %d", optError);
+        return false;
+    }
+
+    u_long blocking = 0;
+    ioctlsocket(sock, FIONBIO, &blocking);
+    return true;
+}
+
+// ---------------------------------------------------------------------------
+// TCP Keepalive
+// ---------------------------------------------------------------------------
+
+void CBaseEquipmentDriver::EnableKeepAlive(SOCKET sock)
+{
+    BOOL keepAlive = TRUE;
+    setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, (const char*)&keepAlive, sizeof(keepAlive));
+
+    struct tcp_keepalive ka = {};
+    ka.onoff = 1;
+    ka.keepalivetime = 10000;       // 10s idle before first probe
+    ka.keepaliveinterval = 2000;    // 2s between probes
+    DWORD bytesReturned = 0;
+    WSAIoctl(sock, SIO_KEEPALIVE_VALS, &ka, sizeof(ka),
+             NULL, 0, &bytesReturned, NULL, NULL);
+
+    m_logger.Debug("TCP keepalive enabled (idle=10s, interval=2s).");
+}
+
+// ---------------------------------------------------------------------------
+// Post-connection validation (default: check socket health)
+// ---------------------------------------------------------------------------
+
+bool CBaseEquipmentDriver::ValidateConnection()
+{
+    if (m_socket == INVALID_SOCKET)
+        return false;
+
+    fd_set writefds;
+    FD_ZERO(&writefds);
+    FD_SET(m_socket, &writefds);
+
+    timeval tv = {};
+    tv.tv_sec = 0;
+    tv.tv_usec = 100000; // 100ms
+
+    int ret = select(0, NULL, &writefds, NULL, &tv);
+    if (ret <= 0)
+    {
+        m_logger.Error("Validation failed: socket not writable.");
+        return false;
+    }
+
+    int optError = 0;
+    int optLen = sizeof(optError);
+    getsockopt(m_socket, SOL_SOCKET, SO_ERROR, (char*)&optError, &optLen);
+    if (optError != 0)
+    {
+        m_logger.Error("Validation failed: SO_ERROR = %d", optError);
+        return false;
+    }
+
+    m_logger.Debug("Default socket validation passed.");
+    return true;
+}
+
+// ---------------------------------------------------------------------------
+// Active health check
+// ---------------------------------------------------------------------------
+
+bool CBaseEquipmentDriver::IsAlive() const
+{
+    if (m_socket == INVALID_SOCKET || m_state != STATE_CONNECTED)
+        return false;
+
+    fd_set readfds;
+    FD_ZERO(&readfds);
+    FD_SET(m_socket, &readfds);
+
+    timeval tv = {};
+    int ret = select(0, &readfds, NULL, NULL, &tv);
+    if (ret > 0)
+    {
+        char buf;
+        int result = recv(m_socket, &buf, 1, MSG_PEEK);
+        if (result == 0 || result == SOCKET_ERROR)
+            return false;
+    }
+
+    return true;
+}
+
+// ---------------------------------------------------------------------------
 // Connection Management
 // ---------------------------------------------------------------------------
 
@@ -45,27 +203,46 @@ bool CBaseEquipmentDriver::Connect()
             continue;
         }
 
-        // Set timeout
-        DWORD timeoutMs = static_cast<DWORD>(m_config.timeout * 1000);
-        setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeoutMs, sizeof(timeoutMs));
-        setsockopt(m_socket, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeoutMs, sizeof(timeoutMs));
-
         sockaddr_in addr = {};
         addr.sin_family = AF_INET;
         addr.sin_port = htons(static_cast<u_short>(m_config.port));
-        inet_pton(AF_INET, m_config.ipAddress.c_str(), &addr.sin_addr);
 
-        if (connect(m_socket, (sockaddr*)&addr, sizeof(addr)) == SOCKET_ERROR)
+        if (inet_pton(AF_INET, m_config.ipAddress.c_str(), &addr.sin_addr) != 1)
         {
-            m_logger.Error("Connection attempt %d failed: %d", attempt, WSAGetLastError());
+            m_logger.Error("Invalid IP address format: %s", m_config.ipAddress.c_str());
+            CleanupSocket();
+            m_state = STATE_ERROR;
+            return false;
+        }
+
+        if (!ConnectSocket(m_socket, addr, m_config.timeout))
+        {
+            m_logger.Error("Connection attempt %d failed.", attempt);
             CleanupSocket();
             if (attempt < m_config.reconnectAttempts)
                 Sleep(static_cast<DWORD>(m_config.reconnectDelay * 1000));
             continue;
         }
 
+        // TCP handshake succeeded - configure socket options
+        DWORD timeoutMs = static_cast<DWORD>(m_config.timeout * 1000);
+        setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeoutMs, sizeof(timeoutMs));
+        setsockopt(m_socket, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeoutMs, sizeof(timeoutMs));
+        EnableKeepAlive(m_socket);
+
+        // Validate we are talking to a real device
         m_state = STATE_CONNECTED;
-        m_logger.Info("Connection established successfully.");
+        if (!ValidateConnection())
+        {
+            m_logger.Error("Post-connection validation failed (attempt %d).", attempt);
+            m_state = STATE_CONNECTING;
+            CleanupSocket();
+            if (attempt < m_config.reconnectAttempts)
+                Sleep(static_cast<DWORD>(m_config.reconnectDelay * 1000));
+            continue;
+        }
+
+        m_logger.Info("Connection established and validated successfully.");
         return true;
     }
 
@@ -125,9 +302,22 @@ std::string CBaseEquipmentDriver::SendCommand(const std::string& command,
     int sent = send(m_socket, fullCommand.c_str(), static_cast<int>(fullCommand.size()), 0);
     if (sent == SOCKET_ERROR)
     {
-        m_state = STATE_ERROR;
-        throw std::runtime_error(std::string("Failed to send command, WSA error: ")
-            + std::to_string(WSAGetLastError()));
+        int wsaErr = WSAGetLastError();
+        m_logger.Warning("Send failed (WSA %d). Attempting auto-reconnect...", wsaErr);
+
+        // Safe to retry: the command was never delivered
+        if (Reconnect())
+        {
+            m_logger.Info("Reconnected. Retrying command: %s", command.c_str());
+            sent = send(m_socket, fullCommand.c_str(), static_cast<int>(fullCommand.size()), 0);
+        }
+
+        if (sent == SOCKET_ERROR)
+        {
+            m_state = STATE_ERROR;
+            throw std::runtime_error(std::string("Send failed, WSA error: ")
+                + std::to_string(WSAGetLastError()));
+        }
     }
 
     bool isQuery = (command.find('?') != std::string::npos);
@@ -155,7 +345,7 @@ std::string CBaseEquipmentDriver::ReceiveResponse(int bufferSize)
                 throw std::runtime_error("Response timeout.");
             }
             m_state = STATE_ERROR;
-            throw std::runtime_error(std::string("Receive error: ") + std::to_string(err));
+            throw std::runtime_error(std::string("Receive error: WSA ") + std::to_string(err));
         }
         if (received == 0)
         {
@@ -170,7 +360,6 @@ std::string CBaseEquipmentDriver::ReceiveResponse(int bufferSize)
             break;
     }
 
-    // Trim trailing whitespace/newline
     while (!data.empty() && (data.back() == '\n' || data.back() == '\r' || data.back() == ' '))
         data.pop_back();
 

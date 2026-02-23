@@ -34,6 +34,9 @@ public:
     // VIAVI-specific configuration
     void ConfigureORL(const ORLConfig& config);
 
+protected:
+    virtual bool ValidateConnection() override;
+
 private:
     // Chassis communication
     std::string SendChassisCommand(const std::string& command);

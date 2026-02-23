@@ -39,7 +39,7 @@ CViaviPCTDriver::~CViaviPCTDriver()
 
 bool CViaviPCTDriver::Connect()
 {
-    // Step 1: Connect to Chassis (port 8100)
+    // Step 1: Connect to Chassis (port 8100) with proper timeout
     m_logger.Info("Connecting to Chassis at %s:%d", m_ipAddress.c_str(), CHASSIS_PORT);
 
     m_chassisSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -49,22 +49,31 @@ bool CViaviPCTDriver::Connect()
         return false;
     }
 
-    DWORD timeoutMs = static_cast<DWORD>(m_config.timeout * 1000);
-    setsockopt(m_chassisSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeoutMs, sizeof(timeoutMs));
-    setsockopt(m_chassisSocket, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeoutMs, sizeof(timeoutMs));
-
     sockaddr_in chassisAddr = {};
     chassisAddr.sin_family = AF_INET;
     chassisAddr.sin_port = htons(static_cast<u_short>(CHASSIS_PORT));
-    inet_pton(AF_INET, m_ipAddress.c_str(), &chassisAddr.sin_addr);
 
-    if (connect(m_chassisSocket, (sockaddr*)&chassisAddr, sizeof(chassisAddr)) == SOCKET_ERROR)
+    if (inet_pton(AF_INET, m_ipAddress.c_str(), &chassisAddr.sin_addr) != 1)
     {
-        m_logger.Error("Chassis connection failed: %d", WSAGetLastError());
+        m_logger.Error("Invalid IP address format: %s", m_ipAddress.c_str());
         closesocket(m_chassisSocket);
         m_chassisSocket = INVALID_SOCKET;
         return false;
     }
+
+    if (!ConnectSocket(m_chassisSocket, chassisAddr, m_config.timeout))
+    {
+        m_logger.Error("Chassis connection failed (timeout=%.1fs).", m_config.timeout);
+        closesocket(m_chassisSocket);
+        m_chassisSocket = INVALID_SOCKET;
+        return false;
+    }
+
+    DWORD timeoutMs = static_cast<DWORD>(m_config.timeout * 1000);
+    setsockopt(m_chassisSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeoutMs, sizeof(timeoutMs));
+    setsockopt(m_chassisSocket, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeoutMs, sizeof(timeoutMs));
+    EnableKeepAlive(m_chassisSocket);
+
     m_logger.Info("Chassis connection established.");
 
     // Step 2: Launch Super Application
@@ -73,7 +82,7 @@ bool CViaviPCTDriver::Connect()
     m_logger.Info("Waiting %d ms for Super App to start...", SUPER_APP_WAIT_MS);
     Sleep(SUPER_APP_WAIT_MS);
 
-    // Step 3: Connect to PCT Module via base class
+    // Step 3: Connect to PCT Module via base class (includes ValidateConnection)
     m_logger.Info("Connecting to PCT Module at slot %d (port %d)", m_slot, m_config.port);
     return CBaseEquipmentDriver::Connect();
 }
@@ -121,6 +130,31 @@ std::string CViaviPCTDriver::SendChassisCommand(const std::string& command)
         return data;
     }
     return std::string();
+}
+
+// ---------------------------------------------------------------------------
+// Post-connection validation: query SYST:ERR? to confirm device is responsive
+// ---------------------------------------------------------------------------
+
+bool CViaviPCTDriver::ValidateConnection()
+{
+    m_logger.Info("Validating VIAVI PCT connection...");
+    try
+    {
+        std::string response = SendCommand("SYST:ERR?");
+        if (response.empty())
+        {
+            m_logger.Error("Validation failed: empty response from SYST:ERR?");
+            return false;
+        }
+        m_logger.Info("VIAVI PCT validation OK (SYST:ERR? -> %s)", response.c_str());
+        return true;
+    }
+    catch (const std::exception& e)
+    {
+        m_logger.Error("Validation failed: %s", e.what());
+        return false;
+    }
 }
 
 // ---------------------------------------------------------------------------

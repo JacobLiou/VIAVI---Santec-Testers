@@ -6,6 +6,7 @@
 #include <Windows.h>
 #include <WinSock2.h>
 #include <WS2tcpip.h>
+#include <mstcpip.h>
 #pragma comment(lib, "ws2_32.lib")
 
 #include <stdio.h>
