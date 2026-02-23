@@ -6,6 +6,11 @@
 #include "SantecDriver.h"
 #include "Logger.h"
 #include <memory>
+#include <thread>
+#include <functional>
+
+#define WM_LOG_MESSAGE  (WM_USER + 100)
+#define WM_WORKER_DONE  (WM_USER + 101)
 
 class CDriverTestAppDlg : public CDialogEx
 {
@@ -18,10 +23,12 @@ public:
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);
     virtual BOOL OnInitDialog();
+    virtual void OnOK() override;
+    virtual void OnCancel() override;
 
     DECLARE_MESSAGE_MAP()
 
-    // Button handlers
+    afx_msg void OnClose();
     afx_msg void OnBnClickedConnect();
     afx_msg void OnBnClickedDisconnect();
     afx_msg void OnBnClickedInitialize();
@@ -34,17 +41,32 @@ protected:
     afx_msg void OnCbnSelchangeDeviceType();
     afx_msg void OnBnClickedOverride();
 
-    // Custom message for thread-safe log append
     afx_msg LRESULT OnLogMessage(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnWorkerDone(WPARAM wParam, LPARAM lParam);
 
 private:
+    // UI helpers
     void AppendLog(const CString& text);
     void UpdateStatus(const CString& status);
     void EnableControls(bool connected);
+    void SetBusy(bool busy, const CString& statusText = _T(""));
     void PopulateResultsList(const std::vector<EquipmentDriver::MeasurementResult>& results);
 
     std::vector<double> GetSelectedWavelengths();
     std::vector<int> GetSelectedChannels();
+
+    // Async worker infrastructure
+    struct WorkerResult
+    {
+        bool success;
+        bool hasResults;
+        CString statusText;
+        CString logMessage;
+        std::vector<EquipmentDriver::MeasurementResult> results;
+        WorkerResult() : success(false), hasResults(false) {}
+    };
+
+    void RunAsync(const CString& operationName, std::function<WorkerResult*()> task);
 
     // Controls
     CComboBox   m_comboDeviceType;
@@ -65,8 +87,7 @@ private:
     CListCtrl   m_listResults;
     CEdit       m_editLog;
 
-    // Driver instance
+    // State
     EquipmentDriver::IEquipmentDriver* m_pDriver;
+    bool m_bBusy;
 };
-
-#define WM_LOG_MESSAGE (WM_USER + 100)

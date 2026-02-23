@@ -8,10 +8,10 @@
 
 using namespace EquipmentDriver;
 
-// Store dialog pointer for log callback
 static CDriverTestAppDlg* g_pDlg = nullptr;
 
 BEGIN_MESSAGE_MAP(CDriverTestAppDlg, CDialogEx)
+    ON_WM_CLOSE()
     ON_BN_CLICKED(IDC_BTN_CONNECT, &CDriverTestAppDlg::OnBnClickedConnect)
     ON_BN_CLICKED(IDC_BTN_DISCONNECT, &CDriverTestAppDlg::OnBnClickedDisconnect)
     ON_BN_CLICKED(IDC_BTN_INITIALIZE, &CDriverTestAppDlg::OnBnClickedInitialize)
@@ -24,11 +24,13 @@ BEGIN_MESSAGE_MAP(CDriverTestAppDlg, CDialogEx)
     ON_CBN_SELCHANGE(IDC_COMBO_DEVICE_TYPE, &CDriverTestAppDlg::OnCbnSelchangeDeviceType)
     ON_BN_CLICKED(IDC_CHECK_OVERRIDE, &CDriverTestAppDlg::OnBnClickedOverride)
     ON_MESSAGE(WM_LOG_MESSAGE, &CDriverTestAppDlg::OnLogMessage)
+    ON_MESSAGE(WM_WORKER_DONE, &CDriverTestAppDlg::OnWorkerDone)
 END_MESSAGE_MAP()
 
 CDriverTestAppDlg::CDriverTestAppDlg(CWnd* pParent)
     : CDialogEx(IDD_DRIVERTESTAPP_DIALOG, pParent)
     , m_pDriver(nullptr)
+    , m_bBusy(false)
 {
 }
 
@@ -70,7 +72,6 @@ BOOL CDriverTestAppDlg::OnInitDialog()
 
     g_pDlg = this;
 
-    // Setup log callback to route driver logs to the UI
     CLogger::SetGlobalCallback(
         [](LogLevel level, const std::string& source, const std::string& message)
     {
@@ -95,35 +96,28 @@ BOOL CDriverTestAppDlg::OnInitDialog()
     m_editPort.SetWindowText(_T("8301"));
     m_editSlot.SetWindowText(_T("1"));
 
-    // Wavelength defaults
     m_check1310.SetCheck(BST_CHECKED);
     m_check1550.SetCheck(BST_CHECKED);
 
-    // Channel defaults
     m_editChFrom.SetWindowText(_T("1"));
     m_editChTo.SetWindowText(_T("12"));
 
-    // ORL method combo
     m_comboOrlMethod.AddString(_T("Integration (1)"));
     m_comboOrlMethod.AddString(_T("Discrete (2)"));
-    m_comboOrlMethod.SetCurSel(1); // Discrete by default
+    m_comboOrlMethod.SetCurSel(1);
 
-    // ORL origin combo
     m_comboOrlOrigin.AddString(_T("A+B from DUT start (1)"));
     m_comboOrlOrigin.AddString(_T("A+B from DUT end (2)"));
     m_comboOrlOrigin.AddString(_T("A start / B end (3)"));
     m_comboOrlOrigin.SetCurSel(0);
 
-    // ORL offsets
     m_editAOffset.SetWindowText(_T("-0.5"));
     m_editBOffset.SetWindowText(_T("0.5"));
 
-    // Reference defaults
     m_checkOverride.SetCheck(BST_CHECKED);
     m_editILValue.SetWindowText(_T("0.1"));
     m_editLengthValue.SetWindowText(_T("3.0"));
 
-    // Setup results list columns
     m_listResults.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
     m_listResults.InsertColumn(0, _T("Channel"), LVCFMT_CENTER, 60);
     m_listResults.InsertColumn(1, _T("Wavelength (nm)"), LVCFMT_CENTER, 90);
@@ -137,10 +131,151 @@ BOOL CDriverTestAppDlg::OnInitDialog()
 }
 
 // ---------------------------------------------------------------------------
+// Prevent accidental dialog close
+// ---------------------------------------------------------------------------
+
+void CDriverTestAppDlg::OnOK()
+{
+    // Block Enter key from closing the dialog
+}
+
+void CDriverTestAppDlg::OnCancel()
+{
+    if (m_bBusy)
+    {
+        MessageBox(_T("An operation is in progress. Please wait for it to complete."),
+                   _T("Busy"), MB_OK | MB_ICONINFORMATION);
+        return;
+    }
+    CDialogEx::OnCancel();
+}
+
+void CDriverTestAppDlg::OnClose()
+{
+    if (m_bBusy)
+    {
+        MessageBox(_T("An operation is in progress. Please wait for it to complete."),
+                   _T("Busy"), MB_OK | MB_ICONINFORMATION);
+        return;
+    }
+    CDialogEx::OnClose();
+}
+
+// ---------------------------------------------------------------------------
+// Async worker infrastructure
+// ---------------------------------------------------------------------------
+
+void CDriverTestAppDlg::RunAsync(const CString& operationName,
+                                  std::function<WorkerResult*()> task)
+{
+    if (m_bBusy)
+    {
+        AppendLog(_T("Another operation is in progress. Please wait."));
+        return;
+    }
+
+    SetBusy(true, operationName);
+
+    HWND hWnd = GetSafeHwnd();
+    std::thread worker([hWnd, task]()
+    {
+        WorkerResult* result = nullptr;
+        try
+        {
+            result = task();
+        }
+        catch (...)
+        {
+            result = new WorkerResult();
+            result->logMessage = _T("Unexpected internal error.");
+            result->statusText = _T("Error");
+        }
+
+        if (::IsWindow(hWnd))
+            ::PostMessage(hWnd, WM_WORKER_DONE, 0, (LPARAM)result);
+        else
+            delete result;
+    });
+    worker.detach();
+}
+
+LRESULT CDriverTestAppDlg::OnWorkerDone(WPARAM /*wParam*/, LPARAM lParam)
+{
+    WorkerResult* result = reinterpret_cast<WorkerResult*>(lParam);
+    if (result)
+    {
+        if (!result->logMessage.IsEmpty())
+            AppendLog(result->logMessage);
+
+        if (!result->statusText.IsEmpty())
+            UpdateStatus(result->statusText);
+
+        if (result->hasResults)
+            PopulateResultsList(result->results);
+
+        delete result;
+    }
+
+    SetBusy(false);
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Busy state management
+// ---------------------------------------------------------------------------
+
+void CDriverTestAppDlg::SetBusy(bool busy, const CString& statusText)
+{
+    m_bBusy = busy;
+
+    if (busy)
+    {
+        static const int ids[] = {
+            IDC_BTN_CONNECT, IDC_BTN_DISCONNECT, IDC_BTN_INITIALIZE,
+            IDC_BTN_CONFIGURE_ORL, IDC_BTN_TAKE_REFERENCE, IDC_BTN_TAKE_MEASUREMENT,
+            IDC_BTN_GET_RESULTS, IDC_BTN_RUN_FULL_TEST,
+            IDC_COMBO_DEVICE_TYPE, IDC_EDIT_IP, IDC_EDIT_PORT, IDC_EDIT_SLOT,
+            IDC_CHECK_1310, IDC_CHECK_1550, IDC_EDIT_CH_FROM, IDC_EDIT_CH_TO,
+            IDC_COMBO_ORL_METHOD, IDC_COMBO_ORL_ORIGIN, IDC_EDIT_A_OFFSET, IDC_EDIT_B_OFFSET,
+            IDC_CHECK_OVERRIDE, IDC_EDIT_IL_VALUE, IDC_EDIT_LENGTH_VALUE
+        };
+
+        for (int id : ids)
+        {
+            CWnd* pWnd = GetDlgItem(id);
+            if (pWnd) pWnd->EnableWindow(FALSE);
+        }
+
+        if (!statusText.IsEmpty())
+            UpdateStatus(statusText);
+    }
+    else
+    {
+        bool connected = m_pDriver && m_pDriver->IsConnected();
+        EnableControls(connected);
+
+        // Parameter controls are always usable when not busy
+        GetDlgItem(IDC_CHECK_1310)->EnableWindow(TRUE);
+        GetDlgItem(IDC_CHECK_1550)->EnableWindow(TRUE);
+        GetDlgItem(IDC_EDIT_CH_FROM)->EnableWindow(TRUE);
+        GetDlgItem(IDC_EDIT_CH_TO)->EnableWindow(TRUE);
+        GetDlgItem(IDC_COMBO_ORL_METHOD)->EnableWindow(TRUE);
+        GetDlgItem(IDC_COMBO_ORL_ORIGIN)->EnableWindow(TRUE);
+        GetDlgItem(IDC_EDIT_A_OFFSET)->EnableWindow(TRUE);
+        GetDlgItem(IDC_EDIT_B_OFFSET)->EnableWindow(TRUE);
+        GetDlgItem(IDC_CHECK_OVERRIDE)->EnableWindow(TRUE);
+
+        BOOL overrideOn = (m_checkOverride.GetCheck() == BST_CHECKED);
+        GetDlgItem(IDC_EDIT_IL_VALUE)->EnableWindow(overrideOn);
+        GetDlgItem(IDC_EDIT_LENGTH_VALUE)->EnableWindow(overrideOn);
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Log handling
 // ---------------------------------------------------------------------------
 
-LRESULT CDriverTestAppDlg::OnLogMessage(WPARAM wParam, LPARAM lParam)
+LRESULT CDriverTestAppDlg::OnLogMessage(WPARAM /*wParam*/, LPARAM lParam)
 {
     CString* pMsg = reinterpret_cast<CString*>(lParam);
     if (pMsg)
@@ -215,7 +350,7 @@ void CDriverTestAppDlg::OnBnClickedOverride()
 }
 
 // ---------------------------------------------------------------------------
-// Connection
+// Connection (async)
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::OnBnClickedConnect()
@@ -244,62 +379,93 @@ void CDriverTestAppDlg::OnBnClickedConnect()
             m_pDriver = CDriverFactory::Create("viavi", ipStr, port, slot);
         else
             m_pDriver = CDriverFactory::Create("santec", ipStr, port, slot);
-
-        AppendLog(_T("Connecting..."));
-        UpdateStatus(_T("Connecting..."));
-
-        if (m_pDriver->Connect())
-        {
-            UpdateStatus(_T("Connected"));
-            EnableControls(true);
-            AppendLog(_T("Connection successful."));
-        }
-        else
-        {
-            UpdateStatus(_T("Failed"));
-            AppendLog(_T("Connection failed."));
-        }
     }
     catch (const std::exception& e)
     {
         CString msg;
-        msg.Format(_T("Connection error: %S"), e.what());
+        msg.Format(_T("Failed to create driver: %S"), e.what());
         AppendLog(msg);
-        UpdateStatus(_T("Error"));
+        return;
     }
+
+    AppendLog(_T("Connecting..."));
+
+    IEquipmentDriver* pDriver = m_pDriver;
+    RunAsync(_T("Connecting..."), [pDriver]() -> WorkerResult*
+    {
+        WorkerResult* r = new WorkerResult();
+        try
+        {
+            r->success = pDriver->Connect();
+            if (r->success)
+            {
+                r->logMessage = _T("Connection successful.");
+                r->statusText = _T("Connected");
+            }
+            else
+            {
+                r->logMessage = _T("Connection failed.");
+                r->statusText = _T("Connection Failed");
+            }
+        }
+        catch (const std::exception& e)
+        {
+            CString msg;
+            msg.Format(_T("Connection error: %S"), e.what());
+            r->logMessage = msg;
+            r->statusText = _T("Error");
+        }
+        return r;
+    });
 }
 
 void CDriverTestAppDlg::OnBnClickedDisconnect()
 {
-    if (m_pDriver)
+    if (!m_pDriver) return;
+
+    IEquipmentDriver* pDriver = m_pDriver;
+    RunAsync(_T("Disconnecting..."), [pDriver]() -> WorkerResult*
     {
-        m_pDriver->Disconnect();
-        AppendLog(_T("Disconnected."));
-    }
-    UpdateStatus(_T("Disconnected"));
-    EnableControls(false);
+        WorkerResult* r = new WorkerResult();
+        pDriver->Disconnect();
+        r->success = true;
+        r->logMessage = _T("Disconnected.");
+        r->statusText = _T("Disconnected");
+        return r;
+    });
 }
+
+// ---------------------------------------------------------------------------
+// Initialize (async)
+// ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::OnBnClickedInitialize()
 {
     if (!m_pDriver) return;
-    try
+
+    IEquipmentDriver* pDriver = m_pDriver;
+    RunAsync(_T("Initializing..."), [pDriver]() -> WorkerResult*
     {
-        if (m_pDriver->Initialize())
-            AppendLog(_T("Initialization successful."));
-        else
-            AppendLog(_T("Initialization failed."));
-    }
-    catch (const std::exception& e)
-    {
-        CString msg;
-        msg.Format(_T("Init error: %S"), e.what());
-        AppendLog(msg);
-    }
+        WorkerResult* r = new WorkerResult();
+        try
+        {
+            r->success = pDriver->Initialize();
+            r->logMessage = r->success
+                ? _T("Initialization successful.")
+                : _T("Initialization failed.");
+        }
+        catch (const std::exception& e)
+        {
+            CString msg;
+            msg.Format(_T("Init error: %S"), e.what());
+            r->logMessage = msg;
+        }
+        return r;
+    });
 }
 
 // ---------------------------------------------------------------------------
-// ORL Configuration (VIAVI specific)
+// ORL Configuration (async, VIAVI specific)
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::OnBnClickedConfigureOrl()
@@ -317,146 +483,180 @@ void CDriverTestAppDlg::OnBnClickedConfigureOrl()
     m_editAOffset.GetWindowText(aStr);
     m_editBOffset.GetWindowText(bStr);
 
-    try
-    {
-        ORLConfig cfg;
-        cfg.channel = 1;
-        cfg.method = static_cast<ORLMethod>(m_comboOrlMethod.GetCurSel() + 1);
-        cfg.origin = static_cast<ORLOrigin>(m_comboOrlOrigin.GetCurSel() + 1);
-        cfg.aOffset = _ttof(aStr);
-        cfg.bOffset = _ttof(bStr);
+    ORLConfig cfg;
+    cfg.channel = 1;
+    cfg.method = static_cast<ORLMethod>(m_comboOrlMethod.GetCurSel() + 1);
+    cfg.origin = static_cast<ORLOrigin>(m_comboOrlOrigin.GetCurSel() + 1);
+    cfg.aOffset = _ttof(aStr);
+    cfg.bOffset = _ttof(bStr);
 
-        viavi->ConfigureORL(cfg);
-        AppendLog(_T("ORL configuration applied."));
-    }
-    catch (const std::exception& e)
+    RunAsync(_T("Configuring ORL..."), [viavi, cfg]() -> WorkerResult*
     {
-        CString msg;
-        msg.Format(_T("ORL config error: %S"), e.what());
-        AppendLog(msg);
-    }
+        WorkerResult* r = new WorkerResult();
+        try
+        {
+            viavi->ConfigureORL(cfg);
+            r->success = true;
+            r->logMessage = _T("ORL configuration applied.");
+        }
+        catch (const std::exception& e)
+        {
+            CString msg;
+            msg.Format(_T("ORL config error: %S"), e.what());
+            r->logMessage = msg;
+        }
+        return r;
+    });
 }
 
 // ---------------------------------------------------------------------------
-// Reference
+// Reference (async)
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::OnBnClickedTakeReference()
 {
     if (!m_pDriver) return;
 
-    try
+    std::vector<double> wavelengths = GetSelectedWavelengths();
+    std::vector<int> channels = GetSelectedChannels();
+
+    ReferenceConfig cfg;
+    cfg.useOverride = (m_checkOverride.GetCheck() == BST_CHECKED);
+    CString ilStr, lenStr;
+    m_editILValue.GetWindowText(ilStr);
+    m_editLengthValue.GetWindowText(lenStr);
+    cfg.ilValue = _ttof(ilStr);
+    cfg.lengthValue = _ttof(lenStr);
+
+    AppendLog(_T("Taking reference..."));
+
+    IEquipmentDriver* pDriver = m_pDriver;
+    RunAsync(_T("Taking reference..."), [pDriver, wavelengths, channels, cfg]() -> WorkerResult*
     {
-        // Configure wavelengths and channels first
-        m_pDriver->ConfigureWavelengths(GetSelectedWavelengths());
-        m_pDriver->ConfigureChannels(GetSelectedChannels());
-
-        ReferenceConfig cfg;
-        cfg.useOverride = (m_checkOverride.GetCheck() == BST_CHECKED);
-
-        CString ilStr, lenStr;
-        m_editILValue.GetWindowText(ilStr);
-        m_editLengthValue.GetWindowText(lenStr);
-        cfg.ilValue = _ttof(ilStr);
-        cfg.lengthValue = _ttof(lenStr);
-
-        AppendLog(_T("Taking reference..."));
-        if (m_pDriver->TakeReference(cfg))
-            AppendLog(_T("Reference completed."));
-        else
-            AppendLog(_T("Reference FAILED."));
-    }
-    catch (const std::exception& e)
-    {
-        CString msg;
-        msg.Format(_T("Reference error: %S"), e.what());
-        AppendLog(msg);
-    }
+        WorkerResult* r = new WorkerResult();
+        try
+        {
+            pDriver->ConfigureWavelengths(wavelengths);
+            pDriver->ConfigureChannels(channels);
+            r->success = pDriver->TakeReference(cfg);
+            r->logMessage = r->success
+                ? _T("Reference completed.")
+                : _T("Reference FAILED.");
+        }
+        catch (const std::exception& e)
+        {
+            CString msg;
+            msg.Format(_T("Reference error: %S"), e.what());
+            r->logMessage = msg;
+        }
+        return r;
+    });
 }
 
 // ---------------------------------------------------------------------------
-// Measurement
+// Measurement (async)
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::OnBnClickedTakeMeasurement()
 {
     if (!m_pDriver) return;
-    try
+
+    AppendLog(_T("Taking measurement..."));
+
+    IEquipmentDriver* pDriver = m_pDriver;
+    RunAsync(_T("Measuring..."), [pDriver]() -> WorkerResult*
     {
-        AppendLog(_T("Taking measurement..."));
-        if (m_pDriver->TakeMeasurement())
-            AppendLog(_T("Measurement completed."));
-        else
-            AppendLog(_T("Measurement FAILED."));
-    }
-    catch (const std::exception& e)
-    {
-        CString msg;
-        msg.Format(_T("Measurement error: %S"), e.what());
-        AppendLog(msg);
-    }
+        WorkerResult* r = new WorkerResult();
+        try
+        {
+            r->success = pDriver->TakeMeasurement();
+            r->logMessage = r->success
+                ? _T("Measurement completed.")
+                : _T("Measurement FAILED.");
+        }
+        catch (const std::exception& e)
+        {
+            CString msg;
+            msg.Format(_T("Measurement error: %S"), e.what());
+            r->logMessage = msg;
+        }
+        return r;
+    });
 }
 
 // ---------------------------------------------------------------------------
-// Get Results
+// Get Results (async)
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::OnBnClickedGetResults()
 {
     if (!m_pDriver) return;
-    try
+
+    IEquipmentDriver* pDriver = m_pDriver;
+    RunAsync(_T("Retrieving results..."), [pDriver]() -> WorkerResult*
     {
-        std::vector<MeasurementResult> results = m_pDriver->GetResults();
-        PopulateResultsList(results);
-        CString msg;
-        msg.Format(_T("Retrieved %d results."), (int)results.size());
-        AppendLog(msg);
-    }
-    catch (const std::exception& e)
-    {
-        CString msg;
-        msg.Format(_T("Get results error: %S"), e.what());
-        AppendLog(msg);
-    }
+        WorkerResult* r = new WorkerResult();
+        try
+        {
+            r->results = pDriver->GetResults();
+            r->hasResults = true;
+            r->success = true;
+            CString msg;
+            msg.Format(_T("Retrieved %d results."), (int)r->results.size());
+            r->logMessage = msg;
+        }
+        catch (const std::exception& e)
+        {
+            CString msg;
+            msg.Format(_T("Get results error: %S"), e.what());
+            r->logMessage = msg;
+        }
+        return r;
+    });
 }
 
 // ---------------------------------------------------------------------------
-// Run Full Test
+// Run Full Test (async)
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::OnBnClickedRunFullTest()
 {
     if (!m_pDriver) return;
-    try
+
+    std::vector<double> wavelengths = GetSelectedWavelengths();
+    std::vector<int> channels = GetSelectedChannels();
+
+    ReferenceConfig refCfg;
+    refCfg.useOverride = (m_checkOverride.GetCheck() == BST_CHECKED);
+    CString ilStr, lenStr;
+    m_editILValue.GetWindowText(ilStr);
+    m_editLengthValue.GetWindowText(lenStr);
+    refCfg.ilValue = _ttof(ilStr);
+    refCfg.lengthValue = _ttof(lenStr);
+
+    AppendLog(_T("=== Running Full Test ==="));
+
+    IEquipmentDriver* pDriver = m_pDriver;
+    RunAsync(_T("Running full test..."), [pDriver, wavelengths, channels, refCfg]() -> WorkerResult*
     {
-        ReferenceConfig refCfg;
-        refCfg.useOverride = (m_checkOverride.GetCheck() == BST_CHECKED);
-
-        CString ilStr, lenStr;
-        m_editILValue.GetWindowText(ilStr);
-        m_editLengthValue.GetWindowText(lenStr);
-        refCfg.ilValue = _ttof(ilStr);
-        refCfg.lengthValue = _ttof(lenStr);
-
-        AppendLog(_T("=== Running Full Test ==="));
-        std::vector<MeasurementResult> results = m_pDriver->RunFullTest(
-            GetSelectedWavelengths(),
-            GetSelectedChannels(),
-            true,
-            refCfg);
-
-        PopulateResultsList(results);
-
-        CString msg;
-        msg.Format(_T("=== Full Test Complete: %d results ==="), (int)results.size());
-        AppendLog(msg);
-    }
-    catch (const std::exception& e)
-    {
-        CString msg;
-        msg.Format(_T("Full test error: %S"), e.what());
-        AppendLog(msg);
-    }
+        WorkerResult* r = new WorkerResult();
+        try
+        {
+            r->results = pDriver->RunFullTest(wavelengths, channels, true, refCfg);
+            r->hasResults = true;
+            r->success = true;
+            CString msg;
+            msg.Format(_T("=== Full Test Complete: %d results ==="), (int)r->results.size());
+            r->logMessage = msg;
+        }
+        catch (const std::exception& e)
+        {
+            CString msg;
+            msg.Format(_T("Full test error: %S"), e.what());
+            r->logMessage = msg;
+        }
+        return r;
+    });
 }
 
 // ---------------------------------------------------------------------------
