@@ -50,7 +50,7 @@ private:
     void UpdateStatus(const CString& status);
     void EnableControls(bool connected);
     void SetBusy(bool busy, const CString& statusText = _T(""));
-    void PopulateResultsList(const std::vector<EquipmentDriver::MeasurementResult>& results);
+    void PopulateResultsList(const std::vector<ViaviNSantecTester::MeasurementResult>& results);
 
     std::vector<double> GetSelectedWavelengths();
     std::vector<int> GetSelectedChannels();
@@ -62,7 +62,7 @@ private:
         bool hasResults;
         CString statusText;
         CString logMessage;
-        std::vector<EquipmentDriver::MeasurementResult> results;
+        std::vector<ViaviNSantecTester::MeasurementResult> results;
         WorkerResult() : success(false), hasResults(false) {}
     };
 
@@ -88,6 +88,6 @@ private:
     CEdit       m_editLog;
 
     // State
-    EquipmentDriver::IEquipmentDriver* m_pDriver;
+    ViaviNSantecTester::IEquipmentDriver* m_pDriver;
     bool m_bBusy;
 };

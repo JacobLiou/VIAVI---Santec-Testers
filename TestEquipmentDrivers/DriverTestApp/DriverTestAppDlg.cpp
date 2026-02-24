@@ -6,7 +6,7 @@
 #define new DEBUG_NEW
 #endif
 
-using namespace EquipmentDriver;
+using namespace ViaviNSantecTester;
 
 static CDriverTestAppDlg* g_pDlg = nullptr;
 
