@@ -341,7 +341,7 @@ void CDriverTestAppDlg::OnCbnSelchangeDeviceType()
     }
     else // Santec
     {
-        m_editPort.SetWindowText(_T("5000"));
+        m_editPort.SetWindowText(_T("5025"));
         m_editSlot.SetWindowText(_T("0"));
         GetDlgItem(IDC_EDIT_SLOT)->EnableWindow(FALSE);
         GetDlgItem(IDC_BTN_CONFIGURE_ORL)->ShowWindow(SW_HIDE);

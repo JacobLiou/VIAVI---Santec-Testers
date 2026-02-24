@@ -8,6 +8,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ViaviSimulator", "ViaviSimu
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UDL.ViaviNSantecTester", "UDL.ViaviNSantecTester\UDL.ViaviNSantecTester.vcxproj", "{2CEFE38C-047A-49D0-8890-B45A10D06F2D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SantecSimulator", "SantecSimulator\SantecSimulator.vcxproj", "{C4D5E6F7-A8B9-40C1-D2E3-F4A5B6C7D8E9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -40,6 +42,14 @@ Global
 		{2CEFE38C-047A-49D0-8890-B45A10D06F2D}.Release|Win32.Build.0 = Release|Win32
 		{2CEFE38C-047A-49D0-8890-B45A10D06F2D}.Release|x64.ActiveCfg = Release|x64
 		{2CEFE38C-047A-49D0-8890-B45A10D06F2D}.Release|x64.Build.0 = Release|x64
+		{C4D5E6F7-A8B9-40C1-D2E3-F4A5B6C7D8E9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C4D5E6F7-A8B9-40C1-D2E3-F4A5B6C7D8E9}.Debug|Win32.Build.0 = Debug|Win32
+		{C4D5E6F7-A8B9-40C1-D2E3-F4A5B6C7D8E9}.Debug|x64.ActiveCfg = Debug|x64
+		{C4D5E6F7-A8B9-40C1-D2E3-F4A5B6C7D8E9}.Debug|x64.Build.0 = Debug|x64
+		{C4D5E6F7-A8B9-40C1-D2E3-F4A5B6C7D8E9}.Release|Win32.ActiveCfg = Release|Win32
+		{C4D5E6F7-A8B9-40C1-D2E3-F4A5B6C7D8E9}.Release|Win32.Build.0 = Release|Win32
+		{C4D5E6F7-A8B9-40C1-D2E3-F4A5B6C7D8E9}.Release|x64.ActiveCfg = Release|x64
+		{C4D5E6F7-A8B9-40C1-D2E3-F4A5B6C7D8E9}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
