@@ -86,6 +86,21 @@ DWORD WINAPI CSantecSimServer::MeasDelayThreadProc(LPVOID param)
         std::lock_guard<std::mutex> lock(self->m_mutex);
         self->m_measRunning = false;
     }
+    self->Log("  [Meas] Measurement completed.");
+    return 0;
+}
+
+DWORD WINAPI CSantecSimServer::RefDelayThreadProc(LPVOID param)
+{
+    CSantecSimServer* self = static_cast<CSantecSimServer*>(param);
+    DWORD delay = self->GetMeasDelayMs() > 0 ? (DWORD)self->GetMeasDelayMs() : 2000;
+    Sleep(delay);
+    {
+        std::lock_guard<std::mutex> lock(self->m_mutex);
+        self->m_measRunning = false;
+        self->m_referenced = true;
+    }
+    self->Log("  [Reference] Reference completed.");
     return 0;
 }
 
@@ -311,14 +326,9 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
             m_measRunning = true;
             m_measStartTick = GetTickCount();
         }
-        // Simulate reference takes about 2 seconds
-        Sleep(m_measDelayMs > 0 ? (DWORD)(m_measDelayMs) : 2000);
-        {
-            std::lock_guard<std::mutex> lock(m_mutex);
-            m_measRunning = false;
-            m_referenced = true;
-        }
-        Log("  [Reference] Reference completed.");
+        // Non-blocking: delay runs in a separate thread so the handler
+        // can keep processing STAT:OPER? polls from the driver.
+        CreateThread(NULL, 0, RefDelayThreadProc, this, 0, NULL);
         return "";
     }
 
@@ -329,8 +339,10 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
 
     if (upper == "REF:CLE")
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_referenced = false;
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            m_referenced = false;
+        }
         Log("  [Reference] Cleared.");
         return "";
     }
@@ -355,8 +367,10 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
 
     if (upper == "ABOR")
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_measRunning = false;
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            m_measRunning = false;
+        }
         Log("  [Meas] Aborted.");
         return "";
     }

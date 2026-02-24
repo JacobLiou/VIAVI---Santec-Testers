@@ -45,6 +45,7 @@ public:
 private:
     static DWORD WINAPI ServerThreadProc(LPVOID param);
     static DWORD WINAPI MeasDelayThreadProc(LPVOID param);
+    static DWORD WINAPI RefDelayThreadProc(LPVOID param);
     void RunServer();
     void HandleClient(SOCKET clientSocket);
     std::string ProcessCommand(const std::string& cmd);
