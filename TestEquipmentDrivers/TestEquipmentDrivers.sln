@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DriverTestApp", "DriverTest
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DriverUnitTest", "DriverUnitTest\DriverUnitTest.vcxproj", "{D1E2F3A4-B5C6-4D7E-8F9A-0B1C2D3E4F5A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ViaviSimulator", "ViaviSimulator\ViaviSimulator.vcxproj", "{B3C4D5E6-F7A8-49B0-C1D2-E3F4A5B6C7D8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -41,6 +43,14 @@ Global
 		{D1E2F3A4-B5C6-4D7E-8F9A-0B1C2D3E4F5A}.Release|Win32.Build.0 = Release|Win32
 		{D1E2F3A4-B5C6-4D7E-8F9A-0B1C2D3E4F5A}.Release|x64.ActiveCfg = Release|x64
 		{D1E2F3A4-B5C6-4D7E-8F9A-0B1C2D3E4F5A}.Release|x64.Build.0 = Release|x64
+		{B3C4D5E6-F7A8-49B0-C1D2-E3F4A5B6C7D8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B3C4D5E6-F7A8-49B0-C1D2-E3F4A5B6C7D8}.Debug|Win32.Build.0 = Debug|Win32
+		{B3C4D5E6-F7A8-49B0-C1D2-E3F4A5B6C7D8}.Debug|x64.ActiveCfg = Debug|x64
+		{B3C4D5E6-F7A8-49B0-C1D2-E3F4A5B6C7D8}.Debug|x64.Build.0 = Debug|x64
+		{B3C4D5E6-F7A8-49B0-C1D2-E3F4A5B6C7D8}.Release|Win32.ActiveCfg = Release|Win32
+		{B3C4D5E6-F7A8-49B0-C1D2-E3F4A5B6C7D8}.Release|Win32.Build.0 = Release|Win32
+		{B3C4D5E6-F7A8-49B0-C1D2-E3F4A5B6C7D8}.Release|x64.ActiveCfg = Release|x64
+		{B3C4D5E6-F7A8-49B0-C1D2-E3F4A5B6C7D8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

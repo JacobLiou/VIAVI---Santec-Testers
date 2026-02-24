@@ -207,11 +207,17 @@ LRESULT CDriverTestAppDlg::OnWorkerDone(WPARAM /*wParam*/, LPARAM lParam)
         if (!result->logMessage.IsEmpty())
             AppendLog(result->logMessage);
 
-        if (!result->statusText.IsEmpty())
-            UpdateStatus(result->statusText);
-
         if (result->hasResults)
             PopulateResultsList(result->results);
+
+        // Update status: use explicit text if provided, otherwise derive from state
+        if (!result->statusText.IsEmpty())
+            UpdateStatus(result->statusText);
+        else
+        {
+            bool connected = m_pDriver && m_pDriver->IsConnected();
+            UpdateStatus(connected ? _T("Connected - Ready") : _T("Disconnected"));
+        }
 
         delete result;
     }
@@ -453,12 +459,16 @@ void CDriverTestAppDlg::OnBnClickedInitialize()
             r->logMessage = r->success
                 ? _T("Initialization successful.")
                 : _T("Initialization failed.");
+            r->statusText = r->success
+                ? _T("Initialized - Ready")
+                : _T("Initialization Failed");
         }
         catch (const std::exception& e)
         {
             CString msg;
             msg.Format(_T("Init error: %S"), e.what());
             r->logMessage = msg;
+            r->statusText = _T("Init Error");
         }
         return r;
     });
@@ -498,12 +508,14 @@ void CDriverTestAppDlg::OnBnClickedConfigureOrl()
             viavi->ConfigureORL(cfg);
             r->success = true;
             r->logMessage = _T("ORL configuration applied.");
+            r->statusText = _T("ORL Configured - Ready");
         }
         catch (const std::exception& e)
         {
             CString msg;
             msg.Format(_T("ORL config error: %S"), e.what());
             r->logMessage = msg;
+            r->statusText = _T("ORL Config Error");
         }
         return r;
     });
@@ -542,12 +554,16 @@ void CDriverTestAppDlg::OnBnClickedTakeReference()
             r->logMessage = r->success
                 ? _T("Reference completed.")
                 : _T("Reference FAILED.");
+            r->statusText = r->success
+                ? _T("Reference Done - Ready")
+                : _T("Reference Failed");
         }
         catch (const std::exception& e)
         {
             CString msg;
             msg.Format(_T("Reference error: %S"), e.what());
             r->logMessage = msg;
+            r->statusText = _T("Reference Error");
         }
         return r;
     });
@@ -573,12 +589,16 @@ void CDriverTestAppDlg::OnBnClickedTakeMeasurement()
             r->logMessage = r->success
                 ? _T("Measurement completed.")
                 : _T("Measurement FAILED.");
+            r->statusText = r->success
+                ? _T("Measurement Done - Ready")
+                : _T("Measurement Failed");
         }
         catch (const std::exception& e)
         {
             CString msg;
             msg.Format(_T("Measurement error: %S"), e.what());
             r->logMessage = msg;
+            r->statusText = _T("Measurement Error");
         }
         return r;
     });
@@ -604,12 +624,14 @@ void CDriverTestAppDlg::OnBnClickedGetResults()
             CString msg;
             msg.Format(_T("Retrieved %d results."), (int)r->results.size());
             r->logMessage = msg;
+            r->statusText = _T("Results Retrieved - Ready");
         }
         catch (const std::exception& e)
         {
             CString msg;
             msg.Format(_T("Get results error: %S"), e.what());
             r->logMessage = msg;
+            r->statusText = _T("Get Results Error");
         }
         return r;
     });
@@ -648,12 +670,14 @@ void CDriverTestAppDlg::OnBnClickedRunFullTest()
             CString msg;
             msg.Format(_T("=== Full Test Complete: %d results ==="), (int)r->results.size());
             r->logMessage = msg;
+            r->statusText = _T("Full Test Done - Ready");
         }
         catch (const std::exception& e)
         {
             CString msg;
             msg.Format(_T("Full test error: %S"), e.what());
             r->logMessage = msg;
+            r->statusText = _T("Full Test Error");
         }
         return r;
     });
