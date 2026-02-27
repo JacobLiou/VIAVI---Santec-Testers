@@ -32,6 +32,8 @@ public:
     virtual std::string SendQuery(const std::string& command) override;
     virtual void SendWrite(const std::string& command) override;
 
+    void SetReadTimeout(DWORD timeoutMs);
+
 private:
     SOCKET m_socket;
     int    m_bufferSize;
@@ -39,39 +41,63 @@ private:
 
 
 // ---------------------------------------------------------------------------
-// Santec Driver for RLM-100 (Return Loss Meter) and ILM-100 (Insertion Loss Meter)
-//
-// Supports both devices through the same SCPI command set over TCP/IP.
-// The device model is auto-detected from the *IDN? response.
+// Santec Driver for RL1 (Return Loss Meter)
 //
 // SCPI Command Reference:
-//   Santec Programming Guide v1.23 & RLM-100 Sample Code
-//   Download from: https://inst.santec.com/resources/programming
+//   RLM User Manual M-RL1-001-07, Programming Guide (Table 11 & Table 12)
 //
-// NOTE: SCPI commands use standard IEEE 488.2 / SCPI 1999.0 patterns.
-//       If your device firmware uses different mnemonics, update the
-//       constants in the SCPI_CMD namespace at the top of SantecDriver.cpp.
+// Communication:
+//   - TCP/IP on port 5025 (SCPI-RAW per LXI standard)
+//   - USB via USBTMC (requires VISA drivers)
+//   - Commands terminated with \n (linefeed)
+//   - RL1 runs SCPI commands synchronously
+//   - Use *OPC? for synchronization between commands
 // ---------------------------------------------------------------------------
 class DRIVER_API CSantecDriver : public CBaseEquipmentDriver
 {
 public:
-    // Default SCPI-RAW port per LXI standard; override if device differs
-    static const int DEFAULT_PORT       = 5025;
-    static const int POLL_INTERVAL_MS   = 100;
-    static const int MAX_POLL_TIME_MS   = 300000;   // 5 minutes
+    static const int DEFAULT_PORT           = 5025;
+    static const int MEAS_TIMEOUT_MS        = 15000;  // READ:RL? can take up to 10s
+    static const int DEFAULT_TIMEOUT_MS     = 5000;
+    static const int MAX_POLL_TIME_MS       = 300000;  // 5 minutes
 
+    // Device model as identified from *IDN?
     enum SantecModel
     {
         MODEL_UNKNOWN = 0,
-        MODEL_RLM_100,      // Return Loss Meter (IL+RL)
+        MODEL_RL1,          // RL1 Automated Return Loss Meter (IL+RL)
+        MODEL_RLM_100,      // Legacy name alias for RL1
         MODEL_ILM_100,      // Insertion Loss Meter (IL only)
         MODEL_BRM_100       // Backreflection Meter
     };
 
-    enum MeasSpeed
+    // RL sensitivity / measurement speed (RL:SENSitivity command)
+    enum RLSensitivity
     {
-        SPEED_STANDARD = 0,
-        SPEED_FAST     = 1
+        SENSITIVITY_FAST = 0,       // <1.5s per wavelength, RL limited to 75 dB
+        SENSITIVITY_STANDARD = 1    // <5s per wavelength, RL up to 85 dB
+    };
+
+    // DUT length bin (DUT:LENGTH command)
+    enum DUTLengthBin
+    {
+        LENGTH_BIN_100  = 100,      // <100m (fastest)
+        LENGTH_BIN_1500 = 1500,     // <1500m
+        LENGTH_BIN_4000 = 4000      // <4000m
+    };
+
+    // RL gain mode (RL:GAIN command)
+    enum RLGainMode
+    {
+        GAIN_NORMAL = 0,    // 40 to 85 dB (recommended for most applications)
+        GAIN_LOW    = 1     // 30 to 40 dB
+    };
+
+    // RLB position definition (RL:POSB command)
+    enum RLPosB
+    {
+        POSB_EOF  = 0,      // backward from end of fiber (default)
+        POSB_ZERO = 1       // forward from position zero
     };
 
     CSantecDriver(const std::string& ipAddress,
@@ -98,8 +124,52 @@ public:
 
     // Santec-specific accessors
     SantecModel GetModel() const { return m_model; }
-    void SetMeasurementSpeed(MeasSpeed speed) { m_speed = speed; }
-    MeasSpeed GetMeasurementSpeed() const { return m_speed; }
+    std::string GetFiberType() const { return m_fiberType; }
+    std::vector<int> GetSupportedWavelengths() const { return m_supportedWavelengths; }
+
+    // RL1-specific configuration (Table 12 commands)
+    void SetRLSensitivity(RLSensitivity sens);
+    RLSensitivity GetRLSensitivity() const { return m_sensitivity; }
+
+    void SetDUTLength(DUTLengthBin bin);
+    DUTLengthBin GetDUTLengthBin() const { return m_dutLengthBin; }
+
+    void SetRLGain(RLGainMode gain);
+    RLGainMode GetRLGain() const { return m_rlGain; }
+
+    void SetRLPosB(RLPosB posb);
+    RLPosB GetRLPosB() const { return m_rlPosB; }
+
+    void SetLocalMode(bool enabled);
+    bool GetLocalMode() const { return m_localMode; }
+
+    void SetAutoStart(bool enabled);
+    bool GetAutoStart() const { return m_autoStart; }
+
+    void SetDUTInsertionLoss(double ilDB);
+    double GetDUTInsertionLoss() const { return m_dutIL; }
+
+    // Laser control
+    void EnableLaser(int wavelengthNm);
+    void DisableLaser();
+    int  QueryEnabledLaser();
+
+    // Switch control
+    void SetOutputChannel(int channel);
+    int  GetOutputChannel();
+    void SetSwitchChannel(int switchNum, int channel);
+    int  GetSwitchChannel(int switchNum);
+
+    // Power meter
+    int  GetDetectorCount();
+    std::string GetDetectorInfo(int detectorNum);
+
+    // Direct measurement reads (synchronous per official protocol)
+    MeasurementResult ReadRL(int wavelengthNm);
+    MeasurementResult ReadRL(int wavelengthNm, double refLenA, double refLenB);
+    double ReadIL(int detectorNum, int wavelengthNm);
+    double ReadPower(int detectorNum, int wavelengthNm);
+    double ReadMonitorPower(int wavelengthNm);
 
 protected:
     virtual bool ValidateConnection() override;
@@ -107,10 +177,13 @@ protected:
 private:
     // Unified command interface: routes to adapter or base socket
     std::string Query(const std::string& command);
+    std::string QueryLong(const std::string& command);  // extended timeout for READ:RL?
     void        Write(const std::string& command);
 
+    // Send command and wait for OPC (official synchronization method)
+    void WriteAndSync(const std::string& command);
+
     // Helpers
-    bool WaitForCompletion(const std::string& operationName);
     void ParseIdentity(const std::string& idnResponse);
     static std::vector<double> ParseDoubleList(const std::string& csv);
     static std::string Trim(const std::string& s);
@@ -119,11 +192,27 @@ private:
     ISantecCommAdapter*     m_adapter;
     bool                    m_ownsAdapter;
     SantecModel             m_model;
-    MeasSpeed               m_speed;
     DeviceInfo              m_deviceInfo;
+
+    // Device capabilities (discovered during Initialize)
+    std::string             m_fiberType;        // "SM" or "MM"
+    std::vector<int>        m_supportedWavelengths;
+
+    // Configuration state
+    RLSensitivity           m_sensitivity;
+    DUTLengthBin            m_dutLengthBin;
+    RLGainMode              m_rlGain;
+    RLPosB                  m_rlPosB;
+    bool                    m_localMode;
+    bool                    m_autoStart;
+    double                  m_dutIL;
+
     std::vector<double>     m_wavelengths;
     std::vector<int>        m_channels;
-    bool                    m_referenced;       // true after successful reference
+    bool                    m_referenced;
+
+    // Cached results from TakeMeasurement()
+    std::vector<MeasurementResult> m_lastResults;
 };
 
 } // namespace ViaviNSantecTester

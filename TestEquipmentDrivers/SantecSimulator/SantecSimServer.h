@@ -3,35 +3,35 @@
 #include "stdafx.h"
 
 // ---------------------------------------------------------------------------
-// Santec RLM-100 / ILM-100 Simulator
+// Santec RL1 Simulator
 //
-// Single TCP server (default port 5025) that responds to SCPI commands
-// matching the Santec IL/RL test instrument protocol.
+// TCP server (default port 5025) that responds to official SCPI commands
+// matching the Santec RL1 protocol per RLM User Manual M-RL1-001-07.
 //
 // Simulates:
 //   - Device identity (*IDN?)
-//   - Wavelength and channel configuration
-//   - Reference (calibration) procedure
-//   - IL/RL measurement with realistic data generation
+//   - Laser control (LAS:ENAB, LAS:DISAB, LAS:INFO?)
+//   - Fiber info (FIBER:INFO?)
+//   - Synchronous IL/RL measurement (READ:IL:det#?, READ:RL?)
+//   - Reference (REF:RL, REF:IL:det#)
+//   - Configuration (DUT:LENGTH, RL:SENS, RL:GAIN, RL:POSB, OUT:CLOS, SW#:CLOS)
+//   - Control (LCL, AUTO:ENAB)
 //   - Error query (SYST:ERR?)
-//   - Operation status polling (STAT:OPER?)
-//
-// Configurable: model type (RLM/ILM), error injection, measurement delay.
+//   - Power meter (POW:NUM?, READ:POW:det#?, READ:POW:MON?)
 // ---------------------------------------------------------------------------
 
 class CSantecSimServer
 {
 public:
-    enum SimModel { SIM_RLM_100, SIM_ILM_100 };
+    enum SimModel { SIM_RL1, SIM_ILM_100 };
 
     CSantecSimServer();
     ~CSantecSimServer();
 
-    bool Start(int port = 5025, SimModel model = SIM_RLM_100);
+    bool Start(int port = 5025, SimModel model = SIM_RL1);
     void Stop();
     bool IsRunning() const { return m_running; }
 
-    // Runtime controls
     void SetErrorMode(bool enabled)     { m_errorMode = enabled; }
     bool GetErrorMode() const           { return m_errorMode; }
     void SetMeasDelayMs(int ms)         { m_measDelayMs = ms; }
@@ -44,8 +44,6 @@ public:
 
 private:
     static DWORD WINAPI ServerThreadProc(LPVOID param);
-    static DWORD WINAPI MeasDelayThreadProc(LPVOID param);
-    static DWORD WINAPI RefDelayThreadProc(LPVOID param);
     void RunServer();
     void HandleClient(SOCKET clientSocket);
     std::string ProcessCommand(const std::string& cmd);
@@ -53,29 +51,40 @@ private:
     // Data generation
     double GenerateIL(int channel, double wavelength);
     double GenerateRL(int channel, double wavelength);
+    double GenerateRLTotal(int channel, double wavelength);
+    double GenerateLength();
 
-    // Logging
     void Log(const char* fmt, ...);
 
-    // State
+    // Server state
     bool            m_running;
     int             m_port;
     SOCKET          m_listenSocket;
     HANDLE          m_serverThread;
     SimModel        m_model;
 
-    // Configuration state (mirrors what the driver sends)
-    double          m_currentWavelength;
-    int             m_currentChannel;
-    std::string     m_speedMode;
-    bool            m_referenced;
-    bool            m_measRunning;
+    // Device state (mirrors what the driver sends)
+    int             m_enabledLaser;         // 0=disabled, or wavelength nm
+    std::string     m_fiberType;            // "SM" or "MM"
+    std::vector<int> m_supportedWavelengths;
+    int             m_dutLengthBin;         // 100, 1500, or 4000
+    std::string     m_rlSensitivity;        // "fast" or "standard"
+    std::string     m_rlGain;               // "normal" or "low"
+    std::string     m_rlPosB;               // "eof" or "zero"
+    int             m_outputChannel;
+    int             m_sw1Channel;
+    int             m_sw2Channel;
+    bool            m_localMode;
+    bool            m_autoStart;
+    double          m_dutIL;
     int             m_measDelayMs;
-    DWORD           m_measStartTick;
 
-    // Generated results cache (populated after measurement completes)
-    double          m_lastIL;
-    double          m_lastRL;
+    // Reference state
+    bool            m_rlReferenced;
+    double          m_refMTJ1Length;
+    double          m_refMTJ2Length;
+    struct ILRef { int wavelength; double value; };
+    std::vector<ILRef> m_ilRefs;
 
     // Controls
     bool            m_errorMode;

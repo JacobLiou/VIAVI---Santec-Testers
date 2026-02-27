@@ -18,14 +18,14 @@ static void PrintBanner()
 {
     printf("\n");
     printf("====================================================\n");
-    printf("     Santec IL/RL Tester Simulator v1.0\n");
-    printf("     (RLM-100 / ILM-100 SCPI Emulator)\n");
+    printf("     Santec RL1 Simulator v2.0\n");
+    printf("     (Official SCPI Protocol per M-RL1-001-07)\n");
     printf("====================================================\n");
 }
 
 static void PrintStatus()
 {
-    printf("  Model:       %s\n", g_server.GetModel() == CSantecSimServer::SIM_RLM_100 ? "RLM-100 (IL+RL)" : "ILM-100 (IL only)");
+    printf("  Model:       %s\n", g_server.GetModel() == CSantecSimServer::SIM_RL1 ? "RL1 (IL+RL)" : "ILM-100 (IL only)");
     printf("  Error mode:  %s\n", g_server.GetErrorMode() ? "ON  (injecting errors)" : "OFF");
     printf("  Meas delay:  %d ms\n", g_server.GetMeasDelayMs());
     printf("  Verbose:     %s\n", g_server.GetVerbose() ? "ON" : "OFF");
@@ -38,7 +38,7 @@ static void PrintHelp()
     printf("  e  - Toggle error injection mode\n");
     printf("  d  - Set measurement delay (ms)\n");
     printf("  v  - Toggle verbose logging\n");
-    printf("  m  - Switch model (RLM-100 / ILM-100)\n");
+    printf("  m  - Switch model (RL1 / ILM-100)\n");
     printf("  s  - Show status\n");
     printf("  q  - Quit\n\n");
 }
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
     SetConsoleCtrlHandler(ConsoleHandler, TRUE);
 
     int port = 5025;
-    CSantecSimServer::SimModel model = CSantecSimServer::SIM_RLM_100;
+    CSantecSimServer::SimModel model = CSantecSimServer::SIM_RL1;
 
     for (int i = 1; i < argc; ++i)
     {
@@ -63,13 +63,13 @@ int main(int argc, char* argv[])
             port = atoi(argv[++i]);
         else if (std::string(argv[i]) == "--ilm")
             model = CSantecSimServer::SIM_ILM_100;
-        else if (std::string(argv[i]) == "--rlm")
-            model = CSantecSimServer::SIM_RLM_100;
+        else if (std::string(argv[i]) == "--rl1" || std::string(argv[i]) == "--rlm")
+            model = CSantecSimServer::SIM_RL1;
     }
 
     PrintBanner();
     printf("  Port: %d\n", port);
-    printf("  Model: %s\n\n", model == CSantecSimServer::SIM_RLM_100 ? "RLM-100" : "ILM-100");
+    printf("  Model: %s\n\n", model == CSantecSimServer::SIM_RL1 ? "RL1" : "ILM-100");
 
     if (!g_server.Start(port, model))
     {
@@ -122,12 +122,12 @@ int main(int argc, char* argv[])
         case 'M':
         {
             CSantecSimServer::SimModel cur = g_server.GetModel();
-            CSantecSimServer::SimModel next = (cur == CSantecSimServer::SIM_RLM_100)
+            CSantecSimServer::SimModel next = (cur == CSantecSimServer::SIM_RL1)
                 ? CSantecSimServer::SIM_ILM_100
-                : CSantecSimServer::SIM_RLM_100;
+                : CSantecSimServer::SIM_RL1;
             g_server.SetModel(next);
             printf("Model switched to: %s\n",
-                next == CSantecSimServer::SIM_RLM_100 ? "RLM-100 (IL+RL)" : "ILM-100 (IL only)");
+                next == CSantecSimServer::SIM_RL1 ? "RL1 (IL+RL)" : "ILM-100 (IL only)");
             break;
         }
         case 's':

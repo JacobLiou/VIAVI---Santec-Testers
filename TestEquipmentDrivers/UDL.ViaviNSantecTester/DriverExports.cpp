@@ -156,6 +156,10 @@ DRIVER_C_API int WINAPI DriverGetResults(HANDLE hDriver,
             results[i].wavelength = res[i].wavelength;
             results[i].insertionLoss = res[i].insertionLoss;
             results[i].returnLoss = res[i].returnLoss;
+            results[i].returnLossA = res[i].returnLossA;
+            results[i].returnLossB = res[i].returnLossB;
+            results[i].returnLossTotal = res[i].returnLossTotal;
+            results[i].dutLength = res[i].dutLength;
             results[i].rawDataCount = res[i].rawDataCount;
             memcpy(results[i].rawData, res[i].rawData,
                    sizeof(double) * (std::min)(res[i].rawDataCount, 10));
@@ -226,4 +230,60 @@ DRIVER_C_API void WINAPI DriverSetLogCallback(DriverLogCallback callback)
     {
         CLogger::SetGlobalCallback(nullptr);
     }
+}
+
+// ---------------------------------------------------------------------------
+// Santec RL1 specific configuration exports
+// ---------------------------------------------------------------------------
+
+DRIVER_C_API BOOL WINAPI DriverSantecSetRLSensitivity(HANDLE hDriver, int sensitivity)
+{
+    if (!hDriver) return FALSE;
+    try
+    {
+        CSantecDriver* santec = dynamic_cast<CSantecDriver*>(ToDriver(hDriver));
+        if (!santec) return FALSE;
+        santec->SetRLSensitivity(static_cast<CSantecDriver::RLSensitivity>(sensitivity));
+        return TRUE;
+    }
+    catch (...) { return FALSE; }
+}
+
+DRIVER_C_API BOOL WINAPI DriverSantecSetDUTLength(HANDLE hDriver, int lengthBin)
+{
+    if (!hDriver) return FALSE;
+    try
+    {
+        CSantecDriver* santec = dynamic_cast<CSantecDriver*>(ToDriver(hDriver));
+        if (!santec) return FALSE;
+        santec->SetDUTLength(static_cast<CSantecDriver::DUTLengthBin>(lengthBin));
+        return TRUE;
+    }
+    catch (...) { return FALSE; }
+}
+
+DRIVER_C_API BOOL WINAPI DriverSantecSetRLGain(HANDLE hDriver, int gain)
+{
+    if (!hDriver) return FALSE;
+    try
+    {
+        CSantecDriver* santec = dynamic_cast<CSantecDriver*>(ToDriver(hDriver));
+        if (!santec) return FALSE;
+        santec->SetRLGain(static_cast<CSantecDriver::RLGainMode>(gain));
+        return TRUE;
+    }
+    catch (...) { return FALSE; }
+}
+
+DRIVER_C_API BOOL WINAPI DriverSantecSetLocalMode(HANDLE hDriver, BOOL enabled)
+{
+    if (!hDriver) return FALSE;
+    try
+    {
+        CSantecDriver* santec = dynamic_cast<CSantecDriver*>(ToDriver(hDriver));
+        if (!santec) return FALSE;
+        santec->SetLocalMode(enabled != FALSE);
+        return TRUE;
+    }
+    catch (...) { return FALSE; }
 }

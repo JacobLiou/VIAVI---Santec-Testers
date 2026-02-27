@@ -80,13 +80,19 @@ struct DRIVER_API MeasurementResult
     int    channel;
     double wavelength;          // nm
     double insertionLoss;       // dB (IL)
-    double returnLoss;          // dB (RL)
+    double returnLoss;          // dB (RL) - kept for backward compat / VIAVI
+    double returnLossA;         // dB (RLA) - Santec RL1: connector RL at position A
+    double returnLossB;         // dB (RLB) - Santec RL1: connector RL at position B
+    double returnLossTotal;     // dB (RLTOTAL) - Santec RL1: total ORL
+    double dutLength;           // meters - Santec RL1: DUT length from READ:RL?
     double rawData[10];
     int    rawDataCount;
 
     MeasurementResult()
         : channel(0), wavelength(0.0)
         , insertionLoss(0.0), returnLoss(0.0)
+        , returnLossA(0.0), returnLossB(0.0)
+        , returnLossTotal(0.0), dutLength(0.0)
         , rawDataCount(0)
     {
         memset(rawData, 0, sizeof(rawData));
@@ -181,6 +187,10 @@ struct DRIVER_API CMeasurementResult
     double wavelength;
     double insertionLoss;
     double returnLoss;
+    double returnLossA;
+    double returnLossB;
+    double returnLossTotal;
+    double dutLength;
     double rawData[10];
     int    rawDataCount;
 };

@@ -7,21 +7,33 @@ CSantecSimServer::CSantecSimServer()
     , m_port(5025)
     , m_listenSocket(INVALID_SOCKET)
     , m_serverThread(NULL)
-    , m_model(SIM_RLM_100)
-    , m_currentWavelength(1310.0)
-    , m_currentChannel(1)
-    , m_speedMode("FAST")
-    , m_referenced(false)
-    , m_measRunning(false)
+    , m_model(SIM_RL1)
+    , m_enabledLaser(0)
+    , m_fiberType("SM")
+    , m_dutLengthBin(100)
+    , m_rlSensitivity("fast")
+    , m_rlGain("normal")
+    , m_rlPosB("eof")
+    , m_outputChannel(1)
+    , m_sw1Channel(1)
+    , m_sw2Channel(1)
+    , m_localMode(true)
+    , m_autoStart(false)
+    , m_dutIL(0.0)
     , m_measDelayMs(1500)
-    , m_measStartTick(0)
-    , m_lastIL(0.0)
-    , m_lastRL(0.0)
+    , m_rlReferenced(false)
+    , m_refMTJ1Length(3.0)
+    , m_refMTJ2Length(0.0)
     , m_errorMode(false)
     , m_verbose(false)
     , m_commandCount(0)
 {
     srand(static_cast<unsigned>(time(NULL)));
+
+    m_supportedWavelengths.push_back(1310);
+    m_supportedWavelengths.push_back(1490);
+    m_supportedWavelengths.push_back(1550);
+    m_supportedWavelengths.push_back(1625);
 }
 
 CSantecSimServer::~CSantecSimServer()
@@ -38,6 +50,11 @@ bool CSantecSimServer::Start(int port, SimModel model)
     m_port = port;
     m_model = model;
     m_running = true;
+
+    if (model == SIM_ILM_100)
+    {
+        m_fiberType = "SM";
+    }
 
     m_serverThread = CreateThread(NULL, 0, ServerThreadProc, this, 0, NULL);
     if (!m_serverThread)
@@ -77,33 +94,6 @@ DWORD WINAPI CSantecSimServer::ServerThreadProc(LPVOID param)
     return 0;
 }
 
-DWORD WINAPI CSantecSimServer::MeasDelayThreadProc(LPVOID param)
-{
-    CSantecSimServer* self = static_cast<CSantecSimServer*>(param);
-    DWORD delay = self->GetMeasDelayMs() > 0 ? (DWORD)self->GetMeasDelayMs() : 1500;
-    Sleep(delay);
-    {
-        std::lock_guard<std::mutex> lock(self->m_mutex);
-        self->m_measRunning = false;
-    }
-    self->Log("  [Meas] Measurement completed.");
-    return 0;
-}
-
-DWORD WINAPI CSantecSimServer::RefDelayThreadProc(LPVOID param)
-{
-    CSantecSimServer* self = static_cast<CSantecSimServer*>(param);
-    DWORD delay = self->GetMeasDelayMs() > 0 ? (DWORD)self->GetMeasDelayMs() : 2000;
-    Sleep(delay);
-    {
-        std::lock_guard<std::mutex> lock(self->m_mutex);
-        self->m_measRunning = false;
-        self->m_referenced = true;
-    }
-    self->Log("  [Reference] Reference completed.");
-    return 0;
-}
-
 void CSantecSimServer::RunServer()
 {
     m_listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -133,7 +123,7 @@ void CSantecSimServer::RunServer()
 
     listen(m_listenSocket, SOMAXCONN);
     Log("[Santec Sim] Listening on port %d (%s mode)",
-        m_port, m_model == SIM_RLM_100 ? "RLM-100" : "ILM-100");
+        m_port, m_model == SIM_RL1 ? "RL1" : "ILM-100");
 
     while (m_running)
     {
@@ -182,29 +172,47 @@ void CSantecSimServer::HandleClient(SOCKET clientSocket)
         chunk[received] = '\0';
         buffer.append(chunk, received);
 
-        // Process all complete commands (delimited by \n)
         size_t pos;
         while ((pos = buffer.find('\n')) != std::string::npos)
         {
             std::string cmd = buffer.substr(0, pos);
             buffer.erase(0, pos + 1);
 
-            // Trim CR
             while (!cmd.empty() && (cmd.back() == '\r' || cmd.back() == ' '))
                 cmd.pop_back();
             if (cmd.empty()) continue;
 
-            m_commandCount++;
-            if (m_verbose)
-                Log("  RX> %s", cmd.c_str());
-
-            std::string response = ProcessCommand(cmd);
-            if (!response.empty())
+            // Handle chained commands separated by ';'
+            std::vector<std::string> subCmds;
+            std::istringstream cmdStream(cmd);
+            std::string subCmd;
+            while (std::getline(cmdStream, subCmd, ';'))
             {
-                response += "\n";
-                send(clientSocket, response.c_str(), static_cast<int>(response.size()), 0);
+                while (!subCmd.empty() && subCmd.front() == ' ') subCmd.erase(0, 1);
+                while (!subCmd.empty() && subCmd.back() == ' ') subCmd.pop_back();
+                if (!subCmd.empty())
+                    subCmds.push_back(subCmd);
+            }
+
+            std::string lastResponse;
+            for (size_t i = 0; i < subCmds.size(); ++i)
+            {
+                m_commandCount++;
                 if (m_verbose)
-                    Log("  TX< %s", response.c_str());
+                    Log("  RX> %s", subCmds[i].c_str());
+
+                std::string response = ProcessCommand(subCmds[i]);
+                if (!response.empty())
+                    lastResponse = response;
+            }
+
+            if (!lastResponse.empty())
+            {
+                lastResponse += "\n";
+                send(clientSocket, lastResponse.c_str(),
+                     static_cast<int>(lastResponse.size()), 0);
+                if (m_verbose)
+                    Log("  TX< %s", lastResponse.c_str());
             }
         }
     }
@@ -214,22 +222,21 @@ void CSantecSimServer::HandleClient(SOCKET clientSocket)
 }
 
 // ---------------------------------------------------------------------------
-// SCPI Command Processing
+// SCPI Command Processing (official RL1 commands per M-RL1-001-07)
 // ---------------------------------------------------------------------------
 
 std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
 {
-    // Uppercase for matching
     std::string upper = cmd;
     for (size_t i = 0; i < upper.size(); ++i)
         upper[i] = static_cast<char>(toupper(static_cast<unsigned char>(upper[i])));
 
-    // ---- IEEE 488.2 Common Commands ----
+    // ---- IEEE 488.2 Common Commands (Table 11) ----
 
     if (upper == "*IDN?")
     {
-        if (m_model == SIM_RLM_100)
-            return "Santec,RLM-100,SIM001,1.0.0";
+        if (m_model == SIM_RL1)
+            return "Santec,RL1,SIM001,1.0.0";
         else
             return "Santec,ILM-100,SIM002,1.0.0";
     }
@@ -237,12 +244,20 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
     if (upper == "*RST")
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_referenced = false;
-        m_measRunning = false;
-        m_currentWavelength = 1310.0;
-        m_currentChannel = 1;
-        m_speedMode = "FAST";
+        m_rlReferenced = false;
+        m_enabledLaser = 0;
+        m_outputChannel = 1;
+        m_sw1Channel = 1;
+        m_sw2Channel = 1;
+        m_dutLengthBin = 100;
+        m_rlSensitivity = "fast";
+        m_rlGain = "normal";
+        m_rlPosB = "eof";
+        m_localMode = true;
+        m_autoStart = false;
+        m_dutIL = 0.0;
         m_errorQueue.clear();
+        m_ilRefs.clear();
         return "";
     }
 
@@ -253,14 +268,19 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    if (upper == "*OPC?")
+    if (upper == "*OPC?" || upper == "*OPC")
     {
         return "1";
     }
 
-    // ---- System Error ----
+    if (upper == "*WAI")
+    {
+        return "";
+    }
 
-    if (upper == "SYST:ERR?")
+    // ---- System (Table 11) ----
+
+    if (upper == "SYST:ERR?" || upper == ":SYST:ERR?" || upper == "SYST:ERR:NEXT?")
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (m_errorMode && (rand() % 5 == 0))
@@ -274,123 +294,381 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "0,\"No error\"";
     }
 
-    // ---- Configuration ----
+    if (upper == "SYST:VER?")
+    {
+        return "1999.0";
+    }
 
-    if (upper.find("CONF:WAV") == 0)
+    // ---- Laser Control (Table 12) ----
+
+    if (upper == "LAS:DISAB" || upper == "LASER:DISABLE" || upper == "LAS:DISABLE")
+    {
+        m_enabledLaser = 0;
+        Log("  [Laser] Disabled.");
+        return "";
+    }
+
+    if (upper.find("LAS:ENAB") == 0 || upper.find("LASER:ENAB") == 0)
     {
         if (upper.back() == '?')
         {
             char buf[32];
-            sprintf_s(buf, "%d", static_cast<int>(m_currentWavelength));
+            sprintf_s(buf, "%d", m_enabledLaser);
             return buf;
         }
 
         size_t sp = upper.find(' ');
         if (sp != std::string::npos)
         {
-            m_currentWavelength = atof(cmd.substr(sp + 1).c_str());
-            Log("  Config: wavelength = %.0f nm", m_currentWavelength);
+            m_enabledLaser = atoi(cmd.substr(sp + 1).c_str());
+            Log("  [Laser] Enabled at %d nm.", m_enabledLaser);
         }
         return "";
     }
 
-    if (upper.find("CONF:CHAN") == 0)
+    if (upper == "LAS:INFO?" || upper == "LASER:INFO?")
     {
+        std::string result;
+        for (size_t i = 0; i < m_supportedWavelengths.size(); ++i)
+        {
+            if (i > 0) result += ",";
+            char buf[16];
+            sprintf_s(buf, "%d", m_supportedWavelengths[i]);
+            result += buf;
+        }
+        return result;
+    }
+
+    // ---- Fiber Info (Table 12) ----
+
+    if (upper == "FIBER:INFO?")
+    {
+        return m_fiberType;
+    }
+
+    // ---- RL Sensitivity (Table 12) ----
+
+    if (upper.find("RL:SENS") == 0)
+    {
+        if (upper.back() == '?')
+            return m_rlSensitivity;
+
         size_t sp = upper.find(' ');
         if (sp != std::string::npos)
         {
-            m_currentChannel = atoi(cmd.substr(sp + 1).c_str());
-            Log("  Config: channel = %d", m_currentChannel);
+            m_rlSensitivity = cmd.substr(sp + 1);
+            for (size_t i = 0; i < m_rlSensitivity.size(); ++i)
+                m_rlSensitivity[i] = static_cast<char>(
+                    tolower(static_cast<unsigned char>(m_rlSensitivity[i])));
+            Log("  [Config] RL sensitivity = %s", m_rlSensitivity.c_str());
         }
         return "";
     }
 
-    if (upper.find("CONF:SPEED") == 0)
+    // ---- RL Gain (Table 12) ----
+
+    if (upper.find("RL:GAIN") == 0)
     {
+        if (upper.back() == '?')
+            return m_rlGain;
+
         size_t sp = upper.find(' ');
         if (sp != std::string::npos)
         {
-            m_speedMode = cmd.substr(sp + 1);
-            Log("  Config: speed = %s", m_speedMode.c_str());
+            m_rlGain = cmd.substr(sp + 1);
+            for (size_t i = 0; i < m_rlGain.size(); ++i)
+                m_rlGain[i] = static_cast<char>(
+                    tolower(static_cast<unsigned char>(m_rlGain[i])));
+            Log("  [Config] RL gain = %s", m_rlGain.c_str());
         }
         return "";
     }
 
-    // ---- Reference ----
+    // ---- RL POSB (Table 12) ----
 
-    if (upper == "REF:STAR")
+    if (upper.find("RL:POSB") == 0)
     {
-        Log("  [Reference] Starting reference calibration...");
+        if (upper.back() == '?')
+            return m_rlPosB;
+
+        size_t sp = upper.find(' ');
+        if (sp != std::string::npos)
         {
-            std::lock_guard<std::mutex> lock(m_mutex);
-            m_measRunning = true;
-            m_measStartTick = GetTickCount();
+            m_rlPosB = cmd.substr(sp + 1);
+            for (size_t i = 0; i < m_rlPosB.size(); ++i)
+                m_rlPosB[i] = static_cast<char>(
+                    tolower(static_cast<unsigned char>(m_rlPosB[i])));
+            Log("  [Config] RL POSB = %s", m_rlPosB.c_str());
         }
-        // Non-blocking: delay runs in a separate thread so the handler
-        // can keep processing STAT:OPER? polls from the driver.
-        CreateThread(NULL, 0, RefDelayThreadProc, this, 0, NULL);
         return "";
     }
 
-    if (upper == "REF:STAT?")
-    {
-        return m_referenced ? "1" : "0";
-    }
+    // ---- DUT Length (Table 12) ----
 
-    if (upper == "REF:CLE")
+    if (upper.find("DUT:LENGTH") == 0)
     {
+        if (upper.back() == '?')
         {
-            std::lock_guard<std::mutex> lock(m_mutex);
-            m_referenced = false;
+            char buf[32];
+            sprintf_s(buf, "%d", m_dutLengthBin);
+            return buf;
         }
-        Log("  [Reference] Cleared.");
-        return "";
-    }
 
-    // ---- Measurement ----
-
-    if (upper == "INIT:IMM")
-    {
-        Log("  [Meas] Measurement initiated (Ch%d, %.0f nm)...",
-            m_currentChannel, m_currentWavelength);
+        size_t sp = upper.find(' ');
+        if (sp != std::string::npos)
         {
-            std::lock_guard<std::mutex> lock(m_mutex);
-            m_measRunning = true;
-            m_measStartTick = GetTickCount();
-            m_lastIL = GenerateIL(m_currentChannel, m_currentWavelength);
-            m_lastRL = GenerateRL(m_currentChannel, m_currentWavelength);
+            m_dutLengthBin = atoi(cmd.substr(sp + 1).c_str());
+            Log("  [Config] DUT length bin = %d m", m_dutLengthBin);
         }
-        // Simulate measurement delay in a separate thread to allow status polling
-        CreateThread(NULL, 0, MeasDelayThreadProc, this, 0, NULL);
         return "";
     }
 
-    if (upper == "ABOR")
+    // ---- DUT IL (Table 12) ----
+
+    if (upper.find("DUT:IL") == 0)
     {
+        if (upper.back() == '?')
         {
-            std::lock_guard<std::mutex> lock(m_mutex);
-            m_measRunning = false;
+            char buf[32];
+            sprintf_s(buf, "%.4f", m_dutIL);
+            return buf;
         }
-        Log("  [Meas] Aborted.");
+
+        size_t sp = upper.find(' ');
+        if (sp != std::string::npos)
+        {
+            m_dutIL = atof(cmd.substr(sp + 1).c_str());
+            Log("  [Config] DUT IL = %.4f dB", m_dutIL);
+        }
         return "";
     }
 
-    if (upper == "STAT:OPER?")
+    // ---- Output / Internal Switch (Table 12) ----
+
+    if (upper.find("OUT:CLOS") == 0)
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        return m_measRunning ? "16" : "0";  // bit 4 = measurement running
+        if (upper.back() == '?')
+        {
+            char buf[16];
+            sprintf_s(buf, "%d", m_outputChannel);
+            return buf;
+        }
+
+        size_t sp = upper.find(' ');
+        if (sp != std::string::npos)
+        {
+            m_outputChannel = atoi(cmd.substr(sp + 1).c_str());
+            Log("  [Switch] Output channel = %d", m_outputChannel);
+        }
+        return "";
     }
 
-    // ---- Fetch Results ----
+    // ---- External Switch SW#:CLOSe (Table 12) ----
 
-    if (upper == "FETC:IL?" || upper == "FETC?")
+    if (upper.find("SW") == 0 && upper.find(":CLOS") != std::string::npos)
     {
+        int swNum = 0;
+        if (upper.size() > 2 && upper[2] >= '0' && upper[2] <= '9')
+            swNum = upper[2] - '0';
+
+        if (upper.back() == '?')
+        {
+            char buf[16];
+            int ch = (swNum == 1) ? m_sw1Channel : m_sw2Channel;
+            sprintf_s(buf, "%d", ch);
+            return buf;
+        }
+
+        size_t sp = upper.find(' ');
+        if (sp != std::string::npos)
+        {
+            int ch = atoi(cmd.substr(sp + 1).c_str());
+            if (swNum == 1) m_sw1Channel = ch;
+            else if (swNum == 2) m_sw2Channel = ch;
+            Log("  [Switch] SW%d channel = %d", swNum, ch);
+        }
+        return "";
+    }
+
+    // ---- SW#:INFO? (Table 12) ----
+
+    if (upper.find("SW") == 0 && upper.find(":INFO?") != std::string::npos)
+    {
+        return "SX1";
+    }
+
+    // ---- Local Control (Table 12) ----
+
+    if (upper.find("LCL") == 0)
+    {
+        if (upper == "LCL?")
+        {
+            return m_localMode ? "1" : "0";
+        }
+
+        size_t sp = upper.find(' ');
+        if (sp != std::string::npos)
+        {
+            m_localMode = (atoi(cmd.substr(sp + 1).c_str()) != 0);
+            Log("  [Config] Local mode = %s", m_localMode ? "enabled" : "disabled");
+        }
+        return "";
+    }
+
+    // ---- Auto Start (Table 12) ----
+
+    if (upper.find("AUTO:ENAB") == 0)
+    {
+        if (upper.back() == '?')
+            return m_autoStart ? "1" : "0";
+
+        size_t sp = upper.find(' ');
+        if (sp != std::string::npos)
+        {
+            m_autoStart = (atoi(cmd.substr(sp + 1).c_str()) != 0);
+            Log("  [Config] Auto-start = %s", m_autoStart ? "enabled" : "disabled");
+        }
+        return "";
+    }
+
+    if (upper == "AUTO:TRIG?")
+    {
+        return "0";
+    }
+
+    if (upper.find("AUTO:TRIG:RST") == 0)
+    {
+        return "";
+    }
+
+    // ---- RL Reference (Table 12) ----
+
+    if (upper.find("REF:RL") == 0)
+    {
+        if (upper == "REF:RL?")
+        {
+            char buf[32];
+            sprintf_s(buf, "%.2f", m_refMTJ1Length);
+            return buf;
+        }
+
+        size_t sp = upper.find(' ');
+        if (sp != std::string::npos)
+        {
+            // REF:RL #,[#] - manually set MTJ1 and optional MTJ2 lengths
+            std::string params = cmd.substr(sp + 1);
+            size_t comma = params.find(',');
+            if (comma != std::string::npos)
+            {
+                m_refMTJ1Length = atof(params.substr(0, comma).c_str());
+                m_refMTJ2Length = atof(params.substr(comma + 1).c_str());
+            }
+            else
+            {
+                m_refMTJ1Length = atof(params.c_str());
+            }
+            m_rlReferenced = true;
+            Log("  [Reference] RL ref set manually: MTJ1=%.2f, MTJ2=%.2f",
+                m_refMTJ1Length, m_refMTJ2Length);
+        }
+        else
+        {
+            // REF:RL with no params - auto-measure test jumper
+            Log("  [Reference] RL auto-reference measuring...");
+            Sleep(m_measDelayMs > 0 ? m_measDelayMs : 1000);
+            m_refMTJ1Length = 3.0 + (rand() % 100) * 0.001;
+            m_rlReferenced = true;
+            Log("  [Reference] RL auto-reference done: MTJ1=%.3f m", m_refMTJ1Length);
+        }
+        return "";
+    }
+
+    // ---- IL Reference (Table 12) ----
+    // REF:IL:det# <wavelength>,<value>  or  REF:IL:det#? <wavelength>
+
+    if (upper.find("REF:IL:DET") == 0 || upper.find("REF:IL:DET") == 0)
+    {
+        bool isQuery = (upper.find('?') != std::string::npos);
+
+        size_t sp = cmd.find(' ');
+        if (isQuery && sp != std::string::npos)
+        {
+            int wav = atoi(cmd.substr(sp + 1).c_str());
+            for (size_t i = 0; i < m_ilRefs.size(); ++i)
+            {
+                if (m_ilRefs[i].wavelength == wav)
+                {
+                    char buf[32];
+                    sprintf_s(buf, "%.4f", m_ilRefs[i].value);
+                    return buf;
+                }
+            }
+            return "0.0000";
+        }
+        else if (sp != std::string::npos)
+        {
+            std::string params = cmd.substr(sp + 1);
+            size_t comma = params.find(',');
+            if (comma != std::string::npos)
+            {
+                int wav = atoi(params.substr(0, comma).c_str());
+                double val = atof(params.substr(comma + 1).c_str());
+
+                bool found = false;
+                for (size_t i = 0; i < m_ilRefs.size(); ++i)
+                {
+                    if (m_ilRefs[i].wavelength == wav)
+                    {
+                        m_ilRefs[i].value = val;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    ILRef ref;
+                    ref.wavelength = wav;
+                    ref.value = val;
+                    m_ilRefs.push_back(ref);
+                }
+                Log("  [Reference] IL ref set: det @%d nm = %.4f dB", wav, val);
+            }
+        }
+        return "";
+    }
+
+    // ---- Power Meter (Table 12) ----
+
+    if (upper == "POW:NUM?")
+    {
+        return "1";
+    }
+
+    if (upper.find("POW:DET") != std::string::npos && upper.find(":INFO?") != std::string::npos)
+    {
+        return "SIM-DET001,2025-01-01,1.0.0,100,wired";
+    }
+
+    // ---- Synchronous Measurement Reads (Table 12) ----
+
+    // READ:IL:det#? <wavelength>
+    if (upper.find("READ:IL:DET") == 0 || upper.find("READ:IL:DET") == 0)
+    {
+        size_t sp = cmd.find(' ');
+        double wavelength = (sp != std::string::npos) ? atof(cmd.substr(sp + 1).c_str()) : 1310.0;
+
+        Log("  [Meas] READ:IL Ch%d @%.0f nm...", m_outputChannel, wavelength);
+        if (m_measDelayMs > 100)
+            Sleep(m_measDelayMs / 4);
+
+        double il = GenerateIL(m_outputChannel, wavelength);
         char buf[64];
-        sprintf_s(buf, "%.4f", m_lastIL);
+        sprintf_s(buf, "%.4f", il);
         return buf;
     }
 
-    if (upper == "FETC:RL?")
+    // READ:RL? <wavelength> or READ:RL? <wavelength>,<refLenA>,<refLenB>
+    if (upper.find("READ:RL?") == 0)
     {
         if (m_model == SIM_ILM_100)
         {
@@ -398,9 +676,103 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
             m_errorQueue.push_back("-200,\"RL measurement not supported on ILM-100\"");
             return "";
         }
-        char buf[64];
-        sprintf_s(buf, "%.4f", m_lastRL);
+
+        size_t sp = cmd.find(' ');
+        double wavelength = 1310.0;
+        if (sp != std::string::npos)
+        {
+            std::string params = cmd.substr(sp + 1);
+            size_t comma = params.find(',');
+            wavelength = atof(params.substr(0, (comma != std::string::npos) ? comma : params.size()).c_str());
+        }
+
+        Log("  [Meas] READ:RL Ch%d @%.0f nm (sensitivity=%s, lengthBin=%d)...",
+            m_outputChannel, wavelength, m_rlSensitivity.c_str(), m_dutLengthBin);
+
+        // Simulate measurement delay based on sensitivity
+        int delay = m_measDelayMs;
+        if (m_rlSensitivity == "standard" && m_dutLengthBin >= 4000)
+            delay = (std::max)(delay, 8000);
+        else if (m_rlSensitivity == "standard")
+            delay = (std::max)(delay, 3000);
+        if (delay > 100)
+            Sleep(delay);
+
+        double rla = GenerateRL(m_outputChannel, wavelength);
+        double rlb = GenerateRL(m_outputChannel, wavelength) - 2.0;
+        double rltotal = GenerateRLTotal(m_outputChannel, wavelength);
+        double length = GenerateLength();
+
+        char buf[128];
+        sprintf_s(buf, "%.2f,%.2f,%.2f,%.2f", rla, rlb, rltotal, length);
         return buf;
+    }
+
+    // READ:POW:det#? <wavelength>
+    if (upper.find("READ:POW:DET") == 0)
+    {
+        char buf[32];
+        sprintf_s(buf, "%.2f", -10.0 + (rand() % 100) * 0.01);
+        return buf;
+    }
+
+    // READ:POW:MON? <wavelength>
+    if (upper.find("READ:POW:MON?") == 0)
+    {
+        char buf[32];
+        sprintf_s(buf, "%.2f", -5.0 + (rand() % 100) * 0.01);
+        return buf;
+    }
+
+    // READ:FACT:POW? <output>,<wavelength>
+    if (upper.find("READ:FACT:POW?") == 0)
+    {
+        char buf[32];
+        sprintf_s(buf, "%.2f", -8.0 + (rand() % 100) * 0.01);
+        return buf;
+    }
+
+    // READ:BARC?
+    if (upper == "READ:BARC?")
+    {
+        return "SIM-BARCODE-001";
+    }
+
+    // ---- Test Plan (Table 12) ----
+
+    if (upper.find("TEST:NOTIFY") == 0)
+    {
+        Log("  [Notify] %s", cmd.c_str());
+        return "";
+    }
+
+    if (upper == "TEST:RETRY")
+    {
+        Log("  [Test] Retry.");
+        return "";
+    }
+
+    if (upper == "TEST:NEXT")
+    {
+        Log("  [Test] Next DUT.");
+        return "";
+    }
+
+    // ---- Status registers (Table 11) ----
+
+    if (upper.find("STAT:OPER") != std::string::npos)
+    {
+        return "0";
+    }
+
+    if (upper.find("STAT:QUES") != std::string::npos)
+    {
+        return "0";
+    }
+
+    if (upper == "STAT:PRES" || upper == ":STAT:PRES")
+    {
+        return "";
     }
 
     // ---- Unknown command ----
@@ -418,26 +790,38 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
 
 double CSantecSimServer::GenerateIL(int channel, double wavelength)
 {
-    // Typical IL: 0.05 - 0.50 dB for good connectors
     double base = 0.10 + (channel - 1) * 0.02;
-    if (wavelength > 1500) base += 0.03;  // slightly higher at 1550
-    double noise = (rand() % 100 - 50) * 0.001;  // +/- 0.05 dB
+    if (wavelength > 1500) base += 0.03;
+    double noise = (rand() % 100 - 50) * 0.001;
     double result = base + noise;
-    if (!m_referenced) result += 0.5;  // worse without reference
-    if (m_errorMode) result += (rand() % 100) * 0.01;  // inject noise
+    if (!m_rlReferenced) result += 0.5;
+    if (m_errorMode) result += (rand() % 100) * 0.01;
     return result > 0 ? result : 0.01;
 }
 
 double CSantecSimServer::GenerateRL(int channel, double wavelength)
 {
-    // Typical RL: 45 - 65 dB for UPC, 55 - 75 dB for APC
     double base = 55.0 + (channel - 1) * 0.5;
     if (wavelength > 1500) base -= 1.0;
-    double noise = (rand() % 100 - 50) * 0.1;  // +/- 5 dB
+    if (m_rlGain == "low") base -= 20.0;
+    double noise = (rand() % 100 - 50) * 0.1;
     double result = base + noise;
-    if (!m_referenced) result -= 10.0;
+    if (!m_rlReferenced) result -= 10.0;
     if (m_errorMode) result -= (rand() % 200) * 0.1;
     return result > 10 ? result : 10.0;
+}
+
+double CSantecSimServer::GenerateRLTotal(int channel, double wavelength)
+{
+    double rl = GenerateRL(channel, wavelength);
+    return rl - 3.0 - (rand() % 50) * 0.1;
+}
+
+double CSantecSimServer::GenerateLength()
+{
+    double base = 3.0;
+    double noise = (rand() % 100) * 0.01;
+    return base + noise;
 }
 
 // ---------------------------------------------------------------------------

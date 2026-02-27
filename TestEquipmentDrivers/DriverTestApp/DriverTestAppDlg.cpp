@@ -119,10 +119,13 @@ BOOL CDriverTestAppDlg::OnInitDialog()
     m_editLengthValue.SetWindowText(_T("3.0"));
 
     m_listResults.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
-    m_listResults.InsertColumn(0, _T("Channel"), LVCFMT_CENTER, 60);
-    m_listResults.InsertColumn(1, _T("Wavelength (nm)"), LVCFMT_CENTER, 90);
-    m_listResults.InsertColumn(2, _T("IL (dB)"), LVCFMT_RIGHT, 70);
-    m_listResults.InsertColumn(3, _T("RL (dB)"), LVCFMT_RIGHT, 70);
+    m_listResults.InsertColumn(0, _T("Channel"), LVCFMT_CENTER, 55);
+    m_listResults.InsertColumn(1, _T("WL (nm)"), LVCFMT_CENTER, 60);
+    m_listResults.InsertColumn(2, _T("IL (dB)"), LVCFMT_RIGHT, 65);
+    m_listResults.InsertColumn(3, _T("RLA (dB)"), LVCFMT_RIGHT, 65);
+    m_listResults.InsertColumn(4, _T("RLB (dB)"), LVCFMT_RIGHT, 65);
+    m_listResults.InsertColumn(5, _T("RLTOTAL (dB)"), LVCFMT_RIGHT, 80);
+    m_listResults.InsertColumn(6, _T("Length (m)"), LVCFMT_RIGHT, 70);
 
     EnableControls(false);
     AppendLog(_T("Application started. Select device type and connect."));
@@ -734,15 +737,21 @@ void CDriverTestAppDlg::PopulateResultsList(const std::vector<MeasurementResult>
     for (size_t i = 0; i < results.size(); ++i)
     {
         const MeasurementResult& r = results[i];
-        CString chStr, wlStr, ilStr, rlStr;
+        CString chStr, wlStr, ilStr, rlaStr, rlbStr, rltStr, lenStr;
         chStr.Format(_T("%d"), r.channel);
         wlStr.Format(_T("%.0f"), r.wavelength);
         ilStr.Format(_T("%.4f"), r.insertionLoss);
-        rlStr.Format(_T("%.4f"), r.returnLoss);
+        rlaStr.Format(_T("%.2f"), r.returnLossA);
+        rlbStr.Format(_T("%.2f"), r.returnLossB);
+        rltStr.Format(_T("%.2f"), r.returnLossTotal);
+        lenStr.Format(_T("%.2f"), r.dutLength);
 
         int idx = m_listResults.InsertItem(static_cast<int>(i), chStr);
         m_listResults.SetItemText(idx, 1, wlStr);
         m_listResults.SetItemText(idx, 2, ilStr);
-        m_listResults.SetItemText(idx, 3, rlStr);
+        m_listResults.SetItemText(idx, 3, rlaStr);
+        m_listResults.SetItemText(idx, 4, rlbStr);
+        m_listResults.SetItemText(idx, 5, rltStr);
+        m_listResults.SetItemText(idx, 6, lenStr);
     }
 }

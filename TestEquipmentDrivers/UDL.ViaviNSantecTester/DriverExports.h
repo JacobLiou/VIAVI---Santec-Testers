@@ -79,3 +79,19 @@ DRIVER_C_API BOOL WINAPI DriverSendCommand(HANDLE hDriver, const char* command,
 // Set log callback (receives log messages from the driver)
 typedef void (WINAPI *DriverLogCallback)(int level, const char* source, const char* message);
 DRIVER_C_API void WINAPI DriverSetLogCallback(DriverLogCallback callback);
+
+// ---------------------------------------------------------------------------
+// Santec RL1 specific configuration
+// ---------------------------------------------------------------------------
+
+// Set RL sensitivity: 0=FAST (<1.5s, RL<=75dB), 1=STANDARD (<5s, RL<=85dB)
+DRIVER_C_API BOOL WINAPI DriverSantecSetRLSensitivity(HANDLE hDriver, int sensitivity);
+
+// Set DUT length bin: 100, 1500, or 4000 (meters)
+DRIVER_C_API BOOL WINAPI DriverSantecSetDUTLength(HANDLE hDriver, int lengthBin);
+
+// Set RL gain mode: 0=NORMAL (40-85dB), 1=LOW (30-40dB)
+DRIVER_C_API BOOL WINAPI DriverSantecSetRLGain(HANDLE hDriver, int gain);
+
+// Set local mode: TRUE=enabled (touchscreen active), FALSE=disabled (remote only)
+DRIVER_C_API BOOL WINAPI DriverSantecSetLocalMode(HANDLE hDriver, BOOL enabled);
