@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 # 此 .gitignore 文件已由 Microsoft(R) Visual Studio 自动创建。
 ################################################################################
 
@@ -15,3 +15,12 @@
 /TestEquipmentDrivers/ViaviSimulator/Debug
 /TestEquipmentDrivers/UDL.ViaviNSantecTester/Debug
 /TestEquipmentDrivers/SantecSimulator/Debug
+/TestEquipmentDrivers/UDL.OSX/Debug
+/TestEquipmentDrivers/UDL.OSX/x64
+/TestEquipmentDrivers/UDL.OSX/Release
+/TestEquipmentDrivers/OSXSimulator/Debug
+/TestEquipmentDrivers/OSXSimulator/x64
+/TestEquipmentDrivers/OSXSimulator/Release
+/TestEquipmentDrivers/OSXTestApp/Debug
+/TestEquipmentDrivers/OSXTestApp/x64
+/TestEquipmentDrivers/OSXTestApp/Release

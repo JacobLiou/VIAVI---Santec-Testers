@@ -1,2 +1,2 @@
-PlatformToolSet=v143:VCToolArchitecture=Native64Bit:VCToolsVersion=14.44.35207:TargetPlatformVersion=8.1:
-Debug|x64|C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\|
+#TargetFrameworkVersion=:PlatformToolSet=v140:EnableManagedIncrementalBuild=false:VCToolArchitecture=Native64Bit:WindowsTargetPlatformVersion=8.1
+Debug|x64|C:\Users\menghl2\WorkSpace\Projects\VIAVI---Santec-Testers\TestEquipmentDrivers\|

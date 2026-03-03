@@ -1,456 +1,334 @@
 ﻿  stdafx.cpp
-  BaseEquipmentDriver.cpp
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(107,17): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::ConnectionConfig”的客户端使用
-  (编译源文件“/BaseEquipmentDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(125,17): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/BaseEquipmentDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(126,17): warning C4251: “ViaviNSantecTester::DeviceInfo::model”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/BaseEquipmentDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(127,17): warning C4251: “ViaviNSantecTester::DeviceInfo::serialNumber”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/BaseEquipmentDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(128,17): warning C4251: “ViaviNSantecTester::DeviceInfo::firmwareVersion”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/BaseEquipmentDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(140,17): warning C4251: “ViaviNSantecTester::ErrorInfo::message”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::ErrorInfo”的客户端使用
-  (编译源文件“/BaseEquipmentDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(40,17): warning C4251: “ViaviNSantecTester::CLogger::m_source”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/BaseEquipmentDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(42,17): warning C4251: “ViaviNSantecTester::CLogger::m_callback”:“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/BaseEquipmentDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\functional(1089,7):
-      参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(44,24): warning C4251: “ViaviNSantecTester::CLogger::s_globalCallback”:“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/BaseEquipmentDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\functional(1089,7):
-      参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(46,23): warning C4251: “ViaviNSantecTester::CLogger::s_mutex”:“std::mutex”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/BaseEquipmentDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\mutex(98,19):
-      参见“std::mutex”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\BaseEquipmentDriver.h(64,21): warning C4251: “ViaviNSantecTester::CBaseEquipmentDriver::m_deviceType”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::CBaseEquipmentDriver”的客户端使用
-  (编译源文件“/BaseEquipmentDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-  dllmain.cpp
-  DriverExports.cpp
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(107,17): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::ConnectionConfig”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(125,17): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(126,17): warning C4251: “ViaviNSantecTester::DeviceInfo::model”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(127,17): warning C4251: “ViaviNSantecTester::DeviceInfo::serialNumber”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(128,17): warning C4251: “ViaviNSantecTester::DeviceInfo::firmwareVersion”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(140,17): warning C4251: “ViaviNSantecTester::ErrorInfo::message”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::ErrorInfo”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(40,17): warning C4251: “ViaviNSantecTester::CLogger::m_source”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(42,17): warning C4251: “ViaviNSantecTester::CLogger::m_callback”:“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\functional(1089,7):
-      参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(44,24): warning C4251: “ViaviNSantecTester::CLogger::s_globalCallback”:“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\functional(1089,7):
-      参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(46,23): warning C4251: “ViaviNSantecTester::CLogger::s_mutex”:“std::mutex”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\mutex(98,19):
-      参见“std::mutex”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\BaseEquipmentDriver.h(64,21): warning C4251: “ViaviNSantecTester::CBaseEquipmentDriver::m_deviceType”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::CBaseEquipmentDriver”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\ViaviPCTDriver.h(56,25): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_ipAddress”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\ViaviPCTDriver.h(59,25): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_wavelengths”:“std::vector<double,std::allocator<double>>”需要有 dll 接口以供“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<double,std::allocator<double>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\ViaviPCTDriver.h(60,25): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_channels”:“std::vector<int,std::allocator<int>>”需要有 dll 接口以供“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<int,std::allocator<int>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\SantecDriver.h(198,29): warning C4251: “ViaviNSantecTester::CSantecDriver::m_fiberType”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::CSantecDriver”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\SantecDriver.h(199,29): warning C4251: “ViaviNSantecTester::CSantecDriver::m_supportedWavelengths”:“std::vector<int,std::allocator<int>>”需要有 dll 接口以供“ViaviNSantecTester::CSantecDriver”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<int,std::allocator<int>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\SantecDriver.h(210,29): warning C4251: “ViaviNSantecTester::CSantecDriver::m_wavelengths”:“std::vector<double,std::allocator<double>>”需要有 dll 接口以供“ViaviNSantecTester::CSantecDriver”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<double,std::allocator<double>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\SantecDriver.h(211,29): warning C4251: “ViaviNSantecTester::CSantecDriver::m_channels”:“std::vector<int,std::allocator<int>>”需要有 dll 接口以供“ViaviNSantecTester::CSantecDriver”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<int,std::allocator<int>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\SantecDriver.h(215,36): warning C4251: “ViaviNSantecTester::CSantecDriver::m_lastResults”:“std::vector<ViaviNSantecTester::MeasurementResult,std::allocator<ViaviNSantecTester::MeasurementResult>>”需要有 dll 接口以供“ViaviNSantecTester::CSantecDriver”的客户端使用
-  (编译源文件“/DriverExports.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<ViaviNSantecTester::MeasurementResult,std::allocator<ViaviNSantecTester::MeasurementResult>>”的声明
-  
-  DriverFactory.cpp
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(107,17): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::ConnectionConfig”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(125,17): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(126,17): warning C4251: “ViaviNSantecTester::DeviceInfo::model”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(127,17): warning C4251: “ViaviNSantecTester::DeviceInfo::serialNumber”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(128,17): warning C4251: “ViaviNSantecTester::DeviceInfo::firmwareVersion”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(140,17): warning C4251: “ViaviNSantecTester::ErrorInfo::message”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::ErrorInfo”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(40,17): warning C4251: “ViaviNSantecTester::CLogger::m_source”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(42,17): warning C4251: “ViaviNSantecTester::CLogger::m_callback”:“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\functional(1089,7):
-      参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(44,24): warning C4251: “ViaviNSantecTester::CLogger::s_globalCallback”:“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\functional(1089,7):
-      参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(46,23): warning C4251: “ViaviNSantecTester::CLogger::s_mutex”:“std::mutex”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\mutex(98,19):
-      参见“std::mutex”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\BaseEquipmentDriver.h(64,21): warning C4251: “ViaviNSantecTester::CBaseEquipmentDriver::m_deviceType”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::CBaseEquipmentDriver”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\ViaviPCTDriver.h(56,25): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_ipAddress”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\ViaviPCTDriver.h(59,25): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_wavelengths”:“std::vector<double,std::allocator<double>>”需要有 dll 接口以供“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<double,std::allocator<double>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\ViaviPCTDriver.h(60,25): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_channels”:“std::vector<int,std::allocator<int>>”需要有 dll 接口以供“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<int,std::allocator<int>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\SantecDriver.h(198,29): warning C4251: “ViaviNSantecTester::CSantecDriver::m_fiberType”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::CSantecDriver”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\SantecDriver.h(199,29): warning C4251: “ViaviNSantecTester::CSantecDriver::m_supportedWavelengths”:“std::vector<int,std::allocator<int>>”需要有 dll 接口以供“ViaviNSantecTester::CSantecDriver”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<int,std::allocator<int>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\SantecDriver.h(210,29): warning C4251: “ViaviNSantecTester::CSantecDriver::m_wavelengths”:“std::vector<double,std::allocator<double>>”需要有 dll 接口以供“ViaviNSantecTester::CSantecDriver”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<double,std::allocator<double>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\SantecDriver.h(211,29): warning C4251: “ViaviNSantecTester::CSantecDriver::m_channels”:“std::vector<int,std::allocator<int>>”需要有 dll 接口以供“ViaviNSantecTester::CSantecDriver”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<int,std::allocator<int>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\SantecDriver.h(215,36): warning C4251: “ViaviNSantecTester::CSantecDriver::m_lastResults”:“std::vector<ViaviNSantecTester::MeasurementResult,std::allocator<ViaviNSantecTester::MeasurementResult>>”需要有 dll 接口以供“ViaviNSantecTester::CSantecDriver”的客户端使用
-  (编译源文件“/DriverFactory.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<ViaviNSantecTester::MeasurementResult,std::allocator<ViaviNSantecTester::MeasurementResult>>”的声明
-  
-  Logger.cpp
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(107,17): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::ConnectionConfig”的客户端使用
-  (编译源文件“/Logger.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(125,17): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/Logger.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(126,17): warning C4251: “ViaviNSantecTester::DeviceInfo::model”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/Logger.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(127,17): warning C4251: “ViaviNSantecTester::DeviceInfo::serialNumber”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/Logger.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(128,17): warning C4251: “ViaviNSantecTester::DeviceInfo::firmwareVersion”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/Logger.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(140,17): warning C4251: “ViaviNSantecTester::ErrorInfo::message”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::ErrorInfo”的客户端使用
-  (编译源文件“/Logger.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(40,17): warning C4251: “ViaviNSantecTester::CLogger::m_source”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/Logger.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(42,17): warning C4251: “ViaviNSantecTester::CLogger::m_callback”:“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/Logger.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\functional(1089,7):
-      参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(44,24): warning C4251: “ViaviNSantecTester::CLogger::s_globalCallback”:“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/Logger.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\functional(1089,7):
-      参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(46,23): warning C4251: “ViaviNSantecTester::CLogger::s_mutex”:“std::mutex”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/Logger.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\mutex(98,19):
-      参见“std::mutex”的声明
-  
-  SantecDriver.cpp
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(107,17): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::ConnectionConfig”的客户端使用
-  (编译源文件“/SantecDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(125,17): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/SantecDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(126,17): warning C4251: “ViaviNSantecTester::DeviceInfo::model”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/SantecDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(127,17): warning C4251: “ViaviNSantecTester::DeviceInfo::serialNumber”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/SantecDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(128,17): warning C4251: “ViaviNSantecTester::DeviceInfo::firmwareVersion”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/SantecDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(140,17): warning C4251: “ViaviNSantecTester::ErrorInfo::message”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::ErrorInfo”的客户端使用
-  (编译源文件“/SantecDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(40,17): warning C4251: “ViaviNSantecTester::CLogger::m_source”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/SantecDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(42,17): warning C4251: “ViaviNSantecTester::CLogger::m_callback”:“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/SantecDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\functional(1089,7):
-      参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(44,24): warning C4251: “ViaviNSantecTester::CLogger::s_globalCallback”:“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/SantecDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\functional(1089,7):
-      参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(46,23): warning C4251: “ViaviNSantecTester::CLogger::s_mutex”:“std::mutex”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/SantecDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\mutex(98,19):
-      参见“std::mutex”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\BaseEquipmentDriver.h(64,21): warning C4251: “ViaviNSantecTester::CBaseEquipmentDriver::m_deviceType”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::CBaseEquipmentDriver”的客户端使用
-  (编译源文件“/SantecDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\SantecDriver.h(198,29): warning C4251: “ViaviNSantecTester::CSantecDriver::m_fiberType”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::CSantecDriver”的客户端使用
-  (编译源文件“/SantecDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\SantecDriver.h(199,29): warning C4251: “ViaviNSantecTester::CSantecDriver::m_supportedWavelengths”:“std::vector<int,std::allocator<int>>”需要有 dll 接口以供“ViaviNSantecTester::CSantecDriver”的客户端使用
-  (编译源文件“/SantecDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<int,std::allocator<int>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\SantecDriver.h(210,29): warning C4251: “ViaviNSantecTester::CSantecDriver::m_wavelengths”:“std::vector<double,std::allocator<double>>”需要有 dll 接口以供“ViaviNSantecTester::CSantecDriver”的客户端使用
-  (编译源文件“/SantecDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<double,std::allocator<double>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\SantecDriver.h(211,29): warning C4251: “ViaviNSantecTester::CSantecDriver::m_channels”:“std::vector<int,std::allocator<int>>”需要有 dll 接口以供“ViaviNSantecTester::CSantecDriver”的客户端使用
-  (编译源文件“/SantecDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<int,std::allocator<int>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\SantecDriver.h(215,36): warning C4251: “ViaviNSantecTester::CSantecDriver::m_lastResults”:“std::vector<ViaviNSantecTester::MeasurementResult,std::allocator<ViaviNSantecTester::MeasurementResult>>”需要有 dll 接口以供“ViaviNSantecTester::CSantecDriver”的客户端使用
-  (编译源文件“/SantecDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<ViaviNSantecTester::MeasurementResult,std::allocator<ViaviNSantecTester::MeasurementResult>>”的声明
-  
   ViaviPCTDriver.cpp
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(107,17): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::ConnectionConfig”的客户端使用
-  (编译源文件“/ViaviPCTDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(125,17): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/ViaviPCTDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(126,17): warning C4251: “ViaviNSantecTester::DeviceInfo::model”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/ViaviPCTDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(127,17): warning C4251: “ViaviNSantecTester::DeviceInfo::serialNumber”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/ViaviPCTDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(128,17): warning C4251: “ViaviNSantecTester::DeviceInfo::firmwareVersion”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::DeviceInfo”的客户端使用
-  (编译源文件“/ViaviPCTDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\DriverTypes.h(140,17): warning C4251: “ViaviNSantecTester::ErrorInfo::message”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::ErrorInfo”的客户端使用
-  (编译源文件“/ViaviPCTDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(40,17): warning C4251: “ViaviNSantecTester::CLogger::m_source”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/ViaviPCTDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(42,17): warning C4251: “ViaviNSantecTester::CLogger::m_callback”:“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/ViaviPCTDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\functional(1089,7):
-      参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(44,24): warning C4251: “ViaviNSantecTester::CLogger::s_globalCallback”:“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/ViaviPCTDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\functional(1089,7):
-      参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\Logger.h(46,23): warning C4251: “ViaviNSantecTester::CLogger::s_mutex”:“std::mutex”需要有 dll 接口以供“ViaviNSantecTester::CLogger”的客户端使用
-  (编译源文件“/ViaviPCTDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\mutex(98,19):
-      参见“std::mutex”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\BaseEquipmentDriver.h(64,21): warning C4251: “ViaviNSantecTester::CBaseEquipmentDriver::m_deviceType”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::CBaseEquipmentDriver”的客户端使用
-  (编译源文件“/ViaviPCTDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\ViaviPCTDriver.h(56,25): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_ipAddress”:“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口以供“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
-  (编译源文件“/ViaviPCTDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
-      参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\ViaviPCTDriver.h(59,25): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_wavelengths”:“std::vector<double,std::allocator<double>>”需要有 dll 接口以供“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
-  (编译源文件“/ViaviPCTDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<double,std::allocator<double>>”的声明
-  
-C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\UDL.ViaviNSantecTester\ViaviPCTDriver.h(60,25): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_channels”:“std::vector<int,std::allocator<int>>”需要有 dll 接口以供“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
-  (编译源文件“/ViaviPCTDriver.cpp”)
-      C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
-      参见“std::vector<int,std::allocator<int>>”的声明
-  
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(107): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ConnectionConfig”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(125): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(126): warning C4251: “ViaviNSantecTester::DeviceInfo::model”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(127): warning C4251: “ViaviNSantecTester::DeviceInfo::serialNumber”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(128): warning C4251: “ViaviNSantecTester::DeviceInfo::firmwareVersion”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(140): warning C4251: “ViaviNSantecTester::ErrorInfo::message”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ErrorInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(40): warning C4251: “ViaviNSantecTester::CLogger::m_source”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(42): warning C4251: “ViaviNSantecTester::CLogger::m_callback”: class“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(18): note: 参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(44): warning C4251: “ViaviNSantecTester::CLogger::s_globalCallback”: class“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(18): note: 参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(46): warning C4251: “ViaviNSantecTester::CLogger::s_mutex”: class“std::mutex”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\mutex(78): note: 参见“std::mutex”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\baseequipmentdriver.h(64): warning C4251: “ViaviNSantecTester::CBaseEquipmentDriver::m_deviceType”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CBaseEquipmentDriver”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\viavipctdriver.h(56): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_ipAddress”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\viavipctdriver.h(59): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_wavelengths”: class“std::vector<double,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
+          with
+          [
+              _Ty=double
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(30): note: 参见“std::vector<double,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=double
+          ]
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\viavipctdriver.h(60): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_channels”: class“std::vector<int,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
+          with
+          [
+              _Ty=int
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(31): note: 参见“std::vector<int,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=int
+          ]
+  SantecDriver.cpp
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(107): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ConnectionConfig”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(125): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(126): warning C4251: “ViaviNSantecTester::DeviceInfo::model”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(127): warning C4251: “ViaviNSantecTester::DeviceInfo::serialNumber”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(128): warning C4251: “ViaviNSantecTester::DeviceInfo::firmwareVersion”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(140): warning C4251: “ViaviNSantecTester::ErrorInfo::message”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ErrorInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(40): warning C4251: “ViaviNSantecTester::CLogger::m_source”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(42): warning C4251: “ViaviNSantecTester::CLogger::m_callback”: class“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(18): note: 参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(44): warning C4251: “ViaviNSantecTester::CLogger::s_globalCallback”: class“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(18): note: 参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(46): warning C4251: “ViaviNSantecTester::CLogger::s_mutex”: class“std::mutex”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\mutex(78): note: 参见“std::mutex”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\baseequipmentdriver.h(64): warning C4251: “ViaviNSantecTester::CBaseEquipmentDriver::m_deviceType”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CBaseEquipmentDriver”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(198): warning C4251: “ViaviNSantecTester::CSantecDriver::m_fiberType”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(199): warning C4251: “ViaviNSantecTester::CSantecDriver::m_supportedWavelengths”: class“std::vector<int,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
+          with
+          [
+              _Ty=int
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(31): note: 参见“std::vector<int,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=int
+          ]
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(210): warning C4251: “ViaviNSantecTester::CSantecDriver::m_wavelengths”: class“std::vector<double,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
+          with
+          [
+              _Ty=double
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(30): note: 参见“std::vector<double,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=double
+          ]
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(211): warning C4251: “ViaviNSantecTester::CSantecDriver::m_channels”: class“std::vector<int,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
+          with
+          [
+              _Ty=int
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(31): note: 参见“std::vector<int,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=int
+          ]
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(215): warning C4251: “ViaviNSantecTester::CSantecDriver::m_lastResults”: class“std::vector<ViaviNSantecTester::MeasurementResult,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
+          with
+          [
+              _Ty=ViaviNSantecTester::MeasurementResult
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(36): note: 参见“std::vector<ViaviNSantecTester::MeasurementResult,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=ViaviNSantecTester::MeasurementResult
+          ]
+  Logger.cpp
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(107): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ConnectionConfig”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(125): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(126): warning C4251: “ViaviNSantecTester::DeviceInfo::model”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(127): warning C4251: “ViaviNSantecTester::DeviceInfo::serialNumber”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(128): warning C4251: “ViaviNSantecTester::DeviceInfo::firmwareVersion”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(140): warning C4251: “ViaviNSantecTester::ErrorInfo::message”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ErrorInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(40): warning C4251: “ViaviNSantecTester::CLogger::m_source”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(42): warning C4251: “ViaviNSantecTester::CLogger::m_callback”: class“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(18): note: 参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(44): warning C4251: “ViaviNSantecTester::CLogger::s_globalCallback”: class“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(18): note: 参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(46): warning C4251: “ViaviNSantecTester::CLogger::s_mutex”: class“std::mutex”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\mutex(78): note: 参见“std::mutex”的声明
+  DriverFactory.cpp
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(107): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ConnectionConfig”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(125): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(126): warning C4251: “ViaviNSantecTester::DeviceInfo::model”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(127): warning C4251: “ViaviNSantecTester::DeviceInfo::serialNumber”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(128): warning C4251: “ViaviNSantecTester::DeviceInfo::firmwareVersion”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(140): warning C4251: “ViaviNSantecTester::ErrorInfo::message”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ErrorInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(40): warning C4251: “ViaviNSantecTester::CLogger::m_source”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(42): warning C4251: “ViaviNSantecTester::CLogger::m_callback”: class“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(18): note: 参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(44): warning C4251: “ViaviNSantecTester::CLogger::s_globalCallback”: class“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(18): note: 参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(46): warning C4251: “ViaviNSantecTester::CLogger::s_mutex”: class“std::mutex”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\mutex(78): note: 参见“std::mutex”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\baseequipmentdriver.h(64): warning C4251: “ViaviNSantecTester::CBaseEquipmentDriver::m_deviceType”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CBaseEquipmentDriver”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\viavipctdriver.h(56): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_ipAddress”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\viavipctdriver.h(59): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_wavelengths”: class“std::vector<double,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
+          with
+          [
+              _Ty=double
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(30): note: 参见“std::vector<double,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=double
+          ]
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\viavipctdriver.h(60): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_channels”: class“std::vector<int,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
+          with
+          [
+              _Ty=int
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(31): note: 参见“std::vector<int,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=int
+          ]
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(198): warning C4251: “ViaviNSantecTester::CSantecDriver::m_fiberType”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(199): warning C4251: “ViaviNSantecTester::CSantecDriver::m_supportedWavelengths”: class“std::vector<int,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
+          with
+          [
+              _Ty=int
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(31): note: 参见“std::vector<int,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=int
+          ]
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(210): warning C4251: “ViaviNSantecTester::CSantecDriver::m_wavelengths”: class“std::vector<double,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
+          with
+          [
+              _Ty=double
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(30): note: 参见“std::vector<double,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=double
+          ]
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(211): warning C4251: “ViaviNSantecTester::CSantecDriver::m_channels”: class“std::vector<int,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
+          with
+          [
+              _Ty=int
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(31): note: 参见“std::vector<int,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=int
+          ]
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(215): warning C4251: “ViaviNSantecTester::CSantecDriver::m_lastResults”: class“std::vector<ViaviNSantecTester::MeasurementResult,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
+          with
+          [
+              _Ty=ViaviNSantecTester::MeasurementResult
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(36): note: 参见“std::vector<ViaviNSantecTester::MeasurementResult,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=ViaviNSantecTester::MeasurementResult
+          ]
+  DriverExports.cpp
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(107): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ConnectionConfig”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(125): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(126): warning C4251: “ViaviNSantecTester::DeviceInfo::model”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(127): warning C4251: “ViaviNSantecTester::DeviceInfo::serialNumber”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(128): warning C4251: “ViaviNSantecTester::DeviceInfo::firmwareVersion”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(140): warning C4251: “ViaviNSantecTester::ErrorInfo::message”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ErrorInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(40): warning C4251: “ViaviNSantecTester::CLogger::m_source”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(42): warning C4251: “ViaviNSantecTester::CLogger::m_callback”: class“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(18): note: 参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(44): warning C4251: “ViaviNSantecTester::CLogger::s_globalCallback”: class“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(18): note: 参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(46): warning C4251: “ViaviNSantecTester::CLogger::s_mutex”: class“std::mutex”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\mutex(78): note: 参见“std::mutex”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\baseequipmentdriver.h(64): warning C4251: “ViaviNSantecTester::CBaseEquipmentDriver::m_deviceType”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CBaseEquipmentDriver”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\viavipctdriver.h(56): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_ipAddress”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\viavipctdriver.h(59): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_wavelengths”: class“std::vector<double,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
+          with
+          [
+              _Ty=double
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(30): note: 参见“std::vector<double,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=double
+          ]
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\viavipctdriver.h(60): warning C4251: “ViaviNSantecTester::CViaviPCTDriver::m_channels”: class“std::vector<int,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CViaviPCTDriver”的客户端使用
+          with
+          [
+              _Ty=int
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(31): note: 参见“std::vector<int,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=int
+          ]
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(198): warning C4251: “ViaviNSantecTester::CSantecDriver::m_fiberType”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(199): warning C4251: “ViaviNSantecTester::CSantecDriver::m_supportedWavelengths”: class“std::vector<int,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
+          with
+          [
+              _Ty=int
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(31): note: 参见“std::vector<int,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=int
+          ]
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(210): warning C4251: “ViaviNSantecTester::CSantecDriver::m_wavelengths”: class“std::vector<double,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
+          with
+          [
+              _Ty=double
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(30): note: 参见“std::vector<double,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=double
+          ]
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(211): warning C4251: “ViaviNSantecTester::CSantecDriver::m_channels”: class“std::vector<int,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
+          with
+          [
+              _Ty=int
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(31): note: 参见“std::vector<int,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=int
+          ]
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(215): warning C4251: “ViaviNSantecTester::CSantecDriver::m_lastResults”: class“std::vector<ViaviNSantecTester::MeasurementResult,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
+          with
+          [
+              _Ty=ViaviNSantecTester::MeasurementResult
+          ]
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h(36): note: 参见“std::vector<ViaviNSantecTester::MeasurementResult,std::allocator<_Ty>>”的声明
+          with
+          [
+              _Ty=ViaviNSantecTester::MeasurementResult
+          ]
+  dllmain.cpp
+  BaseEquipmentDriver.cpp
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(107): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ConnectionConfig”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(125): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(126): warning C4251: “ViaviNSantecTester::DeviceInfo::model”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(127): warning C4251: “ViaviNSantecTester::DeviceInfo::serialNumber”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(128): warning C4251: “ViaviNSantecTester::DeviceInfo::firmwareVersion”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(140): warning C4251: “ViaviNSantecTester::ErrorInfo::message”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ErrorInfo”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(40): warning C4251: “ViaviNSantecTester::CLogger::m_source”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(42): warning C4251: “ViaviNSantecTester::CLogger::m_callback”: class“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(18): note: 参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(44): warning C4251: “ViaviNSantecTester::CLogger::s_globalCallback”: class“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(18): note: 参见“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(46): warning C4251: “ViaviNSantecTester::CLogger::s_mutex”: class“std::mutex”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\mutex(78): note: 参见“std::mutex”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\baseequipmentdriver.h(64): warning C4251: “ViaviNSantecTester::CBaseEquipmentDriver::m_deviceType”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CBaseEquipmentDriver”的客户端使用
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
   正在生成代码...
-    正在创建库 C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\x64\Debug\UDL.ViaviNSantecTester.lib 和对象 C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\x64\Debug\UDL.ViaviNSantecTester.exp
-  UDL.ViaviNSantecTester.vcxproj -> C:\Users\menghl2\OneDrive - kochind.com\Desktop\VIAVI---Santec-Testers\TestEquipmentDrivers\x64\Debug\UDL.ViaviNSantecTester.dll
+    正在创建库 C:\Users\menghl2\WorkSpace\Projects\VIAVI---Santec-Testers\TestEquipmentDrivers\x64\Debug\UDL.ViaviNSantecTester.lib 和对象 C:\Users\menghl2\WorkSpace\Projects\VIAVI---Santec-Testers\TestEquipmentDrivers\x64\Debug\UDL.ViaviNSantecTester.exp
+  UDL.ViaviNSantecTester.vcxproj -> C:\Users\menghl2\WorkSpace\Projects\VIAVI---Santec-Testers\TestEquipmentDrivers\x64\Debug\UDL.ViaviNSantecTester.dll
+  UDL.ViaviNSantecTester.vcxproj -> C:\Users\menghl2\WorkSpace\Projects\VIAVI---Santec-Testers\TestEquipmentDrivers\x64\Debug\UDL.ViaviNSantecTester.pdb (Full PDB)
