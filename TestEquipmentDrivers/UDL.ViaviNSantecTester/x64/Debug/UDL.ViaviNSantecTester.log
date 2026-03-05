@@ -1,5 +1,10 @@
 ﻿  stdafx.cpp
   ViaviPCTDriver.cpp
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\viavipctdriver.cpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\viavipctdriver.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\baseequipmentdriver.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(107): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ConnectionConfig”的客户端使用
   c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(125): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
@@ -45,6 +50,11 @@ c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\
               _Ty=int
           ]
   SantecDriver.cpp
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.cpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\baseequipmentdriver.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(107): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ConnectionConfig”的客户端使用
   c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(125): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
@@ -109,7 +119,9 @@ c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\
           [
               _Ty=ViaviNSantecTester::MeasurementResult
           ]
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.cpp(874): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
   Logger.cpp
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(107): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ConnectionConfig”的客户端使用
   c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(125): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
@@ -131,6 +143,8 @@ c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(46): warning C4251: “ViaviNSantecTester::CLogger::s_mutex”: class“std::mutex”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
   c:\program files (x86)\microsoft visual studio 14.0\vc\include\mutex(78): note: 参见“std::mutex”的声明
   DriverFactory.cpp
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\driverfactory.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(107): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ConnectionConfig”的客户端使用
   c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(125): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
@@ -143,6 +157,9 @@ c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\
   c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(140): warning C4251: “ViaviNSantecTester::ErrorInfo::message”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ErrorInfo”的客户端使用
   c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\viavipctdriver.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\baseequipmentdriver.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(40): warning C4251: “ViaviNSantecTester::CLogger::m_source”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
   c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(42): warning C4251: “ViaviNSantecTester::CLogger::m_callback”: class“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
@@ -175,6 +192,7 @@ c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\
           [
               _Ty=int
           ]
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(198): warning C4251: “ViaviNSantecTester::CSantecDriver::m_fiberType”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
   c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(199): warning C4251: “ViaviNSantecTester::CSantecDriver::m_supportedWavelengths”: class“std::vector<int,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
@@ -218,6 +236,8 @@ c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\
               _Ty=ViaviNSantecTester::MeasurementResult
           ]
   DriverExports.cpp
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\driverexports.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(107): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ConnectionConfig”的客户端使用
   c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(125): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
@@ -230,6 +250,10 @@ c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\
   c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(140): warning C4251: “ViaviNSantecTester::ErrorInfo::message”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ErrorInfo”的客户端使用
   c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\driverfactory.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\viavipctdriver.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\baseequipmentdriver.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(40): warning C4251: “ViaviNSantecTester::CLogger::m_source”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
   c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\logger.h(42): warning C4251: “ViaviNSantecTester::CLogger::m_callback”: class“std::function<void (ViaviNSantecTester::LogLevel,const std::string &,const std::string &)>”需要有 dll 接口由 class“ViaviNSantecTester::CLogger”的客户端使用
@@ -262,6 +286,7 @@ c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\
           [
               _Ty=int
           ]
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(198): warning C4251: “ViaviNSantecTester::CSantecDriver::m_fiberType”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
   c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\santecdriver.h(199): warning C4251: “ViaviNSantecTester::CSantecDriver::m_supportedWavelengths”: class“std::vector<int,std::allocator<_Ty>>”需要有 dll 接口由 class“ViaviNSantecTester::CSantecDriver”的客户端使用
@@ -306,6 +331,10 @@ c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\
           ]
   dllmain.cpp
   BaseEquipmentDriver.cpp
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\baseequipmentdriver.cpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\baseequipmentdriver.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\iequipmentdriver.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(107): warning C4251: “ViaviNSantecTester::ConnectionConfig::ipAddress”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::ConnectionConfig”的客户端使用
   c:\program files (x86)\microsoft visual studio 14.0\vc\include\xstring(2633): note: 参见“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”的声明
 c:\users\menghl2\workspace\projects\viavi---santec-testers\testequipmentdrivers\udl.viavinsantectester\drivertypes.h(125): warning C4251: “ViaviNSantecTester::DeviceInfo::manufacturer”: class“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”需要有 dll 接口由 struct“ViaviNSantecTester::DeviceInfo”的客户端使用
