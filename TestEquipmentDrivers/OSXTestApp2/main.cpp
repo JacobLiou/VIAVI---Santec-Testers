@@ -2,15 +2,15 @@
 #include "OSXDllLoader.h"
 
 // ---------------------------------------------------------------------------
-// OSXTestApp2 -- UDL.OSX.dll 的动态加载调试工具
+// OSXTestApp2 -- UDL.SantecOSX.dll 的动态加载调试工具
 //
 // 演示生产框架使用的确切模式：
-//   1. LoadLibrary("UDL.OSX.dll")
+//   1. LoadLibrary("UDL.SantecOSX.dll")
 //   2. 对每个 OSX_* 函数调用 GetProcAddress
 //   3. 通过函数指针进行调用
 //   4. 退出时调用 FreeLibrary
 //
-// 不包含 UDL.OSX 的任何 .h 文件。不链接任何 .lib 文件。
+// 不包含 UDL.SantecOSX 的任何 .h 文件。不链接任何 .lib 文件。
 // ---------------------------------------------------------------------------
 
 static COSXDllLoader g_loader;
@@ -70,7 +70,7 @@ static void PrintBanner()
 static void PrintHelp()
 {
     printf("\n--- DLL Management ---\n");
-    printf("  0  - Load UDL.OSX.dll\n");
+    printf("  0  - Load UDL.SantecOSX.dll\n");
     printf("  00 - Unload DLL\n");
     printf("\n--- Connection ---\n");
     printf("  1  - Create driver + Connect (TCP)\n");
@@ -150,8 +150,8 @@ static void DoLoadDll()
         return;
     }
 
-    std::string path = ReadLine("DLL path [UDL.OSX.dll]: ");
-    if (path.empty()) path = "UDL.OSX.dll";
+    std::string path = ReadLine("DLL path [UDL.SantecOSX.dll]: ");
+    if (path.empty()) path = "UDL.SantecOSX.dll";
 
     if (g_loader.LoadDll(path.c_str()))
     {

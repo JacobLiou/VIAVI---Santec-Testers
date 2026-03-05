@@ -95,3 +95,19 @@ DRIVER_C_API BOOL WINAPI DriverSantecSetRLGain(HANDLE hDriver, int gain);
 
 // 设置本地模式: TRUE=启用（触摸屏可用），FALSE=禁用（仅远程控制）
 DRIVER_C_API BOOL WINAPI DriverSantecSetLocalMode(HANDLE hDriver, BOOL enabled);
+
+// ---------------------------------------------------------------------------
+// VISA / USB 扩展
+// ---------------------------------------------------------------------------
+
+// 创建驱动实例（扩展版本，支持指定通信类型）
+// commType: 0=TCP, 1=GPIB, 2=USB(VISA)
+// address: TCP 模式为 IP 地址，USB 模式为 VISA 资源字符串
+DRIVER_C_API HANDLE WINAPI CreateDriverEx(const char* type, const char* address,
+                                          int port, int slot, int commType);
+
+// 枚举可用的 VISA 资源（USB 设备）
+// buffer: 接收以分号分隔的资源字符串列表
+// bufferSize: 缓冲区大小
+// 返回值: 找到的资源数量
+DRIVER_C_API int WINAPI EnumerateVisaResources(char* buffer, int bufferSize);

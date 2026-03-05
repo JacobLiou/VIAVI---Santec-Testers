@@ -42,6 +42,33 @@ IEquipmentDriver* CDriverFactory::Create(const std::string& equipmentType,
     }
 }
 
+IEquipmentDriver* CDriverFactory::Create(const std::string& equipmentType,
+                                          const std::string& address,
+                                          int port,
+                                          int slot,
+                                          CommType commType)
+{
+    std::string key = ToLower(equipmentType);
+    while (!key.empty() && key.front() == ' ') key.erase(key.begin());
+    while (!key.empty() && key.back() == ' ') key.pop_back();
+
+    if (key == "viavi" || key == "viavi_pct" || key == "map300")
+    {
+        return new CViaviPCTDriver(address, slot);
+    }
+    else if (key == "santec")
+    {
+        int santecPort = (port > 0) ? port : CSantecDriver::DEFAULT_PORT;
+        return new CSantecDriver(address, santecPort, 5.0, commType);
+    }
+    else
+    {
+        throw std::invalid_argument(
+            std::string("Unsupported equipment type: '") + equipmentType
+            + "'. Supported: viavi, viavi_pct, map300, santec");
+    }
+}
+
 void CDriverFactory::Destroy(IEquipmentDriver* driver)
 {
     if (driver)

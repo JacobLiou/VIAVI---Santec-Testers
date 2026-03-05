@@ -9,7 +9,7 @@
 
 #include "OSXTypes.h"
 
-#ifdef UDLOSX_EXPORTS
+#ifdef UDLSANTECOSX_EXPORTS
 #define OSX_C_API extern "C" __declspec(dllexport)
 #else
 #define OSX_C_API extern "C" __declspec(dllimport)

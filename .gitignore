@@ -15,9 +15,9 @@
 /TestEquipmentDrivers/ViaviSimulator/Debug
 /TestEquipmentDrivers/UDL.ViaviNSantecTester/Debug
 /TestEquipmentDrivers/SantecSimulator/Debug
-/TestEquipmentDrivers/UDL.OSX/Debug
-/TestEquipmentDrivers/UDL.OSX/x64
-/TestEquipmentDrivers/UDL.OSX/Release
+/TestEquipmentDrivers/UDL.SantecOSX/Debug
+/TestEquipmentDrivers/UDL.SantecOSX/x64
+/TestEquipmentDrivers/UDL.SantecOSX/Release
 /TestEquipmentDrivers/OSXSimulator/Debug
 /TestEquipmentDrivers/OSXSimulator/x64
 /TestEquipmentDrivers/OSXSimulator/Release

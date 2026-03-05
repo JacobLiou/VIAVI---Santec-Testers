@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef UDLOSX_EXPORTS
+#ifdef UDLSANTECOSX_EXPORTS
 #define OSX_API __declspec(dllexport)
 #else
 #define OSX_API __declspec(dllimport)

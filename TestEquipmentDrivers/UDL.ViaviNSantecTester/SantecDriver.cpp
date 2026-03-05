@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "SantecDriver.h"
+#include "SantecVisaAdapter.h"
 #include <stdexcept>
 #include <sstream>
 #include <cmath>
@@ -320,13 +321,20 @@ std::string CSantecDriver::Query(const std::string& command)
 std::string CSantecDriver::QueryLong(const std::string& command)
 {
     CSantecTcpAdapter* tcpAdapter = dynamic_cast<CSantecTcpAdapter*>(m_adapter);
+    CSantecVisaAdapter* visaAdapter = dynamic_cast<CSantecVisaAdapter*>(m_adapter);
+
     if (tcpAdapter)
         tcpAdapter->SetReadTimeout(MEAS_TIMEOUT_MS);
+    else if (visaAdapter)
+        visaAdapter->SetReadTimeout(MEAS_TIMEOUT_MS);
 
     std::string result = Query(command);
 
+    DWORD normalTimeout = static_cast<DWORD>(m_config.timeout * 1000);
     if (tcpAdapter)
-        tcpAdapter->SetReadTimeout(static_cast<DWORD>(m_config.timeout * 1000));
+        tcpAdapter->SetReadTimeout(normalTimeout);
+    else if (visaAdapter)
+        visaAdapter->SetReadTimeout(normalTimeout);
 
     return result;
 }
@@ -404,9 +412,56 @@ bool CSantecDriver::Connect()
         m_logger.Warning("GPIB communication not yet implemented.");
         return false;
     case COMM_USB:
-        m_logger.Warning("USB USBTMC communication not yet implemented. "
-                         "Requires VISA drivers (R&S VISA recommended).");
+    {
+        if (!m_adapter)
+        {
+            CSantecVisaAdapter* visaAdapter = new CSantecVisaAdapter();
+            m_adapter = visaAdapter;
+            m_ownsAdapter = true;
+        }
+
+        for (int attempt = 1; attempt <= m_config.reconnectAttempts; ++attempt)
+        {
+            m_logger.Info("VISA 连接尝试 %d/%d", attempt, m_config.reconnectAttempts);
+
+            try
+            {
+                if (!m_adapter->Open(m_config.ipAddress, m_config.port, m_config.timeout))
+                {
+                    m_logger.Error("VISA 连接尝试 %d 失败。", attempt);
+                    if (attempt < m_config.reconnectAttempts)
+                        Sleep(static_cast<DWORD>(m_config.reconnectDelay * 1000));
+                    continue;
+                }
+            }
+            catch (const std::exception& ex)
+            {
+                m_logger.Error("VISA 连接异常: %s", ex.what());
+                if (attempt < m_config.reconnectAttempts)
+                    Sleep(static_cast<DWORD>(m_config.reconnectDelay * 1000));
+                continue;
+            }
+
+            m_state = STATE_CONNECTED;
+
+            if (!ValidateConnection())
+            {
+                m_logger.Error("VISA 验证失败 (尝试 %d)。", attempt);
+                m_adapter->Close();
+                m_state = STATE_DISCONNECTED;
+                if (attempt < m_config.reconnectAttempts)
+                    Sleep(static_cast<DWORD>(m_config.reconnectDelay * 1000));
+                continue;
+            }
+
+            m_logger.Info("Santec VISA 已连接并验证。");
+            return true;
+        }
+
+        m_state = STATE_ERROR;
+        m_logger.Error("所有 VISA 连接尝试已耗尽。");
         return false;
+    }
     case COMM_DLL:
         m_logger.Warning("DLL communication not yet implemented.");
         return false;
