@@ -86,12 +86,12 @@ BOOL CDriverTestAppDlg::OnInitDialog()
         }
     });
 
-    // Device type combo
+    // 设备类型下拉框
     m_comboDeviceType.AddString(_T("VIAVI MAP300 PCT"));
     m_comboDeviceType.AddString(_T("Santec"));
     m_comboDeviceType.SetCurSel(0);
 
-    // Default values
+    // 默认值
     m_editIP.SetWindowText(_T("10.14.132.194"));
     m_editPort.SetWindowText(_T("8301"));
     m_editSlot.SetWindowText(_T("1"));
@@ -134,12 +134,12 @@ BOOL CDriverTestAppDlg::OnInitDialog()
 }
 
 // ---------------------------------------------------------------------------
-// Prevent accidental dialog close
+// 防止意外关闭对话框
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::OnOK()
 {
-    // Block Enter key from closing the dialog
+    // 阻止 Enter 键关闭对话框
 }
 
 void CDriverTestAppDlg::OnCancel()
@@ -165,7 +165,7 @@ void CDriverTestAppDlg::OnClose()
 }
 
 // ---------------------------------------------------------------------------
-// Async worker infrastructure
+// 异步工作线程基础设施
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::RunAsync(const CString& operationName,
@@ -213,7 +213,7 @@ LRESULT CDriverTestAppDlg::OnWorkerDone(WPARAM /*wParam*/, LPARAM lParam)
         if (result->hasResults)
             PopulateResultsList(result->results);
 
-        // Update status: use explicit text if provided, otherwise derive from state
+        // 更新状态：如果提供了显式文本则使用，否则从状态推导
         if (!result->statusText.IsEmpty())
             UpdateStatus(result->statusText);
         else
@@ -230,7 +230,7 @@ LRESULT CDriverTestAppDlg::OnWorkerDone(WPARAM /*wParam*/, LPARAM lParam)
 }
 
 // ---------------------------------------------------------------------------
-// Busy state management
+// 忙碌状态管理
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::SetBusy(bool busy, const CString& statusText)
@@ -263,7 +263,7 @@ void CDriverTestAppDlg::SetBusy(bool busy, const CString& statusText)
         bool connected = m_pDriver && m_pDriver->IsConnected();
         EnableControls(connected);
 
-        // Parameter controls are always usable when not busy
+        // 非忙碌时参数控件始终可用
         GetDlgItem(IDC_CHECK_1310)->EnableWindow(TRUE);
         GetDlgItem(IDC_CHECK_1550)->EnableWindow(TRUE);
         GetDlgItem(IDC_EDIT_CH_FROM)->EnableWindow(TRUE);
@@ -281,7 +281,7 @@ void CDriverTestAppDlg::SetBusy(bool busy, const CString& statusText)
 }
 
 // ---------------------------------------------------------------------------
-// Log handling
+// 日志处理
 // ---------------------------------------------------------------------------
 
 LRESULT CDriverTestAppDlg::OnLogMessage(WPARAM /*wParam*/, LPARAM lParam)
@@ -329,20 +329,20 @@ void CDriverTestAppDlg::EnableControls(bool connected)
 }
 
 // ---------------------------------------------------------------------------
-// Device type change
+// 设备类型切换
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::OnCbnSelchangeDeviceType()
 {
     int sel = m_comboDeviceType.GetCurSel();
-    if (sel == 0) // VIAVI
+    if (sel == 0) // VIAVI 设备
     {
         m_editPort.SetWindowText(_T("8301"));
         m_editSlot.SetWindowText(_T("1"));
         GetDlgItem(IDC_EDIT_SLOT)->EnableWindow(TRUE);
         GetDlgItem(IDC_BTN_CONFIGURE_ORL)->ShowWindow(SW_SHOW);
     }
-    else // Santec
+    else // Santec 设备
     {
         m_editPort.SetWindowText(_T("5025"));
         m_editSlot.SetWindowText(_T("0"));
@@ -359,7 +359,7 @@ void CDriverTestAppDlg::OnBnClickedOverride()
 }
 
 // ---------------------------------------------------------------------------
-// Connection (async)
+// 连接（异步）
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::OnBnClickedConnect()
@@ -445,7 +445,7 @@ void CDriverTestAppDlg::OnBnClickedDisconnect()
 }
 
 // ---------------------------------------------------------------------------
-// Initialize (async)
+// 初始化（异步）
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::OnBnClickedInitialize()
@@ -478,7 +478,7 @@ void CDriverTestAppDlg::OnBnClickedInitialize()
 }
 
 // ---------------------------------------------------------------------------
-// ORL Configuration (async, VIAVI specific)
+// ORL 配置（异步，VIAVI 专用）
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::OnBnClickedConfigureOrl()
@@ -525,7 +525,7 @@ void CDriverTestAppDlg::OnBnClickedConfigureOrl()
 }
 
 // ---------------------------------------------------------------------------
-// Reference (async)
+// 参考（异步）
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::OnBnClickedTakeReference()
@@ -573,7 +573,7 @@ void CDriverTestAppDlg::OnBnClickedTakeReference()
 }
 
 // ---------------------------------------------------------------------------
-// Measurement (async)
+// 测量（异步）
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::OnBnClickedTakeMeasurement()
@@ -608,7 +608,7 @@ void CDriverTestAppDlg::OnBnClickedTakeMeasurement()
 }
 
 // ---------------------------------------------------------------------------
-// Get Results (async)
+// 获取结果（异步）
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::OnBnClickedGetResults()
@@ -641,7 +641,7 @@ void CDriverTestAppDlg::OnBnClickedGetResults()
 }
 
 // ---------------------------------------------------------------------------
-// Run Full Test (async)
+// 运行完整测试（异步）
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::OnBnClickedRunFullTest()
@@ -687,7 +687,7 @@ void CDriverTestAppDlg::OnBnClickedRunFullTest()
 }
 
 // ---------------------------------------------------------------------------
-// Clear Log
+// 清除日志
 // ---------------------------------------------------------------------------
 
 void CDriverTestAppDlg::OnBnClickedClearLog()
@@ -696,7 +696,7 @@ void CDriverTestAppDlg::OnBnClickedClearLog()
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
+// 辅助函数
 // ---------------------------------------------------------------------------
 
 std::vector<double> CDriverTestAppDlg::GetSelectedWavelengths()

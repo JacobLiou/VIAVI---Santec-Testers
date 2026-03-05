@@ -1,89 +1,89 @@
 #pragma once
 
 // ---------------------------------------------------------------------------
-// CViaviSantecDllLoader -- Pure dynamic binding to UDL.ViaviNSantecTester.dll
+// CViaviSantecDllLoader -- UDL.ViaviNSantecTester.dll 的纯动态绑定加载器
 //
-// All interaction with the driver goes through LoadLibrary / GetProcAddress.
-// No .h from UDL.ViaviNSantecTester is included; no .lib is linked.
-// This is the pattern the production framework will use.
+// 所有与驱动的交互都通过 LoadLibrary / GetProcAddress 进行。
+// 不包含 UDL.ViaviNSantecTester 的任何 .h 文件；不链接任何 .lib 文件。
+// 这是生产框架将使用的模式。
 // ---------------------------------------------------------------------------
 
 #include <Windows.h>
 #include <string>
 
 // ---------------------------------------------------------------------------
-// C-compatible structures (binary-compatible with DLL exports)
+// C兼容结构体（与DLL导出二进制兼容）
 // ---------------------------------------------------------------------------
 
 struct DriverMeasurementResult
 {
-    int    channel;
-    double wavelength;
-    double insertionLoss;
-    double returnLoss;
-    double returnLossA;
-    double returnLossB;
-    double returnLossTotal;
-    double dutLength;
-    double rawData[10];
-    int    rawDataCount;
+    int    channel;          // 通道号
+    double wavelength;       // 波长 (nm)
+    double insertionLoss;    // 插入损耗 (dB)
+    double returnLoss;       // 回波损耗 (dB)
+    double returnLossA;      // A点回波损耗 (dB)
+    double returnLossB;      // B点回波损耗 (dB)
+    double returnLossTotal;  // 总回波损耗 (dB)
+    double dutLength;        // 被测器件长度 (m)
+    double rawData[10];      // 原始数据
+    int    rawDataCount;     // 原始数据数量
 };
 
 struct DriverDeviceInfo
 {
-    char manufacturer[64];
-    char model[64];
-    char serialNumber[64];
-    char firmwareVersion[64];
-    int  slot;
+    char manufacturer[64];    // 制造商
+    char model[64];           // 型号
+    char serialNumber[64];    // 序列号
+    char firmwareVersion[64]; // 固件版本
+    int  slot;                // 插槽号
 };
 
 // ---------------------------------------------------------------------------
-// Function pointer typedefs matching UDL.ViaviNSantecTester C exports
+// 函数指针类型定义，匹配 UDL.ViaviNSantecTester C 导出接口
 // ---------------------------------------------------------------------------
 
-// Lifecycle
+// 生命周期管理
 typedef HANDLE (WINAPI *PFN_CreateDriver)(const char* type, const char* ip, int port, int slot);
 typedef void   (WINAPI *PFN_DestroyDriver)(HANDLE hDriver);
 
-// Connection
+// 连接管理
 typedef BOOL (WINAPI *PFN_DriverConnect)(HANDLE hDriver);
 typedef void (WINAPI *PFN_DriverDisconnect)(HANDLE hDriver);
 typedef BOOL (WINAPI *PFN_DriverInitialize)(HANDLE hDriver);
 typedef BOOL (WINAPI *PFN_DriverIsConnected)(HANDLE hDriver);
 
-// Configuration
+// 配置
 typedef BOOL (WINAPI *PFN_DriverConfigureWavelengths)(HANDLE hDriver, double* wavelengths, int count);
 typedef BOOL (WINAPI *PFN_DriverConfigureChannels)(HANDLE hDriver, int* channels, int count);
 typedef BOOL (WINAPI *PFN_DriverConfigureORL)(HANDLE hDriver, int channel, int method, int origin,
                                               double aOffset, double bOffset);
 
-// Measurement
+// 测量
 typedef BOOL (WINAPI *PFN_DriverTakeReference)(HANDLE hDriver, BOOL bOverride,
                                                double ilValue, double lengthValue);
 typedef BOOL (WINAPI *PFN_DriverTakeMeasurement)(HANDLE hDriver);
 typedef int  (WINAPI *PFN_DriverGetResults)(HANDLE hDriver, DriverMeasurementResult* results, int maxCount);
 
-// Info / Error
+// 信息 / 错误
 typedef BOOL (WINAPI *PFN_DriverGetDeviceInfo)(HANDLE hDriver, DriverDeviceInfo* info);
 typedef int  (WINAPI *PFN_DriverCheckError)(HANDLE hDriver, char* message, int messageSize);
 
-// Raw SCPI
+// 原始SCPI命令
 typedef BOOL (WINAPI *PFN_DriverSendCommand)(HANDLE hDriver, const char* command,
                                              char* response, int responseSize);
 
-// Logging
+// 日志
 typedef void (WINAPI *PFN_DriverLogCallback)(int level, const char* source, const char* message);
 typedef void (WINAPI *PFN_DriverSetLogCallback)(PFN_DriverLogCallback callback);
 
-// Santec-specific
+// Santec专用
 typedef BOOL (WINAPI *PFN_DriverSantecSetRLSensitivity)(HANDLE hDriver, int sensitivity);
 typedef BOOL (WINAPI *PFN_DriverSantecSetDUTLength)(HANDLE hDriver, int lengthBin);
 typedef BOOL (WINAPI *PFN_DriverSantecSetRLGain)(HANDLE hDriver, int gain);
 typedef BOOL (WINAPI *PFN_DriverSantecSetLocalMode)(HANDLE hDriver, BOOL enabled);
 
 // ---------------------------------------------------------------------------
-// CViaviSantecDllLoader
+// CViaviSantecDllLoader 类
 // ---------------------------------------------------------------------------
 
 class CViaviSantecDllLoader
@@ -122,21 +122,21 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // DLL lifecycle
+    // DLL 生命周期管理
     // -----------------------------------------------------------------------
 
     bool LoadDll(const char* dllPath)
     {
         if (m_hDll)
         {
-            printf("[Loader] DLL already loaded. Unload first.\n");
+            printf("[加载器] DLL已加载，请先卸载。\n");
             return false;
         }
 
         m_hDll = ::LoadLibraryA(dllPath);
         if (!m_hDll)
         {
-            printf("[Loader] LoadLibrary(\"%s\") failed, error=%lu\n", dllPath, GetLastError());
+            printf("[加载器] LoadLibrary(\"%s\") 失败，错误码=%lu\n", dllPath, GetLastError());
             return false;
         }
 
@@ -147,7 +147,7 @@ public:
             ++total; \
             varName = (decltype(varName))::GetProcAddress(m_hDll, exportName); \
             if (varName) ++resolved; \
-            else printf("[Loader] WARNING: %s not found\n", exportName);
+            else printf("[加载器] 警告: %s 未找到\n", exportName);
 
         LOAD_PROC(pfnCreateDriver,             "CreateDriver");
         LOAD_PROC(pfnDestroyDriver,            "DestroyDriver");
@@ -172,7 +172,7 @@ public:
 
         #undef LOAD_PROC
 
-        printf("[Loader] DLL loaded: %d/%d functions resolved.\n", resolved, total);
+        printf("[加载器] DLL已加载: %d/%d 个函数已解析。\n", resolved, total);
         return (resolved == total);
     }
 
@@ -202,25 +202,25 @@ public:
             pfnSantecSetDUTLength = NULL;
             pfnSantecSetRLGain = NULL;
             pfnSantecSetLocalMode = NULL;
-            printf("[Loader] DLL unloaded.\n");
+            printf("[加载器] DLL已卸载。\n");
         }
     }
 
     bool IsDllLoaded() const { return m_hDll != NULL; }
 
     // -----------------------------------------------------------------------
-    // Driver instance lifecycle
+    // 驱动实例生命周期管理
     // -----------------------------------------------------------------------
 
     bool CreateDriver(const char* type, const char* ip, int port, int slot)
     {
-        if (!pfnCreateDriver) { printf("[Loader] DLL not loaded.\n"); return false; }
-        if (m_hDriver) { printf("[Loader] Driver already created. Destroy first.\n"); return false; }
+        if (!pfnCreateDriver) { printf("[加载器] DLL未加载。\n"); return false; }
+        if (m_hDriver) { printf("[加载器] 驱动已创建，请先销毁。\n"); return false; }
 
         m_hDriver = pfnCreateDriver(type, ip, port, slot);
         if (!m_hDriver)
         {
-            printf("[Loader] CreateDriver failed.\n");
+            printf("[加载器] CreateDriver 失败。\n");
             return false;
         }
         return true;
@@ -238,7 +238,7 @@ public:
     HANDLE GetDriverHandle() const { return m_hDriver; }
 
     // -----------------------------------------------------------------------
-    // Connection
+    // 连接管理
     // -----------------------------------------------------------------------
 
     BOOL Connect()
@@ -265,7 +265,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // Configuration
+    // 配置
     // -----------------------------------------------------------------------
 
     BOOL ConfigureWavelengths(double* wavelengths, int count)
@@ -287,7 +287,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // Measurement
+    // 测量
     // -----------------------------------------------------------------------
 
     BOOL TakeReference(BOOL bOverride, double ilValue, double lengthValue)
@@ -309,7 +309,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // Info / Error
+    // 信息 / 错误
     // -----------------------------------------------------------------------
 
     BOOL GetDeviceInfo(DriverDeviceInfo* info)
@@ -325,7 +325,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // Raw SCPI
+    // 原始SCPI命令
     // -----------------------------------------------------------------------
 
     BOOL SendCommand(const char* command, char* response, int responseSize)
@@ -335,7 +335,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // Logging
+    // 日志
     // -----------------------------------------------------------------------
 
     void SetLogCallback(PFN_DriverLogCallback callback)
@@ -344,7 +344,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // Santec-specific
+    // Santec专用功能
     // -----------------------------------------------------------------------
 
     BOOL SantecSetRLSensitivity(int sensitivity)
@@ -372,10 +372,10 @@ public:
     }
 
 private:
-    HMODULE m_hDll;
-    HANDLE  m_hDriver;
+    HMODULE m_hDll;      // DLL模块句柄
+    HANDLE  m_hDriver;   // 驱动实例句柄
 
-    // Function pointers -- resolved at LoadDll time
+    // 函数指针 -- 在 LoadDll 时解析
     PFN_CreateDriver                pfnCreateDriver;
     PFN_DestroyDriver               pfnDestroyDriver;
     PFN_DriverConnect               pfnConnect;

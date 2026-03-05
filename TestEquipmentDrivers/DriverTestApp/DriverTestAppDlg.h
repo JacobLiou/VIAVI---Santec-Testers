@@ -45,7 +45,7 @@ protected:
     afx_msg LRESULT OnWorkerDone(WPARAM wParam, LPARAM lParam);
 
 private:
-    // UI helpers
+    // UI 辅助函数
     void AppendLog(const CString& text);
     void UpdateStatus(const CString& status);
     void EnableControls(bool connected);
@@ -55,7 +55,7 @@ private:
     std::vector<double> GetSelectedWavelengths();
     std::vector<int> GetSelectedChannels();
 
-    // Async worker infrastructure
+    // 异步工作线程基础设施
     struct WorkerResult
     {
         bool success;
@@ -68,7 +68,7 @@ private:
 
     void RunAsync(const CString& operationName, std::function<WorkerResult*()> task);
 
-    // Controls
+    // 控件
     CComboBox   m_comboDeviceType;
     CEdit       m_editIP;
     CEdit       m_editPort;
@@ -87,7 +87,7 @@ private:
     CListCtrl   m_listResults;
     CEdit       m_editLog;
 
-    // State
+    // 状态
     ViaviNSantecTester::IEquipmentDriver* m_pDriver;
     bool m_bBusy;
 };

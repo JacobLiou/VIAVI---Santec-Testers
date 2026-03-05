@@ -24,7 +24,7 @@ COSXSimServer::COSXSimServer()
 {
     srand(static_cast<unsigned>(time(NULL)));
 
-    // Default: one 1Ax24 module
+    // 默认：一个 1Ax24 模块
     SimModule mod;
     mod.name = "SX 1Ax24";
     mod.configType = 0;
@@ -57,7 +57,7 @@ void COSXSimServer::ClearModules()
 }
 
 // ---------------------------------------------------------------------------
-// Async operation tracking
+// 异步操作跟踪
 // ---------------------------------------------------------------------------
 
 void COSXSimServer::BeginOperation()
@@ -75,7 +75,7 @@ bool COSXSimServer::IsOperationBusy() const
 }
 
 // ---------------------------------------------------------------------------
-// Lifecycle
+// 生命周期
 // ---------------------------------------------------------------------------
 
 bool COSXSimServer::Start(int port)
@@ -111,7 +111,7 @@ void COSXSimServer::Stop()
 }
 
 // ---------------------------------------------------------------------------
-// Server thread
+// 服务器线程
 // ---------------------------------------------------------------------------
 
 DWORD WINAPI COSXSimServer::ServerThreadProc(LPVOID param)
@@ -208,7 +208,7 @@ void COSXSimServer::HandleClient(SOCKET clientSocket)
                 cmd.pop_back();
             if (cmd.empty()) continue;
 
-            // Handle chained commands separated by ';'
+            // 处理以 ';' 分隔的链式命令
             std::vector<std::string> subCmds;
             std::istringstream cmdStream(cmd);
             std::string subCmd;
@@ -248,7 +248,7 @@ void COSXSimServer::HandleClient(SOCKET clientSocket)
 }
 
 // ---------------------------------------------------------------------------
-// SCPI Command Processing (OSX User Manual Tables 4 & 5)
+// SCPI 命令处理（OSX 用户手册 表 4 和 表 5）
 // ---------------------------------------------------------------------------
 
 std::string COSXSimServer::ProcessCommand(const std::string& cmd)
@@ -257,7 +257,7 @@ std::string COSXSimServer::ProcessCommand(const std::string& cmd)
     for (size_t i = 0; i < upper.size(); ++i)
         upper[i] = static_cast<char>(toupper(static_cast<unsigned char>(upper[i])));
 
-    // ==== IEEE 488.2 Common Commands (Table 4) ====
+    // ==== IEEE 488.2 通用命令 (表 4) ====
 
     if (upper == "*IDN?")
     {
@@ -348,7 +348,7 @@ std::string COSXSimServer::ProcessCommand(const std::string& cmd)
         return "0";
     }
 
-    // ==== Status Registers (Table 4) ====
+    // ==== 状态寄存器 (表 4) ====
 
     if (upper == ":STAT:OPER:COND?" || upper == "STAT:OPER:COND?")
     {
@@ -374,7 +374,7 @@ std::string COSXSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ==== System Commands (Table 4) ====
+    // ==== 系统命令 (表 4) ====
 
     if (upper == ":SYST:ERR?" || upper == "SYST:ERR?" ||
         upper == ":SYST:ERR:NEXT?" || upper == "SYST:ERR:NEXT?")
@@ -396,7 +396,7 @@ std::string COSXSimServer::ProcessCommand(const std::string& cmd)
         return "1999.0";
     }
 
-    // ==== Network (Table 4) ====
+    // ==== 网络 (表 4) ====
 
     if (upper == ":SYST:COMM:LAN:ADDR?" || upper == "SYST:COMM:LAN:ADDR?")
         return m_ipAddress;
@@ -447,7 +447,7 @@ std::string COSXSimServer::ProcessCommand(const std::string& cmd)
     if (upper == ":SYST:COMM:LAN:MAC?" || upper == "SYST:COMM:LAN:MAC?")
         return m_macAddress;
 
-    // ==== CLOSe commands (Table 5) ====
+    // ==== CLOSe 命令 (表 5) ====
 
     if (upper == "CLOSE?" || upper == "CLOSE?")
     {
@@ -462,7 +462,7 @@ std::string COSXSimServer::ProcessCommand(const std::string& cmd)
 
     if (upper == "CLOSE" || upper == "CLOSE")
     {
-        // CLOSe with no argument = move to next channel
+        // CLOSe 无参数 = 切换到下一个通道
         if (m_selectedModule < (int)m_modules.size())
         {
             SimModule& mod = m_modules[m_selectedModule];
@@ -498,7 +498,7 @@ std::string COSXSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ==== CFG:SWT:END? (Table 5) ====
+    // ==== CFG:SWT:END? (表 5) ====
 
     if (upper == "CFG:SWT:END?")
     {
@@ -511,7 +511,7 @@ std::string COSXSimServer::ProcessCommand(const std::string& cmd)
         return "0";
     }
 
-    // ==== MODule commands (Table 5) ====
+    // ==== 模块命令 (表 5) ====
 
     if (upper == "MODULE:CATALOG?" || upper == "MODULE:CAT?")
     {
@@ -535,8 +535,8 @@ std::string COSXSimServer::ProcessCommand(const std::string& cmd)
     if (upper.find("MODULE") == 0 && upper.find(":INFO?") != std::string::npos)
     {
         int modIdx = 0;
-        // Extract module index from "MODULE#:INFO?"
-        size_t numStart = 6; // after "MODULE"
+        // 从 "MODULE#:INFO?" 中提取模块索引
+        size_t numStart = 6; // "MODULE" 之后
         size_t colonPos = upper.find(':', numStart);
         if (colonPos != std::string::npos && colonPos > numStart)
             modIdx = atoi(upper.substr(numStart, colonPos - numStart).c_str());
@@ -562,7 +562,7 @@ std::string COSXSimServer::ProcessCommand(const std::string& cmd)
 
     if (upper == "MODULE:SELECT" || upper == "MODULE:SEL")
     {
-        // Select next module
+        // 选择下一个模块
         m_selectedModule++;
         if (m_selectedModule >= (int)m_modules.size())
             m_selectedModule = 0;
@@ -590,7 +590,7 @@ std::string COSXSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ==== ROUTe commands (Table 5) ====
+    // ==== 路由命令 (表 5) ====
 
     // ROUTe:CHANnel:ALL #
     if (upper.find("ROUTE:CHANNEL:ALL") == 0 || upper.find("ROUTE:CHAN:ALL") == 0)
@@ -614,7 +614,7 @@ std::string COSXSimServer::ProcessCommand(const std::string& cmd)
     if (upper.find("ROUTE") == 0)
     {
         int modIdx = 0;
-        size_t numStart = 5; // after "ROUTE"
+        size_t numStart = 5; // "ROUTE" 之后
         size_t colonPos = upper.find(':', numStart);
         if (colonPos != std::string::npos && colonPos > numStart)
             modIdx = atoi(upper.substr(numStart, colonPos - numStart).c_str());
@@ -637,7 +637,7 @@ std::string COSXSimServer::ProcessCommand(const std::string& cmd)
             return buf;
         }
 
-        // ROUTe#:CHANnel # or ROUTe#:CLOSe #
+        // ROUTe#:CHANnel # 或 ROUTe#:CLOSe #
         if (afterColon.find("CHANNEL") == 0 || afterColon.find("CHAN") == 0 ||
             afterColon.find("CLOSE") == 0 || afterColon.find("CLOS") == 0)
         {
@@ -697,7 +697,7 @@ std::string COSXSimServer::ProcessCommand(const std::string& cmd)
         }
     }
 
-    // ==== LCL (Table 5) ====
+    // ==== LCL (表 5) ====
 
     if (upper == "LCL?")
     {
@@ -715,7 +715,7 @@ std::string COSXSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ==== TEST:NOTIFY (Table 5) ====
+    // ==== TEST:NOTIFY (表 5) ====
 
     if (upper.find("TEST:NOTIFY") == 0)
     {
@@ -723,14 +723,14 @@ std::string COSXSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ==== *RCL / *SAV (Table 4) ====
+    // ==== *RCL / *SAV (表 4) ====
 
     if (upper.find("*RCL") == 0 || upper.find("*SAV") == 0)
     {
         return "";
     }
 
-    // ==== Unknown command ====
+    // ==== 未知命令 ====
     Log("  [WARN] Unknown command: %s", cmd.c_str());
     {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -740,7 +740,7 @@ std::string COSXSimServer::ProcessCommand(const std::string& cmd)
 }
 
 // ---------------------------------------------------------------------------
-// Logging
+// 日志
 // ---------------------------------------------------------------------------
 
 void COSXSimServer::Log(const char* fmt, ...)

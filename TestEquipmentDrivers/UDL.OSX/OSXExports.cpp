@@ -11,7 +11,7 @@ static IOSXDriver* ToDriver(HANDLE h)
 }
 
 // ---------------------------------------------------------------------------
-// Lifecycle
+// 生命周期
 // ---------------------------------------------------------------------------
 
 OSX_C_API HANDLE WINAPI OSX_CreateDriver(const char* ip, int port)
@@ -39,7 +39,7 @@ OSX_C_API void WINAPI OSX_DestroyDriver(HANDLE hDriver)
 }
 
 // ---------------------------------------------------------------------------
-// Connection
+// 连接
 // ---------------------------------------------------------------------------
 
 OSX_C_API BOOL WINAPI OSX_Connect(HANDLE hDriver)
@@ -73,7 +73,7 @@ OSX_C_API BOOL WINAPI OSX_IsConnected(HANDLE hDriver)
 }
 
 // ---------------------------------------------------------------------------
-// Device identification
+// 设备识别
 // ---------------------------------------------------------------------------
 
 OSX_C_API BOOL WINAPI OSX_GetDeviceInfo(HANDLE hDriver, CDeviceInfo* info)
@@ -118,7 +118,7 @@ OSX_C_API BOOL WINAPI OSX_GetSystemVersion(HANDLE hDriver, char* version, int ve
 }
 
 // ---------------------------------------------------------------------------
-// Module management
+// 模块管理
 // ---------------------------------------------------------------------------
 
 OSX_C_API int WINAPI OSX_GetModuleCount(HANDLE hDriver)
@@ -188,7 +188,7 @@ OSX_C_API int WINAPI OSX_GetSelectedModule(HANDLE hDriver)
 }
 
 // ---------------------------------------------------------------------------
-// Channel switching
+// 通道切换
 // ---------------------------------------------------------------------------
 
 OSX_C_API BOOL WINAPI OSX_SwitchChannel(HANDLE hDriver, int channel)
@@ -220,7 +220,7 @@ OSX_C_API int WINAPI OSX_GetChannelCount(HANDLE hDriver)
 }
 
 // ---------------------------------------------------------------------------
-// Multi-module routing
+// 多模块路由
 // ---------------------------------------------------------------------------
 
 OSX_C_API BOOL WINAPI OSX_RouteChannel(HANDLE hDriver, int moduleIndex, int channel)
@@ -266,7 +266,7 @@ OSX_C_API BOOL WINAPI OSX_HomeModule(HANDLE hDriver, int moduleIndex)
 }
 
 // ---------------------------------------------------------------------------
-// Control
+// 控制
 // ---------------------------------------------------------------------------
 
 OSX_C_API BOOL WINAPI OSX_SetLocalMode(HANDLE hDriver, BOOL local)
@@ -298,7 +298,7 @@ OSX_C_API BOOL WINAPI OSX_Reset(HANDLE hDriver)
 }
 
 // ---------------------------------------------------------------------------
-// Network configuration
+// 网络配置
 // ---------------------------------------------------------------------------
 
 OSX_C_API BOOL WINAPI OSX_GetNetworkInfo(HANDLE hDriver, char* ip, char* gateway,
@@ -320,7 +320,7 @@ OSX_C_API BOOL WINAPI OSX_GetNetworkInfo(HANDLE hDriver, char* ip, char* gateway
 }
 
 // ---------------------------------------------------------------------------
-// Operation synchronization
+// 操作同步
 // ---------------------------------------------------------------------------
 
 OSX_C_API BOOL WINAPI OSX_WaitForOperation(HANDLE hDriver, int timeoutMs)
@@ -331,7 +331,7 @@ OSX_C_API BOOL WINAPI OSX_WaitForOperation(HANDLE hDriver, int timeoutMs)
 }
 
 // ---------------------------------------------------------------------------
-// Raw SCPI
+// 原始 SCPI
 // ---------------------------------------------------------------------------
 
 OSX_C_API BOOL WINAPI OSX_SendCommand(HANDLE hDriver, const char* command,
@@ -361,7 +361,7 @@ OSX_C_API BOOL WINAPI OSX_SendCommand(HANDLE hDriver, const char* command,
 }
 
 // ---------------------------------------------------------------------------
-// Logging
+// 日志
 // ---------------------------------------------------------------------------
 
 OSX_C_API void WINAPI OSX_SetLogCallback(OSXLogCallback callback)

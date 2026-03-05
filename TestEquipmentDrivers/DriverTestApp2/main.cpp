@@ -2,37 +2,37 @@
 #include "ViaviSantecDllLoader.h"
 
 // ---------------------------------------------------------------------------
-// DriverTestApp2 -- Dynamic-loading debug tool for UDL.ViaviNSantecTester.dll
+// DriverTestApp2 -- UDL.ViaviNSantecTester.dll 动态加载调试工具
 //
-// Demonstrates the production framework pattern:
+// 演示生产框架模式：
 //   1. LoadLibrary("UDL.ViaviNSantecTester.dll")
-//   2. GetProcAddress for each exported function
-//   3. Call through function pointers
-//   4. FreeLibrary on exit
+//   2. GetProcAddress 获取每个导出函数
+//   3. 通过函数指针调用
+//   4. 退出时 FreeLibrary
 //
-// No .h from UDL.ViaviNSantecTester is included.  No .lib is linked.
+// 不包含 UDL.ViaviNSantecTester 的任何 .h 文件。不链接任何 .lib 文件。
 // ---------------------------------------------------------------------------
 
 static CViaviSantecDllLoader g_loader;
 
 // ---------------------------------------------------------------------------
-// Log callback (called from inside the DLL)
+// 日志回调（从DLL内部调用）
 // ---------------------------------------------------------------------------
 static void WINAPI LogHandler(int level, const char* source, const char* message)
 {
     const char* tag = "???";
     switch (level)
     {
-    case 0: tag = "DBG"; break;
-    case 1: tag = "INF"; break;
-    case 2: tag = "WRN"; break;
-    case 3: tag = "ERR"; break;
+    case 0: tag = "调试"; break;
+    case 1: tag = "信息"; break;
+    case 2: tag = "警告"; break;
+    case 3: tag = "错误"; break;
     }
     printf("  [%s][%s] %s\n", tag, source, message);
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
+// 辅助函数
 // ---------------------------------------------------------------------------
 
 static std::string ReadLine(const char* prompt)
@@ -62,60 +62,60 @@ static double ReadDouble(const char* prompt, double defaultVal)
 }
 
 // ---------------------------------------------------------------------------
-// Menu
+// 菜单
 // ---------------------------------------------------------------------------
 
 static void PrintBanner()
 {
     printf("\n");
     printf("====================================================\n");
-    printf("  DriverTestApp2 -- Dynamic Loading Debug Tool v1.0\n");
-    printf("  Viavi & Santec (LoadLibrary, no static import)\n");
+    printf("  DriverTestApp2 -- 动态加载调试工具 v1.0\n");
+    printf("  Viavi & Santec (LoadLibrary, 无静态导入)\n");
     printf("====================================================\n\n");
 }
 
 static void PrintHelp()
 {
-    printf("\n--- DLL Management ---\n");
-    printf("  0  - Load UDL.ViaviNSantecTester.dll\n");
-    printf("  00 - Unload DLL\n");
-    printf("\n--- Connection ---\n");
-    printf("  1  - Create driver + Connect + Initialize\n");
-    printf("  2  - Disconnect + Destroy driver\n");
-    printf("  3  - Show connection status\n");
-    printf("\n--- Device Info ---\n");
-    printf("  10 - Get device info (*IDN?)\n");
-    printf("  11 - Check error\n");
-    printf("\n--- Configuration ---\n");
-    printf("  20 - Configure wavelengths\n");
-    printf("  21 - Configure channels\n");
-    printf("  22 - Configure ORL (Viavi only)\n");
-    printf("\n--- Measurement ---\n");
-    printf("  30 - Take reference\n");
-    printf("  31 - Take measurement\n");
-    printf("  32 - Get results\n");
-    printf("  33 - Full cycle (reference + measurement + results)\n");
-    printf("\n--- Santec Specific ---\n");
-    printf("  40 - Set RL sensitivity\n");
-    printf("  41 - Set DUT length bin\n");
-    printf("  42 - Set RL gain mode\n");
-    printf("  43 - Set local mode\n");
-    printf("\n--- Raw SCPI ---\n");
-    printf("  60 - Send raw SCPI command\n");
-    printf("\n--- Other ---\n");
-    printf("  h  - Help\n");
-    printf("  q  - Quit\n\n");
+    printf("\n--- DLL 管理 ---\n");
+    printf("  0  - 加载 UDL.ViaviNSantecTester.dll\n");
+    printf("  00 - 卸载 DLL\n");
+    printf("\n--- 连接 ---\n");
+    printf("  1  - 创建驱动 + 连接 + 初始化\n");
+    printf("  2  - 断开连接 + 销毁驱动\n");
+    printf("  3  - 显示连接状态\n");
+    printf("\n--- 设备信息 ---\n");
+    printf("  10 - 获取设备信息 (*IDN?)\n");
+    printf("  11 - 检查错误\n");
+    printf("\n--- 配置 ---\n");
+    printf("  20 - 配置波长\n");
+    printf("  21 - 配置通道\n");
+    printf("  22 - 配置 ORL (仅Viavi)\n");
+    printf("\n--- 测量 ---\n");
+    printf("  30 - 取参考\n");
+    printf("  31 - 执行测量\n");
+    printf("  32 - 获取结果\n");
+    printf("  33 - 完整周期 (参考 + 测量 + 结果)\n");
+    printf("\n--- Santec 专用 ---\n");
+    printf("  40 - 设置 RL 灵敏度\n");
+    printf("  41 - 设置 DUT 长度档位\n");
+    printf("  42 - 设置 RL 增益模式\n");
+    printf("  43 - 设置本地模式\n");
+    printf("\n--- 原始 SCPI ---\n");
+    printf("  60 - 发送原始 SCPI 命令\n");
+    printf("\n--- 其他 ---\n");
+    printf("  h  - 帮助\n");
+    printf("  q  - 退出\n\n");
 }
 
 // ---------------------------------------------------------------------------
-// Guards
+// 检查函数
 // ---------------------------------------------------------------------------
 
 static bool CheckDll()
 {
     if (!g_loader.IsDllLoaded())
     {
-        printf("DLL not loaded. Use '0' to load first.\n");
+        printf("DLL 未加载。请先使用 '0' 加载。\n");
         return false;
     }
     return true;
@@ -126,36 +126,36 @@ static bool CheckConnected()
     if (!CheckDll()) return false;
     if (!g_loader.GetDriverHandle() || !g_loader.IsConnected())
     {
-        printf("Not connected. Use '1' to connect first.\n");
+        printf("未连接。请先使用 '1' 连接。\n");
         return false;
     }
     return true;
 }
 
 // ---------------------------------------------------------------------------
-// Commands
+// 命令实现
 // ---------------------------------------------------------------------------
 
 static void DoLoadDll()
 {
     if (g_loader.IsDllLoaded())
     {
-        printf("DLL already loaded.\n");
+        printf("DLL 已加载。\n");
         return;
     }
 
-    std::string path = ReadLine("DLL path [UDL.ViaviNSantecTester.dll]: ");
+    std::string path = ReadLine("DLL 路径 [UDL.ViaviNSantecTester.dll]: ");
     if (path.empty()) path = "UDL.ViaviNSantecTester.dll";
 
     if (g_loader.LoadDll(path.c_str()))
     {
-        printf("DLL loaded successfully.\n");
+        printf("DLL 加载成功。\n");
         g_loader.SetLogCallback(LogHandler);
-        printf("Log callback registered.\n");
+        printf("日志回调已注册。\n");
     }
     else
     {
-        printf("Failed to load DLL.\n");
+        printf("DLL 加载失败。\n");
     }
 }
 
@@ -163,7 +163,7 @@ static void DoUnloadDll()
 {
     if (!g_loader.IsDllLoaded())
     {
-        printf("DLL not loaded.\n");
+        printf("DLL 未加载。\n");
         return;
     }
     g_loader.DestroyDriver();
@@ -175,59 +175,59 @@ static void DoConnect()
     if (!CheckDll()) return;
     if (g_loader.GetDriverHandle())
     {
-        printf("Driver already created. Destroy first.\n");
+        printf("驱动已创建。请先销毁。\n");
         return;
     }
 
-    printf("Driver type:\n");
+    printf("驱动类型:\n");
     printf("  1 - Viavi PCT\n");
     printf("  2 - Santec RL1\n");
-    int typeChoice = ReadInt("Choice [1]: ", 1);
+    int typeChoice = ReadInt("选择 [1]: ", 1);
     const char* typeStr = (typeChoice == 2) ? "santec" : "viavi";
 
-    std::string ip = ReadLine("IP address [10.14.132.194]: ");
+    std::string ip = ReadLine("IP 地址 [10.14.132.194]: ");
     if (ip.empty()) ip = "10.14.132.194";
 
-    int port = ReadInt("Port [0=default]: ", 0);
+    int port = ReadInt("端口 [0=默认]: ", 0);
     int slot = 0;
     if (typeChoice != 2)
-        slot = ReadInt("Slot [3]: ", 3);
+        slot = ReadInt("插槽 [3]: ", 3);
 
-    printf("Creating %s driver for %s:%d (slot=%d)...\n", typeStr, ip.c_str(), port, slot);
+    printf("正在创建 %s 驱动，目标 %s:%d (插槽=%d)...\n", typeStr, ip.c_str(), port, slot);
     if (!g_loader.CreateDriver(typeStr, ip.c_str(), port, slot))
     {
-        printf("CreateDriver failed.\n");
+        printf("CreateDriver 失败。\n");
         return;
     }
 
-    printf("Connecting...\n");
+    printf("正在连接...\n");
     if (!g_loader.Connect())
     {
-        printf("Connect failed.\n");
+        printf("连接失败。\n");
         g_loader.DestroyDriver();
         return;
     }
-    printf("Connected.\n");
+    printf("已连接。\n");
 
-    printf("Initializing...\n");
+    printf("正在初始化...\n");
     if (g_loader.Initialize())
     {
-        printf("Initialized.\n");
+        printf("已初始化。\n");
 
         DriverDeviceInfo di;
         memset(&di, 0, sizeof(di));
         if (g_loader.GetDeviceInfo(&di))
         {
-            printf("  Manufacturer: %s\n", di.manufacturer);
-            printf("  Model:        %s\n", di.model);
-            printf("  Serial:       %s\n", di.serialNumber);
-            printf("  Firmware:     %s\n", di.firmwareVersion);
-            printf("  Slot:         %d\n", di.slot);
+            printf("  制造商: %s\n", di.manufacturer);
+            printf("  型号:   %s\n", di.model);
+            printf("  序列号: %s\n", di.serialNumber);
+            printf("  固件:   %s\n", di.firmwareVersion);
+            printf("  插槽:   %d\n", di.slot);
         }
     }
     else
     {
-        printf("Initialize failed (connection still up).\n");
+        printf("初始化失败 (连接仍保持)。\n");
     }
 }
 
@@ -235,20 +235,20 @@ static void DoDisconnect()
 {
     if (!g_loader.GetDriverHandle())
     {
-        printf("No driver instance.\n");
+        printf("无驱动实例。\n");
         return;
     }
     g_loader.Disconnect();
     g_loader.DestroyDriver();
-    printf("Disconnected and driver destroyed.\n");
+    printf("已断开连接并销毁驱动。\n");
 }
 
 static void DoConfigureWavelengths()
 {
     if (!CheckConnected()) return;
 
-    printf("Enter wavelengths in nm, comma-separated (e.g. 1310,1550):\n");
-    std::string s = ReadLine("Wavelengths [1310,1550]: ");
+    printf("输入波长(nm)，逗号分隔 (例如 1310,1550):\n");
+    std::string s = ReadLine("波长 [1310,1550]: ");
     if (s.empty()) s = "1310,1550";
 
     std::vector<double> wl;
@@ -264,23 +264,23 @@ static void DoConfigureWavelengths()
 
     if (wl.empty())
     {
-        printf("No valid wavelengths.\n");
+        printf("无有效波长。\n");
         return;
     }
 
-    printf("Configuring %d wavelength(s)...\n", (int)wl.size());
+    printf("正在配置 %d 个波长...\n", (int)wl.size());
     if (g_loader.ConfigureWavelengths(wl.data(), (int)wl.size()))
-        printf("Wavelengths configured.\n");
+        printf("波长配置完成。\n");
     else
-        printf("ConfigureWavelengths failed.\n");
+        printf("ConfigureWavelengths 失败。\n");
 }
 
 static void DoConfigureChannels()
 {
     if (!CheckConnected()) return;
 
-    printf("Enter channels, comma-separated (e.g. 1,2,3,4):\n");
-    std::string s = ReadLine("Channels [1]: ");
+    printf("输入通道，逗号分隔 (例如 1,2,3,4):\n");
+    std::string s = ReadLine("通道 [1]: ");
     if (s.empty()) s = "1";
 
     std::vector<int> ch;
@@ -296,70 +296,70 @@ static void DoConfigureChannels()
 
     if (ch.empty())
     {
-        printf("No valid channels.\n");
+        printf("无有效通道。\n");
         return;
     }
 
-    printf("Configuring %d channel(s)...\n", (int)ch.size());
+    printf("正在配置 %d 个通道...\n", (int)ch.size());
     if (g_loader.ConfigureChannels(ch.data(), (int)ch.size()))
-        printf("Channels configured.\n");
+        printf("通道配置完成。\n");
     else
-        printf("ConfigureChannels failed.\n");
+        printf("ConfigureChannels 失败。\n");
 }
 
 static void DoConfigureORL()
 {
     if (!CheckConnected()) return;
 
-    int channel = ReadInt("ORL channel [1]: ", 1);
-    printf("ORL method: 0=CONTINUOUS, 1=PULSE\n");
-    int method = ReadInt("Method [0]: ", 0);
-    printf("ORL origin: 0=INTERNAL, 1=EXTERNAL\n");
-    int origin = ReadInt("Origin [0]: ", 0);
-    double aOffset = ReadDouble("A-offset [0.0]: ", 0.0);
-    double bOffset = ReadDouble("B-offset [0.0]: ", 0.0);
+    int channel = ReadInt("ORL 通道 [1]: ", 1);
+    printf("ORL 方法: 0=连续, 1=脉冲\n");
+    int method = ReadInt("方法 [0]: ", 0);
+    printf("ORL 源: 0=内部, 1=外部\n");
+    int origin = ReadInt("源 [0]: ", 0);
+    double aOffset = ReadDouble("A偏移 [0.0]: ", 0.0);
+    double bOffset = ReadDouble("B偏移 [0.0]: ", 0.0);
 
     if (g_loader.ConfigureORL(channel, method, origin, aOffset, bOffset))
-        printf("ORL configured.\n");
+        printf("ORL 配置完成。\n");
     else
-        printf("ConfigureORL failed (Viavi only).\n");
+        printf("ConfigureORL 失败 (仅Viavi支持)。\n");
 }
 
 static void DoTakeReference()
 {
     if (!CheckConnected()) return;
 
-    printf("Override reference values? (1=yes, 0=auto)\n");
-    int bOverride = ReadInt("Override [0]: ", 0);
+    printf("是否覆盖参考值? (1=是, 0=自动)\n");
+    int bOverride = ReadInt("覆盖 [0]: ", 0);
     double ilVal = 0.0, lenVal = 0.0;
     if (bOverride)
     {
-        ilVal = ReadDouble("IL override value [0.0]: ", 0.0);
-        lenVal = ReadDouble("Length override value [0.0]: ", 0.0);
+        ilVal = ReadDouble("IL 覆盖值 [0.0]: ", 0.0);
+        lenVal = ReadDouble("长度覆盖值 [0.0]: ", 0.0);
     }
 
-    printf("Taking reference...\n");
+    printf("正在取参考...\n");
     DWORD t0 = GetTickCount();
     BOOL ok = g_loader.TakeReference(bOverride, ilVal, lenVal);
     DWORD dt = GetTickCount() - t0;
     if (ok)
-        printf("Reference taken (%lu ms).\n", dt);
+        printf("参考完成 (%lu ms)。\n", dt);
     else
-        printf("TakeReference failed (%lu ms).\n", dt);
+        printf("TakeReference 失败 (%lu ms)。\n", dt);
 }
 
 static void DoTakeMeasurement()
 {
     if (!CheckConnected()) return;
 
-    printf("Taking measurement...\n");
+    printf("正在测量...\n");
     DWORD t0 = GetTickCount();
     BOOL ok = g_loader.TakeMeasurement();
     DWORD dt = GetTickCount() - t0;
     if (ok)
-        printf("Measurement complete (%lu ms).\n", dt);
+        printf("测量完成 (%lu ms)。\n", dt);
     else
-        printf("TakeMeasurement failed (%lu ms).\n", dt);
+        printf("TakeMeasurement 失败 (%lu ms)。\n", dt);
 }
 
 static void DoGetResults()
@@ -369,16 +369,16 @@ static void DoGetResults()
     DriverMeasurementResult results[64];
     memset(results, 0, sizeof(results));
     int count = g_loader.GetResults(results, 64);
-    printf("  %d result(s):\n", count);
+    printf("  %d 个结果:\n", count);
     for (int i = 0; i < count; ++i)
     {
-        printf("  [%d] ch=%d wl=%.1fnm IL=%.3fdB RL=%.3fdB",
+        printf("  [%d] 通道=%d 波长=%.1fnm IL=%.3fdB RL=%.3fdB",
                i, results[i].channel, results[i].wavelength,
                results[i].insertionLoss, results[i].returnLoss);
         if (results[i].returnLossA != 0.0 || results[i].returnLossB != 0.0)
             printf(" RLA=%.3f RLB=%.3f", results[i].returnLossA, results[i].returnLossB);
         if (results[i].returnLossTotal != 0.0)
-            printf(" RLTotal=%.3f", results[i].returnLossTotal);
+            printf(" RL总=%.3f", results[i].returnLossTotal);
         if (results[i].dutLength != 0.0)
             printf(" DUT=%.2fm", results[i].dutLength);
         printf("\n");
@@ -389,25 +389,25 @@ static void DoFullCycle()
 {
     if (!CheckConnected()) return;
 
-    printf("=== Full measurement cycle ===\n");
+    printf("=== 完整测量周期 ===\n");
 
-    printf("Taking reference (auto)...\n");
+    printf("正在取参考 (自动)...\n");
     DWORD t0 = GetTickCount();
     if (!g_loader.TakeReference(FALSE, 0.0, 0.0))
     {
-        printf("TakeReference failed.\n");
+        printf("TakeReference 失败。\n");
         return;
     }
-    printf("Reference OK (%lu ms).\n", GetTickCount() - t0);
+    printf("参考完成 (%lu ms)。\n", GetTickCount() - t0);
 
-    printf("Taking measurement...\n");
+    printf("正在测量...\n");
     t0 = GetTickCount();
     if (!g_loader.TakeMeasurement())
     {
-        printf("TakeMeasurement failed.\n");
+        printf("TakeMeasurement 失败。\n");
         return;
     }
-    printf("Measurement OK (%lu ms).\n", GetTickCount() - t0);
+    printf("测量完成 (%lu ms)。\n", GetTickCount() - t0);
 
     DoGetResults();
 }
@@ -416,14 +416,14 @@ static void PrintResultsSummary(DriverMeasurementResult* results, int count)
 {
     for (int i = 0; i < count; ++i)
     {
-        printf("  [%d] ch=%d wl=%.1fnm IL=%.3fdB RL=%.3fdB\n",
+        printf("  [%d] 通道=%d 波长=%.1fnm IL=%.3fdB RL=%.3fdB\n",
                i, results[i].channel, results[i].wavelength,
                results[i].insertionLoss, results[i].returnLoss);
     }
 }
 
 // ---------------------------------------------------------------------------
-// main
+// 主函数
 // ---------------------------------------------------------------------------
 
 int main(int argc, char* argv[])
@@ -448,19 +448,19 @@ int main(int argc, char* argv[])
         // --- DLL ---
         case 0:  DoLoadDll(); break;
 
-        // --- Connection ---
+        // --- 连接 ---
         case 1:  DoConnect(); break;
         case 2:  DoDisconnect(); break;
         case 3:
             if (CheckDll())
             {
-                printf("DLL loaded: YES\n");
-                printf("Driver created: %s\n", g_loader.GetDriverHandle() ? "YES" : "NO");
-                printf("Connected: %s\n", g_loader.IsConnected() ? "YES" : "NO");
+                printf("DLL已加载: 是\n");
+                printf("驱动已创建: %s\n", g_loader.GetDriverHandle() ? "是" : "否");
+                printf("已连接: %s\n", g_loader.IsConnected() ? "是" : "否");
             }
             break;
 
-        // --- Device Info ---
+        // --- 设备信息 ---
         case 10:
             if (CheckConnected())
             {
@@ -468,14 +468,14 @@ int main(int argc, char* argv[])
                 memset(&di, 0, sizeof(di));
                 if (g_loader.GetDeviceInfo(&di))
                 {
-                    printf("  Manufacturer: %s\n", di.manufacturer);
-                    printf("  Model:        %s\n", di.model);
-                    printf("  Serial:       %s\n", di.serialNumber);
-                    printf("  Firmware:     %s\n", di.firmwareVersion);
-                    printf("  Slot:         %d\n", di.slot);
+                    printf("  制造商: %s\n", di.manufacturer);
+                    printf("  型号:   %s\n", di.model);
+                    printf("  序列号: %s\n", di.serialNumber);
+                    printf("  固件:   %s\n", di.firmwareVersion);
+                    printf("  插槽:   %d\n", di.slot);
                 }
                 else
-                    printf("  GetDeviceInfo failed.\n");
+                    printf("  GetDeviceInfo 失败。\n");
             }
             break;
 
@@ -484,80 +484,80 @@ int main(int argc, char* argv[])
             {
                 char msg[256] = {};
                 int code = g_loader.CheckError(msg, sizeof(msg));
-                printf("  Error code: %d\n", code);
-                printf("  Message:    %s\n", msg);
+                printf("  错误码: %d\n", code);
+                printf("  消息:   %s\n", msg);
             }
             break;
 
-        // --- Configuration ---
+        // --- 配置 ---
         case 20: DoConfigureWavelengths(); break;
         case 21: DoConfigureChannels(); break;
         case 22: DoConfigureORL(); break;
 
-        // --- Measurement ---
+        // --- 测量 ---
         case 30: DoTakeReference(); break;
         case 31: DoTakeMeasurement(); break;
         case 32: DoGetResults(); break;
         case 33: DoFullCycle(); break;
 
-        // --- Santec Specific ---
+        // --- Santec 专用 ---
         case 40:
             if (CheckConnected())
             {
-                printf("RL Sensitivity: 0=FAST (<1.5s, RL<=75dB), 1=STANDARD (<5s, RL<=85dB)\n");
-                int sens = ReadInt("Sensitivity [0]: ", 0);
+                printf("RL 灵敏度: 0=快速 (<1.5s, RL<=75dB), 1=标准 (<5s, RL<=85dB)\n");
+                int sens = ReadInt("灵敏度 [0]: ", 0);
                 if (g_loader.SantecSetRLSensitivity(sens))
-                    printf("RL sensitivity set to %d.\n", sens);
+                    printf("RL 灵敏度已设置为 %d。\n", sens);
                 else
-                    printf("Failed (Santec only).\n");
+                    printf("失败 (仅Santec支持)。\n");
             }
             break;
 
         case 41:
             if (CheckConnected())
             {
-                printf("DUT Length bin: 100, 1500, or 4000 (meters)\n");
-                int len = ReadInt("Length [1500]: ", 1500);
+                printf("DUT 长度档位: 100, 1500, 或 4000 (米)\n");
+                int len = ReadInt("长度 [1500]: ", 1500);
                 if (g_loader.SantecSetDUTLength(len))
-                    printf("DUT length bin set to %d.\n", len);
+                    printf("DUT 长度档位已设置为 %d。\n", len);
                 else
-                    printf("Failed (Santec only).\n");
+                    printf("失败 (仅Santec支持)。\n");
             }
             break;
 
         case 42:
             if (CheckConnected())
             {
-                printf("RL Gain: 0=NORMAL (40-85dB), 1=LOW (30-40dB)\n");
-                int gain = ReadInt("Gain [0]: ", 0);
+                printf("RL 增益: 0=正常 (40-85dB), 1=低 (30-40dB)\n");
+                int gain = ReadInt("增益 [0]: ", 0);
                 if (g_loader.SantecSetRLGain(gain))
-                    printf("RL gain mode set to %d.\n", gain);
+                    printf("RL 增益模式已设置为 %d。\n", gain);
                 else
-                    printf("Failed (Santec only).\n");
+                    printf("失败 (仅Santec支持)。\n");
             }
             break;
 
         case 43:
             if (CheckConnected())
             {
-                int mode = ReadInt("Local mode (1=enabled, 0=disabled): ", 0);
+                int mode = ReadInt("本地模式 (1=启用, 0=禁用): ", 0);
                 if (g_loader.SantecSetLocalMode(mode))
-                    printf("Local mode set to %s.\n", mode ? "enabled" : "disabled");
+                    printf("本地模式已设置为 %s。\n", mode ? "启用" : "禁用");
                 else
-                    printf("Failed (Santec only).\n");
+                    printf("失败 (仅Santec支持)。\n");
             }
             break;
 
-        // --- Raw SCPI ---
+        // --- 原始 SCPI ---
         case 60:
             if (CheckConnected())
             {
-                std::string cmd = ReadLine("SCPI command: ");
+                std::string cmd = ReadLine("SCPI 命令: ");
                 char resp[4096] = {};
                 if (g_loader.SendCommand(cmd.c_str(), resp, sizeof(resp)))
-                    printf("  Response: %s\n", resp);
+                    printf("  响应: %s\n", resp);
                 else
-                    printf("  SendCommand failed.\n");
+                    printf("  SendCommand 失败。\n");
             }
             break;
 
@@ -567,7 +567,7 @@ int main(int argc, char* argv[])
             else if (input == "q" || input == "Q")
                 running = false;
             else
-                printf("Unknown command. Type 'h' for help.\n");
+                printf("未知命令。输入 'h' 查看帮助。\n");
             break;
         }
     }
@@ -575,6 +575,6 @@ int main(int argc, char* argv[])
     g_loader.DestroyDriver();
     g_loader.UnloadDll();
 
-    printf("DriverTestApp2 stopped.\n");
+    printf("DriverTestApp2 已停止。\n");
     return 0;
 }

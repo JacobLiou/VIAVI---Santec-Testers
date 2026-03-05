@@ -19,7 +19,7 @@ CBaseEquipmentDriver::~CBaseEquipmentDriver()
 }
 
 // ---------------------------------------------------------------------------
-// Non-blocking connect with timeout (select-based)
+// 带超时的非阻塞连接（基于 select）
 // ---------------------------------------------------------------------------
 
 bool CBaseEquipmentDriver::ConnectSocket(SOCKET sock, const sockaddr_in& addr, double timeoutSec)
@@ -94,7 +94,7 @@ bool CBaseEquipmentDriver::ConnectSocket(SOCKET sock, const sockaddr_in& addr, d
 }
 
 // ---------------------------------------------------------------------------
-// TCP Keepalive
+// TCP 保活
 // ---------------------------------------------------------------------------
 
 void CBaseEquipmentDriver::EnableKeepAlive(SOCKET sock)
@@ -104,8 +104,8 @@ void CBaseEquipmentDriver::EnableKeepAlive(SOCKET sock)
 
     struct tcp_keepalive ka = {};
     ka.onoff = 1;
-    ka.keepalivetime = 10000;       // 10s idle before first probe
-    ka.keepaliveinterval = 2000;    // 2s between probes
+    ka.keepalivetime = 10000;       // 空闲10秒后发送第一个探测包
+    ka.keepaliveinterval = 2000;    // 探测包间隔2秒
     DWORD bytesReturned = 0;
     WSAIoctl(sock, SIO_KEEPALIVE_VALS, &ka, sizeof(ka),
              NULL, 0, &bytesReturned, NULL, NULL);
@@ -114,7 +114,7 @@ void CBaseEquipmentDriver::EnableKeepAlive(SOCKET sock)
 }
 
 // ---------------------------------------------------------------------------
-// Post-connection validation (default: check socket health)
+// 连接后验证（默认：检查套接字健康状态）
 // ---------------------------------------------------------------------------
 
 bool CBaseEquipmentDriver::ValidateConnection()
@@ -128,7 +128,7 @@ bool CBaseEquipmentDriver::ValidateConnection()
 
     timeval tv = {};
     tv.tv_sec = 0;
-    tv.tv_usec = 100000; // 100ms
+    tv.tv_usec = 100000; // 100毫秒
 
     int ret = select(0, NULL, &writefds, NULL, &tv);
     if (ret <= 0)
@@ -151,7 +151,7 @@ bool CBaseEquipmentDriver::ValidateConnection()
 }
 
 // ---------------------------------------------------------------------------
-// Active health check
+// 主动健康检查
 // ---------------------------------------------------------------------------
 
 bool CBaseEquipmentDriver::IsAlive() const
@@ -177,7 +177,7 @@ bool CBaseEquipmentDriver::IsAlive() const
 }
 
 // ---------------------------------------------------------------------------
-// Connection Management
+// 连接管理
 // ---------------------------------------------------------------------------
 
 bool CBaseEquipmentDriver::Connect()
@@ -224,13 +224,13 @@ bool CBaseEquipmentDriver::Connect()
             continue;
         }
 
-        // TCP handshake succeeded - configure socket options
+        // TCP 握手成功 - 配置套接字选项
         DWORD timeoutMs = static_cast<DWORD>(m_config.timeout * 1000);
         setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeoutMs, sizeof(timeoutMs));
         setsockopt(m_socket, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeoutMs, sizeof(timeoutMs));
         EnableKeepAlive(m_socket);
 
-        // Validate we are talking to a real device
+        // 验证是否连接到真实设备
         m_state = STATE_CONNECTED;
         if (!ValidateConnection())
         {
@@ -286,7 +286,7 @@ void CBaseEquipmentDriver::CleanupSocket()
 }
 
 // ---------------------------------------------------------------------------
-// Low-level Communication
+// 底层通信
 // ---------------------------------------------------------------------------
 
 std::string CBaseEquipmentDriver::SendCommand(const std::string& command,
@@ -305,7 +305,7 @@ std::string CBaseEquipmentDriver::SendCommand(const std::string& command,
         int wsaErr = WSAGetLastError();
         m_logger.Warning("Send failed (WSA %d). Attempting auto-reconnect...", wsaErr);
 
-        // Safe to retry: the command was never delivered
+        // 可以安全重试：命令从未送达
         if (Reconnect())
         {
             m_logger.Info("Reconnected. Retrying command: %s", command.c_str());
@@ -368,7 +368,7 @@ std::string CBaseEquipmentDriver::ReceiveResponse(int bufferSize)
 }
 
 // ---------------------------------------------------------------------------
-// Error Handling
+// 错误处理
 // ---------------------------------------------------------------------------
 
 void CBaseEquipmentDriver::AssertNoError()
@@ -384,7 +384,7 @@ void CBaseEquipmentDriver::AssertNoError()
 }
 
 // ---------------------------------------------------------------------------
-// High-level Workflow (Template Method)
+// 高级工作流（模板方法）
 // ---------------------------------------------------------------------------
 
 std::vector<MeasurementResult> CBaseEquipmentDriver::RunFullTest(
@@ -395,7 +395,7 @@ std::vector<MeasurementResult> CBaseEquipmentDriver::RunFullTest(
 {
     m_logger.Info("=== Starting Full Test Workflow ===");
 
-    // Step 1: Configure
+    // 步骤1：配置
     m_logger.Info("Configuring %d wavelength(s)...", (int)wavelengths.size());
     ConfigureWavelengths(wavelengths);
     AssertNoError();
@@ -404,7 +404,7 @@ std::vector<MeasurementResult> CBaseEquipmentDriver::RunFullTest(
     ConfigureChannels(channels);
     AssertNoError();
 
-    // Step 2: Reference
+    // 步骤2：参考
     if (doReference)
     {
         m_logger.Info("Taking reference (override=%s)...",
@@ -414,13 +414,13 @@ std::vector<MeasurementResult> CBaseEquipmentDriver::RunFullTest(
         AssertNoError();
     }
 
-    // Step 3: Measurement
+    // 步骤3：测量
     m_logger.Info("Taking measurement...");
     if (!TakeMeasurement())
         throw std::runtime_error("Measurement failed.");
     AssertNoError();
 
-    // Step 4: Results
+    // 步骤4：结果
     m_logger.Info("Retrieving results...");
     std::vector<MeasurementResult> results = GetResults();
     m_logger.Info("=== Test Complete: %d results ===", (int)results.size());

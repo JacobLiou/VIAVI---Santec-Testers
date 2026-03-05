@@ -3,14 +3,14 @@
 #include "stdafx.h"
 
 // ---------------------------------------------------------------------------
-// VIAVI MAP300 PCT Simulator
+// VIAVI MAP300 PCT 模拟器
 //
-// Emulates two TCP servers:
-//   Chassis (port 8100) - Accepts SUPER:LAUNCH commands
-//   PCT Module (port 8301) - Handles SCPI measurement commands
+// 模拟两个TCP服务器：
+//   机箱 (端口 8100) - 接受 SUPER:LAUNCH 命令
+//   PCT 模块 (端口 8301) - 处理 SCPI 测量命令
 //
-// Tracks full protocol state: wavelengths, channels, measurement lifecycle.
-// Generates realistic IL/RL measurement data for driver testing.
+// 跟踪完整的协议状态：波长、通道、测量生命周期。
+// 生成逼真的 IL/RL 测量数据，用于驱动程序测试。
 // ---------------------------------------------------------------------------
 
 class CViaviSimServer
@@ -23,7 +23,7 @@ public:
     void Stop();
     bool IsRunning() const { return m_running; }
 
-    // Runtime controls
+    // 运行时控制
     void SetErrorMode(bool enabled)    { m_errorMode = enabled; }
     bool GetErrorMode() const           { return m_errorMode; }
     void SetMeasurementDelay(int ms)    { m_measDelayMs = ms; }
@@ -31,11 +31,11 @@ public:
     void SetVerbose(bool enabled)       { m_verbose = enabled; }
     bool GetVerbose() const             { return m_verbose; }
 
-    // Statistics
+    // 统计信息
     int  GetCommandCount() const        { return m_commandCount; }
 
 private:
-    // Server thread entry points
+    // 服务器线程入口点
     static DWORD WINAPI ChassisThreadProc(LPVOID param);
     static DWORD WINAPI PctThreadProc(LPVOID param);
 
@@ -43,40 +43,40 @@ private:
     void RunPctServer();
     void HandleClient(SOCKET clientSocket, const char* serverTag);
 
-    // Protocol handling
+    // 协议处理
     std::string ProcessChassisCommand(const std::string& cmd);
     std::string ProcessPctCommand(const std::string& cmd);
     std::string GenerateMeasResults(int channel, int launchPort);
 
-    // Logging
+    // 日志
     void Log(const char* tag, const char* fmt, ...);
     void LogVerbose(const char* tag, const char* fmt, ...);
 
-    // Sockets
+    // 套接字
     SOCKET m_chassisListen;
     SOCKET m_pctListen;
     int    m_chassisPort;
     int    m_pctPort;
 
-    // Threads
+    // 线程
     HANDLE m_hChassisThread;
     HANDLE m_hPctThread;
 
-    // Runtime flags
+    // 运行时标志
     std::atomic<bool> m_running;
     std::atomic<bool> m_errorMode;
     std::atomic<bool> m_verbose;
     std::atomic<int>  m_measDelayMs;
     std::atomic<int>  m_commandCount;
 
-    // PCT protocol state (protected by m_stateMutex)
+    // PCT 协议状态（由 m_stateMutex 保护）
     std::mutex          m_stateMutex;
     std::vector<double> m_wavelengths;
     int                 m_launchPort;
-    int                 m_sensFunc;         // 0 = reference, 1 = measurement
+    int                 m_sensFunc;         // 0 = 参考, 1 = 测量
     bool                m_measRunning;
     DWORD               m_measStartTick;
 
-    // Console output lock
+    // 控制台输出锁
     std::mutex m_logMutex;
 };

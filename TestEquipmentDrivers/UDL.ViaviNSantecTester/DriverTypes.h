@@ -12,7 +12,7 @@
 namespace ViaviNSantecTester {
 
 // ---------------------------------------------------------------------------
-// Connection State
+// 连接状态
 // ---------------------------------------------------------------------------
 enum ConnectionState
 {
@@ -23,7 +23,7 @@ enum ConnectionState
 };
 
 // ---------------------------------------------------------------------------
-// Measurement Mode (VIAVI: SENS:FUNC 0=reference, 1=measurement)
+// 测量模式 (VIAVI: SENS:FUNC 0=参考, 1=测量)
 // ---------------------------------------------------------------------------
 enum MeasurementMode
 {
@@ -32,7 +32,7 @@ enum MeasurementMode
 };
 
 // ---------------------------------------------------------------------------
-// Measurement State (VIAVI: MEAS:STATE? 1=complete, 2=running, 3=error)
+// 测量状态 (VIAVI: MEAS:STATE? 1=完成, 2=运行中, 3=错误)
 // ---------------------------------------------------------------------------
 enum MeasurementState
 {
@@ -43,7 +43,7 @@ enum MeasurementState
 };
 
 // ---------------------------------------------------------------------------
-// ORL Method (VIAVI: MEAS:ORL:SETUP method parameter)
+// 回波损耗方法 (VIAVI: MEAS:ORL:SETUP method 参数)
 // ---------------------------------------------------------------------------
 enum ORLMethod
 {
@@ -52,17 +52,17 @@ enum ORLMethod
 };
 
 // ---------------------------------------------------------------------------
-// ORL Origin (VIAVI: MEAS:ORL:SETUP origin parameter)
+// 回波损耗起点 (VIAVI: MEAS:ORL:SETUP origin 参数)
 // ---------------------------------------------------------------------------
 enum ORLOrigin
 {
-    ORL_ORIGIN_AB_START = 1,    // A+B anchored to DUT start
-    ORL_ORIGIN_AB_END = 2,      // A+B anchored to DUT end
-    ORL_ORIGIN_A_START_B_END = 3 // A from start, B from end
+    ORL_ORIGIN_AB_START = 1,    // A+B 锚定到被测器件起点
+    ORL_ORIGIN_AB_END = 2,      // A+B 锚定到被测器件终点
+    ORL_ORIGIN_A_START_B_END = 3 // A 从起点, B 从终点
 };
 
 // ---------------------------------------------------------------------------
-// Communication type for future Santec adaptation
+// 通信类型，用于未来 Santec 适配
 // ---------------------------------------------------------------------------
 enum CommType
 {
@@ -73,18 +73,18 @@ enum CommType
 };
 
 // ---------------------------------------------------------------------------
-// Single channel / single wavelength measurement result
+// 单通道/单波长测量结果
 // ---------------------------------------------------------------------------
 struct DRIVER_API MeasurementResult
 {
     int    channel;
-    double wavelength;          // nm
-    double insertionLoss;       // dB (IL)
-    double returnLoss;          // dB (RL) - kept for backward compat / VIAVI
-    double returnLossA;         // dB (RLA) - Santec RL1: connector RL at position A
-    double returnLossB;         // dB (RLB) - Santec RL1: connector RL at position B
-    double returnLossTotal;     // dB (RLTOTAL) - Santec RL1: total ORL
-    double dutLength;           // meters - Santec RL1: DUT length from READ:RL?
+    double wavelength;          // 纳米 (nm)
+    double insertionLoss;       // 分贝 (dB) - 插入损耗 (IL)
+    double returnLoss;          // 分贝 (dB) - 回波损耗 (RL) - 保留用于向后兼容 / VIAVI
+    double returnLossA;         // 分贝 (dB) - 回波损耗A (RLA) - Santec RL1: 位置A连接器回波损耗
+    double returnLossB;         // 分贝 (dB) - 回波损耗B (RLB) - Santec RL1: 位置B连接器回波损耗
+    double returnLossTotal;     // 分贝 (dB) - 总回波损耗 (RLTOTAL) - Santec RL1: 总ORL
+    double dutLength;           // 米 - Santec RL1: 从 READ:RL? 获取的被测器件长度
     double rawData[10];
     int    rawDataCount;
 
@@ -100,16 +100,16 @@ struct DRIVER_API MeasurementResult
 };
 
 // ---------------------------------------------------------------------------
-// Connection configuration
+// 连接配置
 // ---------------------------------------------------------------------------
 struct DRIVER_API ConnectionConfig
 {
     std::string ipAddress;
     int    port;
-    double timeout;             // seconds
+    double timeout;             // 秒
     int    bufferSize;
     int    reconnectAttempts;
-    double reconnectDelay;      // seconds
+    double reconnectDelay;      // 秒
 
     ConnectionConfig()
         : port(0), timeout(3.0), bufferSize(1024)
@@ -118,7 +118,7 @@ struct DRIVER_API ConnectionConfig
 };
 
 // ---------------------------------------------------------------------------
-// Device identification info
+// 设备标识信息
 // ---------------------------------------------------------------------------
 struct DRIVER_API DeviceInfo
 {
@@ -132,7 +132,7 @@ struct DRIVER_API DeviceInfo
 };
 
 // ---------------------------------------------------------------------------
-// Error info returned by CheckError()
+// CheckError() 返回的错误信息
 // ---------------------------------------------------------------------------
 struct DRIVER_API ErrorInfo
 {
@@ -145,15 +145,15 @@ struct DRIVER_API ErrorInfo
 };
 
 // ---------------------------------------------------------------------------
-// ORL configuration parameters
+// 回波损耗配置参数
 // ---------------------------------------------------------------------------
 struct DRIVER_API ORLConfig
 {
     int channel;
     ORLMethod method;
     ORLOrigin origin;
-    double aOffset;             // meters
-    double bOffset;             // meters
+    double aOffset;             // 米
+    double bOffset;             // 米
 
     ORLConfig()
         : channel(1)
@@ -165,13 +165,13 @@ struct DRIVER_API ORLConfig
 };
 
 // ---------------------------------------------------------------------------
-// Reference override parameters
+// 参考覆盖参数
 // ---------------------------------------------------------------------------
 struct DRIVER_API ReferenceConfig
 {
     bool   useOverride;
-    double ilValue;             // dB
-    double lengthValue;         // meters
+    double ilValue;             // 分贝 (dB)
+    double lengthValue;         // 米
 
     ReferenceConfig()
         : useOverride(false), ilValue(0.1), lengthValue(3.0)
@@ -179,7 +179,7 @@ struct DRIVER_API ReferenceConfig
 };
 
 // ---------------------------------------------------------------------------
-// C-compatible structures for DLL export interface
+// 用于 DLL 导出接口的 C 兼容结构体
 // ---------------------------------------------------------------------------
 struct DRIVER_API CMeasurementResult
 {

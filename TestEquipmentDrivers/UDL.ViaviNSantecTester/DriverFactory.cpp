@@ -21,7 +21,7 @@ IEquipmentDriver* CDriverFactory::Create(const std::string& equipmentType,
 {
     std::string key = ToLower(equipmentType);
 
-    // Trim whitespace
+    // 去除空白字符
     while (!key.empty() && key.front() == ' ') key.erase(key.begin());
     while (!key.empty() && key.back() == ' ') key.pop_back();
 

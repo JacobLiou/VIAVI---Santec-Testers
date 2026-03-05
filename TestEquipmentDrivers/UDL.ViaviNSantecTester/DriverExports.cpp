@@ -9,7 +9,7 @@
 
 using namespace ViaviNSantecTester;
 
-// Validate handle and cast to driver pointer
+// 验证句柄并转换为驱动指针
 static IEquipmentDriver* ToDriver(HANDLE h)
 {
     return reinterpret_cast<IEquipmentDriver*>(h);
@@ -21,7 +21,7 @@ static CBaseEquipmentDriver* ToBaseDriver(HANDLE h)
 }
 
 // ---------------------------------------------------------------------------
-// Exported Functions
+// 导出函数
 // ---------------------------------------------------------------------------
 
 DRIVER_C_API HANDLE WINAPI CreateDriver(const char* type, const char* ip, int port, int slot)
@@ -105,7 +105,7 @@ DRIVER_C_API BOOL WINAPI DriverConfigureORL(HANDLE hDriver, int channel, int met
     try
     {
         CViaviPCTDriver* viavi = dynamic_cast<CViaviPCTDriver*>(ToDriver(hDriver));
-        if (!viavi) return FALSE; // ORL config is VIAVI-specific
+        if (!viavi) return FALSE; // ORL 配置仅限 VIAVI
 
         ORLConfig cfg;
         cfg.channel = channel;
@@ -233,7 +233,7 @@ DRIVER_C_API void WINAPI DriverSetLogCallback(DriverLogCallback callback)
 }
 
 // ---------------------------------------------------------------------------
-// Santec RL1 specific configuration exports
+// Santec RL1 特定配置导出
 // ---------------------------------------------------------------------------
 
 DRIVER_C_API BOOL WINAPI DriverSantecSetRLSensitivity(HANDLE hDriver, int sensitivity)

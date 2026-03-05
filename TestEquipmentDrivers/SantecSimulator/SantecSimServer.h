@@ -3,21 +3,21 @@
 #include "stdafx.h"
 
 // ---------------------------------------------------------------------------
-// Santec RL1 Simulator
+// Santec RL1 模拟器
 //
-// TCP server (default port 5025) that responds to official SCPI commands
-// matching the Santec RL1 protocol per RLM User Manual M-RL1-001-07.
+// TCP 服务器（默认端口 5025），响应官方 SCPI 命令，
+// 遵循 Santec RL1 协议，参照 RLM 用户手册 M-RL1-001-07。
 //
-// Simulates:
-//   - Device identity (*IDN?)
-//   - Laser control (LAS:ENAB, LAS:DISAB, LAS:INFO?)
-//   - Fiber info (FIBER:INFO?)
-//   - Synchronous IL/RL measurement (READ:IL:det#?, READ:RL?)
-//   - Reference (REF:RL, REF:IL:det#)
-//   - Configuration (DUT:LENGTH, RL:SENS, RL:GAIN, RL:POSB, OUT:CLOS, SW#:CLOS)
-//   - Control (LCL, AUTO:ENAB)
-//   - Error query (SYST:ERR?)
-//   - Power meter (POW:NUM?, READ:POW:det#?, READ:POW:MON?)
+// 模拟功能：
+//   - 设备标识 (*IDN?)
+//   - 激光器控制 (LAS:ENAB, LAS:DISAB, LAS:INFO?)
+//   - 光纤信息 (FIBER:INFO?)
+//   - 同步 IL/RL 测量 (READ:IL:det#?, READ:RL?)
+//   - 参考 (REF:RL, REF:IL:det#)
+//   - 配置 (DUT:LENGTH, RL:SENS, RL:GAIN, RL:POSB, OUT:CLOS, SW#:CLOS)
+//   - 控制 (LCL, AUTO:ENAB)
+//   - 错误查询 (SYST:ERR?)
+//   - 功率计 (POW:NUM?, READ:POW:det#?, READ:POW:MON?)
 // ---------------------------------------------------------------------------
 
 class CSantecSimServer
@@ -48,7 +48,7 @@ private:
     void HandleClient(SOCKET clientSocket);
     std::string ProcessCommand(const std::string& cmd);
 
-    // Data generation
+    // 数据生成
     double GenerateIL(int channel, double wavelength);
     double GenerateRL(int channel, double wavelength);
     double GenerateRLTotal(int channel, double wavelength);
@@ -56,21 +56,21 @@ private:
 
     void Log(const char* fmt, ...);
 
-    // Server state
+    // 服务器状态
     bool            m_running;
     int             m_port;
     SOCKET          m_listenSocket;
     HANDLE          m_serverThread;
     SimModel        m_model;
 
-    // Device state (mirrors what the driver sends)
-    int             m_enabledLaser;         // 0=disabled, or wavelength nm
-    std::string     m_fiberType;            // "SM" or "MM"
+    // 设备状态（镜像驱动程序发送的内容）
+    int             m_enabledLaser;         // 0=禁用，或波长（nm）
+    std::string     m_fiberType;            // "SM" 或 "MM"
     std::vector<int> m_supportedWavelengths;
-    int             m_dutLengthBin;         // 100, 1500, or 4000
-    std::string     m_rlSensitivity;        // "fast" or "standard"
-    std::string     m_rlGain;               // "normal" or "low"
-    std::string     m_rlPosB;               // "eof" or "zero"
+    int             m_dutLengthBin;         // 100、1500 或 4000
+    std::string     m_rlSensitivity;        // "fast" 或 "standard"
+    std::string     m_rlGain;               // "normal" 或 "low"
+    std::string     m_rlPosB;               // "eof" 或 "zero"
     int             m_outputChannel;
     int             m_sw1Channel;
     int             m_sw2Channel;
@@ -79,19 +79,19 @@ private:
     double          m_dutIL;
     int             m_measDelayMs;
 
-    // Reference state
+    // 参考状态
     bool            m_rlReferenced;
     double          m_refMTJ1Length;
     double          m_refMTJ2Length;
     struct ILRef { int wavelength; double value; };
     std::vector<ILRef> m_ilRefs;
 
-    // Controls
+    // 控制
     bool            m_errorMode;
     bool            m_verbose;
     int             m_commandCount;
 
-    // Error queue
+    // 错误队列
     std::vector<std::string> m_errorQueue;
 
     std::mutex      m_mutex;

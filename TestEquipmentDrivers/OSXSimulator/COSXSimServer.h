@@ -3,16 +3,16 @@
 #include "stdafx.h"
 
 // ---------------------------------------------------------------------------
-// OSX Optical Switch Simulator
+// OSX 光开关模拟器
 //
-// TCP server (default port 5025) that responds to official SCPI commands
-// matching the OSX protocol per OSX User Manual M-OSX_SX1-001.04.
+// TCP 服务器（默认端口 5025），响应官方 SCPI 命令，
+// 遵循 OSX 协议，参照 OSX 用户手册 M-OSX_SX1-001.04。
 //
-// Simulates:
-//   - Standard SCPI (Table 4): *IDN?, *RST, *CLS, *OPC?, status, system
-//   - OSX switch commands (Table 5): CLOSe, module, route, LCL, notify
-//   - Asynchronous operation model: STAT:OPER:COND? returns busy during switch
-//   - Multi-module support with configurable configurations
+// 模拟功能：
+//   - 标准 SCPI (表 4): *IDN?, *RST, *CLS, *OPC?, 状态, 系统
+//   - OSX 开关命令 (表 5): CLOSe, 模块, 路由, LCL, 通知
+//   - 异步操作模型: STAT:OPER:COND? 在切换期间返回忙碌状态
+//   - 多模块支持，可配置不同配置
 // ---------------------------------------------------------------------------
 
 class COSXSimServer
@@ -20,11 +20,11 @@ class COSXSimServer
 public:
     struct SimModule
     {
-        std::string name;           // e.g. "SX 1Ax24"
+        std::string name;           // 例如 "SX 1Ax24"
         int  configType;            // 0=1A, 1=2A, 2=2B, 3=2C
         int  channelCount;
         int  currentChannel;
-        int  currentCommon;         // for 2A/2C configs
+        int  currentCommon;         // 用于 2A/2C 配置
 
         SimModule()
             : configType(0), channelCount(24)
@@ -39,7 +39,7 @@ public:
     void Stop();
     bool IsRunning() const { return m_running; }
 
-    // Configuration
+    // 配置
     void SetSwitchDelayMs(int ms)    { m_switchDelayMs = ms; }
     int  GetSwitchDelayMs() const    { return m_switchDelayMs; }
     void SetVerbose(bool enabled)    { m_verbose = enabled; }
@@ -49,7 +49,7 @@ public:
     int  GetCommandCount() const     { return m_commandCount; }
     int  GetModuleCount() const      { return static_cast<int>(m_modules.size()); }
 
-    // Module management
+    // 模块管理
     void AddModule(const std::string& name, int configType, int channelCount);
     void ClearModules();
     const std::vector<SimModule>& GetModules() const { return m_modules; }
@@ -62,42 +62,42 @@ private:
 
     void Log(const char* fmt, ...);
 
-    // Async operation tracking
+    // 异步操作跟踪
     void BeginOperation();
     bool IsOperationBusy() const;
 
-    // Server state
+    // 服务器状态
     bool            m_running;
     int             m_port;
     SOCKET          m_listenSocket;
     HANDLE          m_serverThread;
 
-    // Device state
+    // 设备状态
     std::vector<SimModule> m_modules;
     int             m_selectedModule;
     bool            m_localMode;
     int             m_switchDelayMs;
 
-    // Simulated network settings
+    // 模拟网络设置
     std::string     m_ipAddress;
     std::string     m_gateway;
     std::string     m_netmask;
     std::string     m_hostname;
     std::string     m_macAddress;
 
-    // Async operation timing
+    // 异步操作计时
     DWORD           m_operationStartTick;
     int             m_operationDurationMs;
 
-    // Controls
+    // 控制
     bool            m_errorMode;
     bool            m_verbose;
     int             m_commandCount;
 
-    // Error queue
+    // 错误队列
     std::vector<std::string> m_errorQueue;
 
-    // Status registers
+    // 状态寄存器
     int             m_eseRegister;
     int             m_sreRegister;
 

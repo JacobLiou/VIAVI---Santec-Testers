@@ -1,18 +1,18 @@
 #pragma once
 
 // ---------------------------------------------------------------------------
-// OSXDllLoader -- Pure dynamic binding to UDL.OSX.dll
+// OSXDllLoader -- UDL.OSX.dll 的纯动态绑定加载器
 //
-// All interaction with the driver goes through LoadLibrary / GetProcAddress.
-// No .h from UDL.OSX is included; no .lib is linked.
-// This is the pattern the production framework will use.
+// 所有与驱动的交互都通过 LoadLibrary / GetProcAddress 进行。
+// 不包含 UDL.OSX 的任何 .h 文件；不链接任何 .lib 文件。
+// 这是生产框架将使用的模式。
 // ---------------------------------------------------------------------------
 
 #include <Windows.h>
 #include <string>
 
 // ---------------------------------------------------------------------------
-// C-compatible structures (binary-compatible with UDL.OSX exports)
+// C兼容结构体（与 UDL.OSX 导出二进制兼容）
 // ---------------------------------------------------------------------------
 
 struct OSXDeviceInfo
@@ -35,7 +35,7 @@ struct OSXModuleInfo
 };
 
 // ---------------------------------------------------------------------------
-// Function pointer typedefs matching UDL.OSX C exports
+// 函数指针类型定义，匹配 UDL.OSX C 导出接口
 // ---------------------------------------------------------------------------
 
 typedef HANDLE (WINAPI *PFN_OSX_CreateDriver)(const char* ip, int port);
@@ -87,7 +87,7 @@ typedef void (WINAPI *PFN_OSXLogCallback)(int level, const char* source, const c
 typedef void (WINAPI *PFN_OSX_SetLogCallback)(PFN_OSXLogCallback callback);
 
 // ---------------------------------------------------------------------------
-// COSXDllLoader
+// COSXDllLoader 类
 // ---------------------------------------------------------------------------
 
 class COSXDllLoader
@@ -139,7 +139,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // DLL lifecycle
+    // DLL 生命周期管理
     // -----------------------------------------------------------------------
 
     bool LoadDll(const char* dllPath)
@@ -221,7 +221,7 @@ public:
     bool IsDllLoaded() const { return m_hDll != NULL; }
 
     // -----------------------------------------------------------------------
-    // Driver instance lifecycle
+    // 驱动实例生命周期管理
     // -----------------------------------------------------------------------
 
     bool CreateDriver(const char* ip, int port)
@@ -250,7 +250,7 @@ public:
     HANDLE GetDriverHandle() const { return m_hDriver; }
 
     // -----------------------------------------------------------------------
-    // Connection
+    // 连接管理
     // -----------------------------------------------------------------------
 
     BOOL Connect()
@@ -277,7 +277,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // Device identification
+    // 设备识别
     // -----------------------------------------------------------------------
 
     BOOL GetDeviceInfo(OSXDeviceInfo* info)
@@ -299,7 +299,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // Module management
+    // 模块管理
     // -----------------------------------------------------------------------
 
     int GetModuleCount()
@@ -339,7 +339,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // Channel switching
+    // 通道切换
     // -----------------------------------------------------------------------
 
     BOOL SwitchChannel(int channel)
@@ -367,7 +367,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // Multi-module routing
+    // 多模块路由
     // -----------------------------------------------------------------------
 
     BOOL RouteChannel(int moduleIndex, int channel)
@@ -407,7 +407,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // Control
+    // 控制
     // -----------------------------------------------------------------------
 
     BOOL SetLocalMode(BOOL local)
@@ -435,7 +435,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // Network
+    // 网络
     // -----------------------------------------------------------------------
 
     BOOL GetNetworkInfo(char* ip, char* gateway, char* netmask,
@@ -446,7 +446,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // Operation synchronization
+    // 操作同步
     // -----------------------------------------------------------------------
 
     BOOL WaitForOperation(int timeoutMs)
@@ -456,7 +456,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // Raw SCPI
+    // 原始SCPI命令
     // -----------------------------------------------------------------------
 
     BOOL SendCommand(const char* command, char* response, int responseSize)
@@ -466,7 +466,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // Logging
+    // 日志
     // -----------------------------------------------------------------------
 
     void SetLogCallback(PFN_OSXLogCallback callback)
@@ -478,7 +478,7 @@ private:
     HMODULE m_hDll;
     HANDLE  m_hDriver;
 
-    // Function pointers -- resolved at LoadDll time
+    // 函数指针 -- 在 LoadDll 时解析
     PFN_OSX_CreateDriver      pfnCreateDriver;
     PFN_OSX_DestroyDriver     pfnDestroyDriver;
     PFN_OSX_Connect           pfnConnect;

@@ -6,57 +6,57 @@
 namespace OSXSwitch {
 
 // ===========================================================================
-// Official SCPI Command Definitions for OSX Optical Switch
+// OSX 光开关的官方 SCPI 命令定义
 //
-// Reference: OSX User Manual M-OSX_SX1-001.04, Table 4 & Table 5
+// 参考：OSX 用户手册 M-OSX_SX1-001.04，表 4 和表 5
 // ===========================================================================
 namespace SCPI {
-    // IEEE 488.2 / Standard SCPI (Table 4)
+    // IEEE 488.2 / 标准 SCPI（表 4）
     static const char* IDN          = "*IDN?";
     static const char* RST          = "*RST";
     static const char* CLS          = "*CLS";
     static const char* OPC_Q        = "*OPC?";
     static const char* WAI          = "*WAI";
 
-    // System commands (Table 4)
+    // 系统命令（表 4）
     static const char* SYS_ERR      = ":SYST:ERR?";
     static const char* SYS_VER      = ":SYST:VERS?";
 
-    // Status (Table 4) -- critical for async polling
+    // 状态（表 4）—— 对异步轮询至关重要
     static const char* STAT_OPER_COND = ":STAT:OPER:COND?";
 
-    // Network (Table 4)
+    // 网络（表 4）
     static const char* LAN_ADDR_Q   = ":SYST:COMM:LAN:ADDR?";
     static const char* LAN_GW_Q     = ":SYST:COMM:LAN:GATE?";
     static const char* LAN_MASK_Q   = ":SYST:COMM:LAN:MASK?";
     static const char* LAN_HOST_Q   = ":SYST:COMM:LAN:HOST?";
     static const char* LAN_MAC_Q    = ":SYST:COMM:LAN:MAC?";
 
-    // OSX-specific switch commands (Table 5)
+    // OSX 专用开关命令（表 5）
     static const char* CLOSE        = "CLOSe";              // CLOSe / CLOSe # / CLOSe?
     static const char* CFG_END_Q    = "CFG:SWT:END?";
 
-    // Module commands (Table 5)
+    // 模块命令（表 5）
     static const char* MOD_CAT_Q    = "MODule:CATalog?";
     static const char* MOD_NUM_Q    = "MODule:NUMber?";
     static const char* MOD_SEL      = "MODule:SELect";      // MODule:SELect / MODule:SELect #
     static const char* MOD_SEL_Q    = "MODule:SELect?";
-    // MODule#:INFO?  -- built dynamically
+    // MODule#:INFO?  -- 动态构建
 
-    // Route commands (Table 5)
+    // 路由命令（表 5）
     // ROUTe:CHANnel:ALL # / ROUTe#:CHANnel # / ROUTe#:CLOSe # / ROUTe#:CHANnel?
-    // ROUTe#:COMMon # / ROUTe#:COMMon? / ROUTe#:HOMe -- built dynamically
+    // ROUTe#:COMMon # / ROUTe#:COMMon? / ROUTe#:HOMe -- 动态构建
 
-    // Control (Table 5)
+    // 控制（表 5）
     static const char* LCL          = "LCL";                // LCL # / LCL?
     static const char* LCL_Q        = "LCL?";
 
-    // Notification (Table 5)
-    // TEST:NOTIFY# "<string>" -- built dynamically
+    // 通知（表 5）
+    // TEST:NOTIFY# "<string>" -- 动态构建
 }
 
 // ===========================================================================
-// Static members
+// 静态成员
 // ===========================================================================
 LogCallback COSXDriver::s_globalCallback = nullptr;
 LogLevel    COSXDriver::s_globalLevel    = LOG_INFO;
@@ -74,7 +74,7 @@ void COSXDriver::SetGlobalLogLevel(LogLevel level)
 }
 
 // ===========================================================================
-// Construction / Destruction
+// 构造 / 析构
 // ===========================================================================
 
 COSXDriver::COSXDriver(const std::string& ipAddress, int port, double timeout)
@@ -95,7 +95,7 @@ COSXDriver::~COSXDriver()
 }
 
 // ===========================================================================
-// Logging
+// 日志
 // ===========================================================================
 
 void COSXDriver::Log(LogLevel level, const char* fmt, ...)
@@ -117,7 +117,7 @@ void COSXDriver::Log(LogLevel level, const char* fmt, ...)
 }
 
 // ===========================================================================
-// TCP Connection
+// TCP 连接
 // ===========================================================================
 
 bool COSXDriver::ConnectSocket(SOCKET sock, const sockaddr_in& addr, double timeoutSec)
@@ -242,7 +242,7 @@ bool COSXDriver::ValidateConnection()
 }
 
 // ---------------------------------------------------------------------------
-// IOSXDriver: Connection lifecycle
+// IOSXDriver: 连接生命周期
 // ---------------------------------------------------------------------------
 
 bool COSXDriver::Connect()
@@ -341,7 +341,7 @@ bool COSXDriver::IsConnected() const
 }
 
 // ===========================================================================
-// Low-level SCPI communication
+// 底层 SCPI 通信
 // ===========================================================================
 
 std::string COSXDriver::ReceiveResponse()
@@ -454,7 +454,7 @@ void COSXDriver::WriteAndWait(const std::string& command, int timeoutMs)
 }
 
 // ===========================================================================
-// IOSXDriver: Device identification
+// IOSXDriver: 设备识别
 // ===========================================================================
 
 DeviceInfo COSXDriver::GetDeviceInfo()
@@ -508,7 +508,7 @@ std::string COSXDriver::GetSystemVersion()
 }
 
 // ===========================================================================
-// IOSXDriver: Module management
+// IOSXDriver: 模块管理
 // ===========================================================================
 
 int COSXDriver::GetModuleCount()
@@ -524,7 +524,7 @@ std::vector<ModuleInfo> COSXDriver::GetModuleCatalog()
     std::string catalog = Query(SCPI::MOD_CAT_Q);
     Log(LOG_INFO, "Module catalog: %s", catalog.c_str());
 
-    // Parse comma-separated list: "SX 1Ax24","SX 2Bx12",...
+    // 解析逗号分隔的列表："SX 1Ax24","SX 2Bx12",...
     std::vector<std::string> entries;
     std::istringstream iss(catalog);
     std::string token;
@@ -545,7 +545,7 @@ std::vector<ModuleInfo> COSXDriver::GetModuleCatalog()
         mi.configType = ParseConfigType(entries[i]);
         mi.channelCount = ParseChannelCount(entries[i]);
 
-        // Query detailed info
+        // 查询详细信息
         try
         {
             std::ostringstream cmd;
@@ -597,7 +597,7 @@ int COSXDriver::GetSelectedModule()
 }
 
 // ===========================================================================
-// IOSXDriver: Channel switching
+// IOSXDriver: 通道切换
 // ===========================================================================
 
 void COSXDriver::SwitchChannel(int channel)
@@ -627,7 +627,7 @@ int COSXDriver::GetChannelCount()
 }
 
 // ===========================================================================
-// IOSXDriver: Multi-module routing
+// IOSXDriver: 多模块路由
 // ===========================================================================
 
 void COSXDriver::RouteChannel(int moduleIndex, int channel)
@@ -679,7 +679,7 @@ void COSXDriver::HomeModule(int moduleIndex)
 }
 
 // ===========================================================================
-// IOSXDriver: Control
+// IOSXDriver: 控制
 // ===========================================================================
 
 void COSXDriver::SetLocalMode(bool local)
@@ -711,7 +711,7 @@ void COSXDriver::Reset()
 }
 
 // ===========================================================================
-// IOSXDriver: Network configuration
+// IOSXDriver: 网络配置
 // ===========================================================================
 
 std::string COSXDriver::GetIPAddress()  { return Trim(Query(SCPI::LAN_ADDR_Q)); }
@@ -721,10 +721,10 @@ std::string COSXDriver::GetHostname()   { return Trim(Query(SCPI::LAN_HOST_Q)); 
 std::string COSXDriver::GetMAC()        { return Trim(Query(SCPI::LAN_MAC_Q)); }
 
 // ===========================================================================
-// IOSXDriver: Operation synchronization
+// IOSXDriver: 操作同步
 //
-// The OSX runs SCPI commands asynchronously. After issuing a switch command,
-// poll STAT:OPER:COND? until 0 to confirm the operation has completed.
+// OSX 以异步方式运行 SCPI 命令。发出切换命令后，
+// 需轮询 STAT:OPER:COND? 直到返回 0 以确认操作已完成。
 // ===========================================================================
 
 bool COSXDriver::WaitForOperation(int timeoutMs)
@@ -753,7 +753,7 @@ bool COSXDriver::WaitForOperation(int timeoutMs)
 }
 
 // ===========================================================================
-// IOSXDriver: Raw SCPI passthrough
+// IOSXDriver: 原始 SCPI 透传
 // ===========================================================================
 
 std::string COSXDriver::SendRawQuery(const std::string& command)
@@ -767,7 +767,7 @@ void COSXDriver::SendRawWrite(const std::string& command)
 }
 
 // ===========================================================================
-// Parsing utilities
+// 解析工具
 // ===========================================================================
 
 void COSXDriver::ParseIdentity(const std::string& idnResponse)
@@ -794,7 +794,7 @@ std::string COSXDriver::Trim(const std::string& s)
 
 SwitchConfigType COSXDriver::ParseConfigType(const std::string& catalog)
 {
-    // Catalog entries look like "SX 1Ax24", "SX 2Bx12", etc.
+    // 目录条目格式如 "SX 1Ax24"、"SX 2Bx12" 等
     std::string upper = catalog;
     for (size_t i = 0; i < upper.size(); ++i)
         upper[i] = static_cast<char>(toupper(static_cast<unsigned char>(upper[i])));
@@ -807,14 +807,14 @@ SwitchConfigType COSXDriver::ParseConfigType(const std::string& catalog)
 
 int COSXDriver::ParseChannelCount(const std::string& catalog)
 {
-    // Extract number after 'x' in entries like "SX 1Ax24"
+    // 从 "SX 1Ax24" 等条目中提取 'x' 后面的数字
     size_t xPos = catalog.find('x');
     if (xPos == std::string::npos)
         xPos = catalog.find('X');
     if (xPos == std::string::npos || xPos + 1 >= catalog.size())
         return 0;
 
-    // Find the last 'x' which separates config from channel count
+    // 找到最后一个 'x'，它分隔配置类型和通道数
     size_t lastX = catalog.rfind('x');
     if (lastX == std::string::npos)
         lastX = catalog.rfind('X');

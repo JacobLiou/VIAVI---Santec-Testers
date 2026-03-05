@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
     int chassisPort = 8100;
     int pctPort = 8301;
 
-    // Allow port override from command line:
+    // 允许通过命令行覆盖端口：
     //   ViaviSimulator.exe [chassisPort] [pctPort]
     if (argc >= 2) chassisPort = atoi(argv[1]);
     if (argc >= 3) pctPort = atoi(argv[2]);

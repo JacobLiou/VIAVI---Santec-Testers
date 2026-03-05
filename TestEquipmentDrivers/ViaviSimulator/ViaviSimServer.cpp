@@ -2,7 +2,7 @@
 #include "ViaviSimServer.h"
 
 // ---------------------------------------------------------------------------
-// Construction / Destruction
+// 构造 / 析构
 // ---------------------------------------------------------------------------
 
 CViaviSimServer::CViaviSimServer()
@@ -32,7 +32,7 @@ CViaviSimServer::~CViaviSimServer()
 }
 
 // ---------------------------------------------------------------------------
-// Startup / Shutdown
+// 启动 / 关闭
 // ---------------------------------------------------------------------------
 
 static SOCKET CreateListenSocket(int port)
@@ -127,7 +127,7 @@ void CViaviSimServer::Stop()
 }
 
 // ---------------------------------------------------------------------------
-// Server threads
+// 服务器线程
 // ---------------------------------------------------------------------------
 
 DWORD WINAPI CViaviSimServer::ChassisThreadProc(LPVOID param)
@@ -182,7 +182,7 @@ void CViaviSimServer::RunPctServer()
         inet_ntop(AF_INET, &clientAddr.sin_addr, ipBuf, sizeof(ipBuf));
         Log("PCT    ", "Client connected: %s:%d", ipBuf, ntohs(clientAddr.sin_port));
 
-        // Reset protocol state for new session
+        // 为新会话重置协议状态
         {
             std::lock_guard<std::mutex> lock(m_stateMutex);
             m_measRunning = false;
@@ -196,7 +196,7 @@ void CViaviSimServer::RunPctServer()
 }
 
 // ---------------------------------------------------------------------------
-// Client handler (common receive loop)
+// 客户端处理器（通用接收循环）
 // ---------------------------------------------------------------------------
 
 void CViaviSimServer::HandleClient(SOCKET clientSocket, const char* serverTag)
@@ -222,14 +222,14 @@ void CViaviSimServer::HandleClient(SOCKET clientSocket, const char* serverTag)
         recvBuf[received] = '\0';
         buffer.append(recvBuf, received);
 
-        // Process complete lines
+        // 处理完整的行
         size_t pos;
         while ((pos = buffer.find('\n')) != std::string::npos)
         {
             std::string cmd = buffer.substr(0, pos);
             buffer.erase(0, pos + 1);
 
-            // Trim \r
+            // 去除 \r
             while (!cmd.empty() && cmd.back() == '\r')
                 cmd.pop_back();
             if (cmd.empty()) continue;
@@ -262,7 +262,7 @@ void CViaviSimServer::HandleClient(SOCKET clientSocket, const char* serverTag)
 }
 
 // ---------------------------------------------------------------------------
-// Chassis protocol
+// 机箱协议
 // ---------------------------------------------------------------------------
 
 std::string CViaviSimServer::ProcessChassisCommand(const std::string& cmd)
@@ -284,14 +284,14 @@ std::string CViaviSimServer::ProcessChassisCommand(const std::string& cmd)
 }
 
 // ---------------------------------------------------------------------------
-// PCT protocol
+// PCT 协议
 // ---------------------------------------------------------------------------
 
 std::string CViaviSimServer::ProcessPctCommand(const std::string& cmd)
 {
     std::lock_guard<std::mutex> lock(m_stateMutex);
 
-    // ---- Error query ----
+    // ---- 错误查询 ----
     if (cmd == "SYST:ERR?")
     {
         if (m_errorMode)
@@ -299,7 +299,7 @@ std::string CViaviSimServer::ProcessPctCommand(const std::string& cmd)
         return "0,No error";
     }
 
-    // ---- Wavelength configuration ----
+    // ---- 波长配置 ----
     if (cmd.find("SOURCE:LIST ") == 0)
     {
         m_wavelengths.clear();
@@ -327,7 +327,7 @@ std::string CViaviSimServer::ProcessPctCommand(const std::string& cmd)
         return oss.str();
     }
 
-    // ---- Launch port ----
+    // ---- 启动端口 ----
     if (cmd.find("PATH:LAUNCH ") == 0)
     {
         m_launchPort = atoi(cmd.substr(12).c_str());
@@ -335,28 +335,28 @@ std::string CViaviSimServer::ProcessPctCommand(const std::string& cmd)
         return "";
     }
 
-    // ---- Channel configuration ----
+    // ---- 通道配置 ----
     if (cmd.find("PATH:LIST ") == 0)
     {
         Log("PCT    ", "<< %s  (channels configured)", cmd.c_str());
         return "";
     }
 
-    // ---- Reference overrides (all write-only) ----
+    // ---- 参考覆盖（全部只写）----
     if (cmd.find("PATH:JUMPER:") == 0)
     {
         LogVerbose("PCT    ", "<< %s", cmd.c_str());
         return "";
     }
 
-    // ---- ORL setup ----
+    // ---- ORL 设置 ----
     if (cmd.find("MEAS:ORL:SETUP ") == 0)
     {
         Log("PCT    ", "<< %s  (ORL configured)", cmd.c_str());
         return "";
     }
 
-    // ---- Measurement mode ----
+    // ---- 测量模式 ----
     if (cmd.find("SENS:FUNC ") == 0)
     {
         m_sensFunc = atoi(cmd.substr(10).c_str());
@@ -365,7 +365,7 @@ std::string CViaviSimServer::ProcessPctCommand(const std::string& cmd)
         return "";
     }
 
-    // ---- Start measurement ----
+    // ---- 开始测量 ----
     if (cmd == "MEAS:START")
     {
         m_measRunning = true;
@@ -374,7 +374,7 @@ std::string CViaviSimServer::ProcessPctCommand(const std::string& cmd)
         return "";
     }
 
-    // ---- Measurement state query ----
+    // ---- 测量状态查询 ----
     if (cmd == "MEAS:STATE?")
     {
         if (!m_measRunning)
@@ -382,21 +382,21 @@ std::string CViaviSimServer::ProcessPctCommand(const std::string& cmd)
 
         DWORD elapsed = GetTickCount() - m_measStartTick;
         if (elapsed < static_cast<DWORD>(m_measDelayMs))
-            return "2";     // still running
+            return "2";     // 仍在运行
 
         m_measRunning = false;
 
         if (m_errorMode)
-            return "3";     // error
+            return "3";     // 错误
 
-        return "1";         // complete
+        return "1";         // 完成
     }
 
-    // ---- Results query: MEAS:ALL? <ch>,<port> ----
+    // ---- 结果查询: MEAS:ALL? <ch>,<port> ----
     if (cmd.find("MEAS:ALL?") == 0)
     {
         std::string params = cmd.substr(9);
-        // Trim leading space
+        // 去除前导空格
         size_t s = params.find_first_not_of(" ");
         if (s != std::string::npos) params = params.substr(s);
 
@@ -411,27 +411,27 @@ std::string CViaviSimServer::ProcessPctCommand(const std::string& cmd)
         return GenerateMeasResults(channel, port);
     }
 
-    // ---- Unknown query: return generic response ----
+    // ---- 未知查询：返回通用响应 ----
     if (cmd.find('?') != std::string::npos)
     {
         Log("PCT    ", "<< %s  >> 0 (unknown query)", cmd.c_str());
         return "0";
     }
 
-    // ---- Unknown write command ----
+    // ---- 未知写入命令 ----
     LogVerbose("PCT    ", "<< %s  (ignored)", cmd.c_str());
     return "";
 }
 
 // ---------------------------------------------------------------------------
-// Generate simulated measurement data
+// 生成模拟测量数据
 //
-// Per wavelength, 5 values:
-//   [0] IL (dB)     - insertion loss     (typ 0.1 ~ 0.4)
-//   [1] ORL (dB)    - total return loss  (typ 40 ~ 55)
-//   [2] Length (m)   - fiber length       (typ 1.0 ~ 5.0)
-//   [3] RL (dB)     - connector RL       (typ 45 ~ 60)
-//   [4] Power (dBm) - optical power      (typ -10 ~ -3)
+// 每个波长 5 个值：
+//   [0] IL (dB)     - 插入损耗         (典型值 0.1 ~ 0.4)
+//   [1] ORL (dB)    - 总回波损耗       (典型值 40 ~ 55)
+//   [2] Length (m)   - 光纤长度         (典型值 1.0 ~ 5.0)
+//   [3] RL (dB)     - 连接器回波损耗   (典型值 45 ~ 60)
+//   [4] Power (dBm) - 光功率           (典型值 -10 ~ -3)
 // ---------------------------------------------------------------------------
 
 std::string CViaviSimServer::GenerateMeasResults(int channel, int launchPort)
@@ -444,7 +444,7 @@ std::string CViaviSimServer::GenerateMeasResults(int channel, int launchPort)
     {
         if (wi > 0) oss << ",";
 
-        // Seed-based variation per channel/wavelength for reproducibility
+        // 基于种子的通道/波长变化，确保可重复性
         double chVar = (channel - 1) * 0.02;
         double wlVar = (m_wavelengths[wi] > 1400) ? 0.05 : 0.0;
 
@@ -462,7 +462,7 @@ std::string CViaviSimServer::GenerateMeasResults(int channel, int launchPort)
 }
 
 // ---------------------------------------------------------------------------
-// Logging
+// 日志
 // ---------------------------------------------------------------------------
 
 void CViaviSimServer::Log(const char* tag, const char* fmt, ...)

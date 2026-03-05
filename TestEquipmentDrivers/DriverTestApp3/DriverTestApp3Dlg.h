@@ -66,7 +66,7 @@ private:
 
     void RunAsync(const CString& operationName, std::function<WorkerResult*()> task);
 
-    // Controls
+    // 控件
     CEdit       m_editDllPath;
     CComboBox   m_comboDeviceType;
     CEdit       m_editIP;
@@ -86,7 +86,7 @@ private:
     CListCtrl   m_listResults;
     CEdit       m_editLog;
 
-    // Dynamic loader (replaces IEquipmentDriver*)
+    // 动态加载器（替代 IEquipmentDriver*）
     CViaviSantecDllLoader m_loader;
     bool m_bBusy;
 };

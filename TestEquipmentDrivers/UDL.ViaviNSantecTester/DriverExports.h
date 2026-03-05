@@ -1,10 +1,10 @@
 #pragma once
 
 // ---------------------------------------------------------------------------
-// C-style DLL exported API for external system integration
-// (MIMS / Mlight / MAS or any other caller via LoadLibrary/GetProcAddress)
+// C 风格 DLL 导出 API，用于外部系统集成
+// （MIMS / Mlight / MAS 或其他通过 LoadLibrary/GetProcAddress 调用的程序）
 //
-// All functions use HANDLE to wrap the C++ driver object.
+// 所有函数使用 HANDLE 来封装 C++ 驱动对象。
 // ---------------------------------------------------------------------------
 
 #include "DriverTypes.h"
@@ -15,83 +15,83 @@
 #define DRIVER_C_API extern "C" __declspec(dllimport)
 #endif
 
-// Create a driver instance. Returns HANDLE (opaque pointer).
-// type: "viavi" or "santec"
-// ip: device IP address (e.g. "10.14.132.194")
-// port: TCP port (0 = use default for the type)
-// slot: slot number (VIAVI only, ignored for Santec)
+// 创建驱动实例。返回 HANDLE（不透明指针）。
+// type: "viavi" 或 "santec"
+// ip: 设备 IP 地址（例如 "10.14.132.194"）
+// port: TCP 端口（0 = 使用该类型的默认端口）
+// slot: 插槽号（仅 VIAVI 使用，Santec 忽略）
 DRIVER_C_API HANDLE WINAPI CreateDriver(const char* type, const char* ip, int port, int slot);
 
-// Destroy a driver instance and free resources
+// 销毁驱动实例并释放资源
 DRIVER_C_API void WINAPI DestroyDriver(HANDLE hDriver);
 
-// Connect to the device
+// 连接到设备
 DRIVER_C_API BOOL WINAPI DriverConnect(HANDLE hDriver);
 
-// Disconnect from the device
+// 断开与设备的连接
 DRIVER_C_API void WINAPI DriverDisconnect(HANDLE hDriver);
 
-// Initialize the device after connection
+// 连接后初始化设备
 DRIVER_C_API BOOL WINAPI DriverInitialize(HANDLE hDriver);
 
-// Check if connected
+// 检查是否已连接
 DRIVER_C_API BOOL WINAPI DriverIsConnected(HANDLE hDriver);
 
-// Configure measurement wavelengths (array of doubles in nm)
+// 配置测量波长（双精度浮点数组，单位 nm）
 DRIVER_C_API BOOL WINAPI DriverConfigureWavelengths(HANDLE hDriver, double* wavelengths, int count);
 
-// Configure measurement channels (array of ints)
+// 配置测量通道（整数数组）
 DRIVER_C_API BOOL WINAPI DriverConfigureChannels(HANDLE hDriver, int* channels, int count);
 
-// Configure ORL parameters (VIAVI specific; no-op for other types)
+// 配置回波损耗参数（VIAVI 特定；其他类型为空操作）
 DRIVER_C_API BOOL WINAPI DriverConfigureORL(HANDLE hDriver, int channel, int method, int origin,
                                             double aOffset, double bOffset);
 
-// Take reference measurement
-// bOverride: TRUE to use override values, FALSE for automatic
+// 执行参考测量
+// bOverride: TRUE 使用覆盖值，FALSE 使用自动测量
 DRIVER_C_API BOOL WINAPI DriverTakeReference(HANDLE hDriver, BOOL bOverride,
                                              double ilValue, double lengthValue);
 
-// Take IL/RL measurement
+// 执行插入损耗/回波损耗测量
 DRIVER_C_API BOOL WINAPI DriverTakeMeasurement(HANDLE hDriver);
 
-// Retrieve results into caller-allocated array. Returns number of results written.
-// results: pre-allocated array of CMeasurementResult
-// maxCount: size of the array
+// 将结果写入调用者预分配的数组。返回写入的结果数量。
+// results: 预分配的 CMeasurementResult 数组
+// maxCount: 数组大小
 DRIVER_C_API int WINAPI DriverGetResults(HANDLE hDriver,
                                          ViaviNSantecTester::CMeasurementResult* results,
                                          int maxCount);
 
-// Get device info
+// 获取设备信息
 DRIVER_C_API BOOL WINAPI DriverGetDeviceInfo(HANDLE hDriver, ViaviNSantecTester::CDeviceInfo* info);
 
-// Check last error. Returns error code (0 = no error).
-// message: buffer to receive error message
-// messageSize: size of buffer
+// 检查最近的错误。返回错误代码（0 = 无错误）。
+// message: 接收错误消息的缓冲区
+// messageSize: 缓冲区大小
 DRIVER_C_API int WINAPI DriverCheckError(HANDLE hDriver, char* message, int messageSize);
 
-// Send raw SCPI command and receive response
-// response: buffer to receive response (can be NULL for write-only commands)
-// responseSize: size of buffer
+// 发送原始 SCPI 命令并接收响应
+// response: 接收响应的缓冲区（仅写命令时可为 NULL）
+// responseSize: 缓冲区大小
 DRIVER_C_API BOOL WINAPI DriverSendCommand(HANDLE hDriver, const char* command,
                                            char* response, int responseSize);
 
-// Set log callback (receives log messages from the driver)
+// 设置日志回调（接收来自驱动的日志消息）
 typedef void (WINAPI *DriverLogCallback)(int level, const char* source, const char* message);
 DRIVER_C_API void WINAPI DriverSetLogCallback(DriverLogCallback callback);
 
 // ---------------------------------------------------------------------------
-// Santec RL1 specific configuration
+// Santec RL1 特定配置
 // ---------------------------------------------------------------------------
 
-// Set RL sensitivity: 0=FAST (<1.5s, RL<=75dB), 1=STANDARD (<5s, RL<=85dB)
+// 设置回波损耗灵敏度: 0=快速 (<1.5秒, RL<=75dB), 1=标准 (<5秒, RL<=85dB)
 DRIVER_C_API BOOL WINAPI DriverSantecSetRLSensitivity(HANDLE hDriver, int sensitivity);
 
-// Set DUT length bin: 100, 1500, or 4000 (meters)
+// 设置被测器件长度档位: 100、1500 或 4000（米）
 DRIVER_C_API BOOL WINAPI DriverSantecSetDUTLength(HANDLE hDriver, int lengthBin);
 
-// Set RL gain mode: 0=NORMAL (40-85dB), 1=LOW (30-40dB)
+// 设置回波损耗增益模式: 0=正常 (40-85dB), 1=低 (30-40dB)
 DRIVER_C_API BOOL WINAPI DriverSantecSetRLGain(HANDLE hDriver, int gain);
 
-// Set local mode: TRUE=enabled (touchscreen active), FALSE=disabled (remote only)
+// 设置本地模式: TRUE=启用（触摸屏可用），FALSE=禁用（仅远程控制）
 DRIVER_C_API BOOL WINAPI DriverSantecSetLocalMode(HANDLE hDriver, BOOL enabled);

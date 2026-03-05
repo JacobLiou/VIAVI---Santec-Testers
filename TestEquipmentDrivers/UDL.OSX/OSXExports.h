@@ -1,10 +1,10 @@
 #pragma once
 
 // ---------------------------------------------------------------------------
-// C-style DLL exported API for external system integration
-// (MIMS / Mlight / MAS or any other caller via LoadLibrary/GetProcAddress)
+// C 风格 DLL 导出 API，用于外部系统集成
+// （MIMS / Mlight / MAS 或其他通过 LoadLibrary/GetProcAddress 调用的程序）
 //
-// All functions use HANDLE to wrap the C++ driver object.
+// 所有函数使用 HANDLE 来封装 C++ 驱动对象。
 // ---------------------------------------------------------------------------
 
 #include "OSXTypes.h"
@@ -16,17 +16,17 @@
 #endif
 
 // ---------------------------------------------------------------------------
-// Lifecycle
+// 生命周期
 // ---------------------------------------------------------------------------
 
-// Create an OSX driver instance. Returns HANDLE (opaque pointer).
+// 创建 OSX 驱动实例。返回 HANDLE（不透明指针）。
 OSX_C_API HANDLE WINAPI OSX_CreateDriver(const char* ip, int port);
 
-// Destroy a driver instance and free resources.
+// 销毁驱动实例并释放资源。
 OSX_C_API void WINAPI OSX_DestroyDriver(HANDLE hDriver);
 
 // ---------------------------------------------------------------------------
-// Connection
+// 连接
 // ---------------------------------------------------------------------------
 
 OSX_C_API BOOL WINAPI OSX_Connect(HANDLE hDriver);
@@ -35,7 +35,7 @@ OSX_C_API BOOL WINAPI OSX_Reconnect(HANDLE hDriver);
 OSX_C_API BOOL WINAPI OSX_IsConnected(HANDLE hDriver);
 
 // ---------------------------------------------------------------------------
-// Device identification
+// 设备识别
 // ---------------------------------------------------------------------------
 
 OSX_C_API BOOL WINAPI OSX_GetDeviceInfo(HANDLE hDriver, OSXSwitch::CDeviceInfo* info);
@@ -43,7 +43,7 @@ OSX_C_API int  WINAPI OSX_CheckError(HANDLE hDriver, char* message, int messageS
 OSX_C_API BOOL WINAPI OSX_GetSystemVersion(HANDLE hDriver, char* version, int versionSize);
 
 // ---------------------------------------------------------------------------
-// Module management
+// 模块管理
 // ---------------------------------------------------------------------------
 
 OSX_C_API int  WINAPI OSX_GetModuleCount(HANDLE hDriver);
@@ -54,7 +54,7 @@ OSX_C_API BOOL WINAPI OSX_SelectNextModule(HANDLE hDriver);
 OSX_C_API int  WINAPI OSX_GetSelectedModule(HANDLE hDriver);
 
 // ---------------------------------------------------------------------------
-// Channel switching
+// 通道切换
 // ---------------------------------------------------------------------------
 
 OSX_C_API BOOL WINAPI OSX_SwitchChannel(HANDLE hDriver, int channel);
@@ -63,7 +63,7 @@ OSX_C_API int  WINAPI OSX_GetCurrentChannel(HANDLE hDriver);
 OSX_C_API int  WINAPI OSX_GetChannelCount(HANDLE hDriver);
 
 // ---------------------------------------------------------------------------
-// Multi-module routing
+// 多模块路由
 // ---------------------------------------------------------------------------
 
 OSX_C_API BOOL WINAPI OSX_RouteChannel(HANDLE hDriver, int moduleIndex, int channel);
@@ -74,7 +74,7 @@ OSX_C_API int  WINAPI OSX_GetCommonInput(HANDLE hDriver, int moduleIndex);
 OSX_C_API BOOL WINAPI OSX_HomeModule(HANDLE hDriver, int moduleIndex);
 
 // ---------------------------------------------------------------------------
-// Control
+// 控制
 // ---------------------------------------------------------------------------
 
 OSX_C_API BOOL WINAPI OSX_SetLocalMode(HANDLE hDriver, BOOL local);
@@ -83,7 +83,7 @@ OSX_C_API BOOL WINAPI OSX_SendNotification(HANDLE hDriver, int icon, const char*
 OSX_C_API BOOL WINAPI OSX_Reset(HANDLE hDriver);
 
 // ---------------------------------------------------------------------------
-// Network configuration
+// 网络配置
 // ---------------------------------------------------------------------------
 
 OSX_C_API BOOL WINAPI OSX_GetNetworkInfo(HANDLE hDriver, char* ip, char* gateway,
@@ -91,20 +91,20 @@ OSX_C_API BOOL WINAPI OSX_GetNetworkInfo(HANDLE hDriver, char* ip, char* gateway
                                          int bufSize);
 
 // ---------------------------------------------------------------------------
-// Operation synchronization
+// 操作同步
 // ---------------------------------------------------------------------------
 
 OSX_C_API BOOL WINAPI OSX_WaitForOperation(HANDLE hDriver, int timeoutMs);
 
 // ---------------------------------------------------------------------------
-// Raw SCPI
+// 原始 SCPI
 // ---------------------------------------------------------------------------
 
 OSX_C_API BOOL WINAPI OSX_SendCommand(HANDLE hDriver, const char* command,
                                       char* response, int responseSize);
 
 // ---------------------------------------------------------------------------
-// Logging
+// 日志
 // ---------------------------------------------------------------------------
 
 typedef void (WINAPI *OSXLogCallback)(int level, const char* source, const char* message);

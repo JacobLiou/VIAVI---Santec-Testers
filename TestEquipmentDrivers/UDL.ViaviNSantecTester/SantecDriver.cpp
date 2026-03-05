@@ -7,12 +7,12 @@
 namespace ViaviNSantecTester {
 
 // ===========================================================================
-// Official SCPI Command Definitions for Santec RL1
+// Santec RL1 官方 SCPI 命令定义
 //
-// Reference: RLM User Manual M-RL1-001-07, Table 11 & Table 12
+// 参考：RLM 用户手册 M-RL1-001-07，表11和表12
 // ===========================================================================
 namespace SCPI {
-    // IEEE 488.2 common commands (Table 11)
+    // IEEE 488.2 通用命令（表11）
     static const char* IDN          = "*IDN?";
     static const char* RST          = "*RST";
     static const char* CLS          = "*CLS";
@@ -20,85 +20,85 @@ namespace SCPI {
     static const char* OPC          = "*OPC";
     static const char* WAI          = "*WAI";
 
-    // System commands (Table 11)
+    // 系统命令（表11）
     static const char* SYS_ERR      = "SYST:ERR?";
     static const char* SYS_VER      = "SYST:VER?";
 
-    // Laser control (Table 12)
+    // 激光控制（表12）
     static const char* LAS_DISABLE  = "LAS:DISAB";
-    static const char* LAS_ENABLE   = "LAS:ENAB";          // LAS:ENAB <wavelength_nm>
+    static const char* LAS_ENABLE   = "LAS:ENAB";          // LAS:ENAB <波长_nm>
     static const char* LAS_ENABLE_Q = "LAS:ENAB?";
     static const char* LAS_INFO_Q   = "LAS:INFO?";
 
-    // Fiber info (Table 12)
+    // 光纤信息（表12）
     static const char* FIBER_INFO_Q = "FIBER:INFO?";
 
-    // RL measurement - synchronous (Table 12)
-    static const char* READ_RL      = "READ:RL?";           // READ:RL? <nm> -> RLA,RLB,RLTOTAL,Length
-    static const char* READ_IL      = "READ:IL";            // READ:IL:det#? <nm> -> IL value
+    // 回波损耗测量 - 同步（表12）
+    static const char* READ_RL      = "READ:RL?";           // READ:RL? <nm> -> RLA,RLB,RLTOTAL,长度
+    static const char* READ_IL      = "READ:IL";            // READ:IL:det#? <nm> -> 插入损耗值
 
-    // RL reference (Table 12)
-    static const char* REF_RL       = "REF:RL";             // REF:RL (auto-measure) or REF:RL #,[#]
-    static const char* REF_RL_Q     = "REF:RL?";            // Returns MTJ1 length
-    static const char* REF_IL       = "REF:IL";             // REF:IL:det# <nm>,<value>
+    // 回波损耗参考（表12）
+    static const char* REF_RL       = "REF:RL";             // REF:RL（自动测量）或 REF:RL #,[#]
+    static const char* REF_RL_Q     = "REF:RL?";            // 返回 MTJ1 长度
+    static const char* REF_IL       = "REF:IL";             // REF:IL:det# <nm>,<值>
     static const char* REF_IL_Q     = "REF:IL";             // REF:IL:det#? <nm>
 
-    // Power meter (Table 12)
+    // 功率计（表12）
     static const char* POW_NUM_Q    = "POW:NUM?";
     static const char* POW_INFO     = "POW";                // POW:det#:INFO?
     static const char* READ_POW     = "READ:POW";           // READ:POW:det#? <nm>
     static const char* READ_POW_MON = "READ:POW:MON?";      // READ:POW:MON? <nm>
 
-    // RL sensitivity (Table 12)
+    // 回波损耗灵敏度（表12）
     static const char* RL_SENS      = "RL:SENS";            // RL:SENS <fast|standard>
     static const char* RL_SENS_Q    = "RL:SENS?";
 
-    // RL position B (Table 12)
+    // 回波损耗B位置（表12）
     static const char* RL_POSB      = "RL:POSB";            // RL:POSB <eof|zero>
     static const char* RL_POSB_Q    = "RL:POSB?";
 
-    // RL gain (Table 12)
+    // 回波损耗增益（表12）
     static const char* RL_GAIN      = "RL:GAIN";            // RL:GAIN <low|normal>
     static const char* RL_GAIN_Q    = "RL:GAIN?";
 
-    // DUT configuration (Table 12)
+    // 被测器件配置（表12）
     static const char* DUT_LENGTH   = "DUT:LENGTH";         // DUT:LENGTH <100|1500|4000>
     static const char* DUT_LENGTH_Q = "DUT:LENGTH?";
-    static const char* DUT_IL       = "DUT:IL";             // DUT:IL <value>
+    static const char* DUT_IL       = "DUT:IL";             // DUT:IL <值>
     static const char* DUT_IL_Q     = "DUT:IL?";
 
-    // Internal switch / output (Table 12)
-    static const char* OUT_CLOSE    = "OUT:CLOS";           // OUT:CLOS <channel>
+    // 内部开关/输出（表12）
+    static const char* OUT_CLOSE    = "OUT:CLOS";           // OUT:CLOS <通道>
     static const char* OUT_CLOSE_Q  = "OUT:CLOS?";
 
-    // External switch (Table 12)
+    // 外部开关（表12）
     // SW#:CLOSe # / SW#:CLOSe? / SW#:INFO?
 
-    // Local control (Table 12)
+    // 本地控制（表12）
     static const char* LCL          = "LCL";                // LCL <0|1>
     static const char* LCL_Q        = "LCL?";
 
-    // Auto-start (Table 12)
+    // 自动启动（表12）
     static const char* AUTO_ENABLE  = "AUTO:ENAB";          // AUTO:ENAB <0|1>
     static const char* AUTO_ENABLE_Q= "AUTO:ENAB?";
     static const char* AUTO_TRIG_Q  = "AUTO:TRIG?";
     static const char* AUTO_TRIG_RST= "AUTO:TRIG:RST";     // AUTO:TRIG:RST <nm>,<det#>
 
-    // Factory data (Table 12)
-    static const char* READ_FACTORY = "READ:FACT:POW?";     // READ:FACT:POW? <output>,<nm>
+    // 工厂数据（表12）
+    static const char* READ_FACTORY = "READ:FACT:POW?";     // READ:FACT:POW? <输出>,<nm>
 
-    // Barcode (Table 12)
+    // 条码（表12）
     static const char* READ_BARCODE = "READ:BARC?";
 
-    // Test plan / notification (Table 12)
-    static const char* TEST_NOTIFY  = "TEST:NOTIFY";        // TEST:NOTIFY# "string"
+    // 测试计划/通知（表12）
+    static const char* TEST_NOTIFY  = "TEST:NOTIFY";        // TEST:NOTIFY# "字符串"
     static const char* TEST_RETRY   = "TEST:RETRY";
     static const char* TEST_NEXT    = "TEST:NEXT";
 }
 
 
 // ===========================================================================
-// CSantecTcpAdapter - TCP SCPI transport
+// CSantecTcpAdapter - TCP SCPI 传输层
 // ===========================================================================
 
 CSantecTcpAdapter::CSantecTcpAdapter()
@@ -299,7 +299,7 @@ void CSantecDriver::SetCommAdapter(ISantecCommAdapter* adapter, bool takeOwnersh
 }
 
 // ---------------------------------------------------------------------------
-// Unified command interface
+// 统一命令接口
 // ---------------------------------------------------------------------------
 
 std::string CSantecDriver::Query(const std::string& command)
@@ -350,7 +350,7 @@ void CSantecDriver::WriteAndSync(const std::string& command)
 }
 
 // ---------------------------------------------------------------------------
-// Connection
+// 连接
 // ---------------------------------------------------------------------------
 
 bool CSantecDriver::Connect()
@@ -446,7 +446,7 @@ bool CSantecDriver::IsConnected() const
 }
 
 // ---------------------------------------------------------------------------
-// Post-connection validation: *IDN? to verify device identity
+// 连接后验证：通过 *IDN? 验证设备身份
 // ---------------------------------------------------------------------------
 
 bool CSantecDriver::ValidateConnection()
@@ -506,7 +506,7 @@ void CSantecDriver::ParseIdentity(const std::string& idnResponse)
 }
 
 // ---------------------------------------------------------------------------
-// Error handling
+// 错误处理
 // ---------------------------------------------------------------------------
 
 ErrorInfo CSantecDriver::CheckError()
@@ -555,7 +555,7 @@ DeviceInfo CSantecDriver::GetDeviceInfo()
 }
 
 // ---------------------------------------------------------------------------
-// Initialization - discovers device capabilities and applies config
+// 初始化 - 发现设备能力并应用配置
 // ---------------------------------------------------------------------------
 
 bool CSantecDriver::Initialize()
@@ -567,7 +567,7 @@ bool CSantecDriver::Initialize()
         Write(SCPI::CLS);
         Sleep(100);
 
-        // Discover fiber type (SM or MM)
+        // 发现光纤类型（SM 或 MM）
         try
         {
             m_fiberType = Trim(Query(SCPI::FIBER_INFO_Q));
@@ -579,7 +579,7 @@ bool CSantecDriver::Initialize()
             m_fiberType = "SM";
         }
 
-        // Discover supported wavelengths
+        // 发现支持的波长
         try
         {
             std::string wavList = Query(SCPI::LAS_INFO_Q);
@@ -594,7 +594,7 @@ bool CSantecDriver::Initialize()
             m_logger.Warning("LAS:INFO? not supported.");
         }
 
-        // Apply RL sensitivity (SM only)
+        // 应用回波损耗灵敏度（仅单模光纤）
         if (m_fiberType != "MM")
         {
             SetRLSensitivity(m_sensitivity);
@@ -602,7 +602,7 @@ bool CSantecDriver::Initialize()
             SetRLGain(m_rlGain);
         }
 
-        // Disable local mode for remote control
+        // 禁用本地模式以进行远程控制
         SetLocalMode(false);
 
         ErrorInfo err = CheckError();
@@ -624,7 +624,7 @@ bool CSantecDriver::Initialize()
 }
 
 // ---------------------------------------------------------------------------
-// RL1-specific configuration commands (Table 12)
+// RL1 特定配置命令（表12）
 // ---------------------------------------------------------------------------
 
 void CSantecDriver::SetRLSensitivity(RLSensitivity sens)
@@ -703,7 +703,7 @@ void CSantecDriver::SetDUTInsertionLoss(double ilDB)
 }
 
 // ---------------------------------------------------------------------------
-// Laser control
+// 激光控制
 // ---------------------------------------------------------------------------
 
 void CSantecDriver::EnableLaser(int wavelengthNm)
@@ -727,7 +727,7 @@ int CSantecDriver::QueryEnabledLaser()
 }
 
 // ---------------------------------------------------------------------------
-// Switch control
+// 开关控制
 // ---------------------------------------------------------------------------
 
 void CSantecDriver::SetOutputChannel(int channel)
@@ -761,7 +761,7 @@ int CSantecDriver::GetSwitchChannel(int switchNum)
 }
 
 // ---------------------------------------------------------------------------
-// Power meter
+// 功率计
 // ---------------------------------------------------------------------------
 
 int CSantecDriver::GetDetectorCount()
@@ -778,7 +778,7 @@ std::string CSantecDriver::GetDetectorInfo(int detectorNum)
 }
 
 // ---------------------------------------------------------------------------
-// Configuration - wavelengths and channels
+// 配置 - 波长和通道
 // ---------------------------------------------------------------------------
 
 void CSantecDriver::ConfigureWavelengths(const std::vector<double>& wavelengths)
@@ -794,11 +794,11 @@ void CSantecDriver::ConfigureChannels(const std::vector<int>& channels)
 }
 
 // ---------------------------------------------------------------------------
-// Reference / Calibration (official RL1 protocol)
+// 参考/校准（官方 RL1 协议）
 //
-// RL reference: REF:RL (auto-measure test jumper length)
-//               REF:RL #,[#] (manually set MTJ1 and optional MTJ2 lengths)
-// IL reference: REF:IL:det# <wavelength>,<value>
+// 回波损耗参考：REF:RL（自动测量测试跳线长度）
+//               REF:RL #,[#]（手动设置 MTJ1 和可选的 MTJ2 长度）
+// 插入损耗参考：REF:IL:det# <波长>,<值>
 // ---------------------------------------------------------------------------
 
 bool CSantecDriver::TakeReference(const ReferenceConfig& config)
@@ -810,13 +810,13 @@ bool CSantecDriver::TakeReference(const ReferenceConfig& config)
     {
         if (config.useOverride)
         {
-            // Manually set the test jumper length for RL reference
+            // 手动设置回波损耗参考的测试跳线长度
             std::ostringstream cmd;
             cmd << SCPI::REF_RL << " " << config.lengthValue;
             WriteAndSync(cmd.str());
             m_logger.Info("RL reference set manually: MTJ1 = %.2f m", config.lengthValue);
 
-            // Set IL reference for each detector/wavelength
+            // 为每个检测器/波长设置插入损耗参考
             for (size_t wi = 0; wi < m_wavelengths.size(); ++wi)
             {
                 std::ostringstream ilCmd;
@@ -829,13 +829,13 @@ bool CSantecDriver::TakeReference(const ReferenceConfig& config)
         }
         else
         {
-            // Auto-measure test jumper length (REF:RL with no parameters)
-            // This is a synchronous command that measures the MTJ
+            // 自动测量测试跳线长度（无参数的 REF:RL）
+            // 这是一个同步命令，用于测量 MTJ
             WriteAndSync(SCPI::REF_RL);
             m_logger.Info("RL reference auto-measured.");
         }
 
-        // Verify reference was stored
+        // 验证参考值是否已存储
         std::string refLen = Query(SCPI::REF_RL_Q);
         m_logger.Info("Stored RL reference length: %s", refLen.c_str());
 
@@ -867,11 +867,11 @@ bool CSantecDriver::TakeReference(const ReferenceConfig& config)
 }
 
 // ---------------------------------------------------------------------------
-// Measurement - synchronous READ:RL? / READ:IL:det#? per official protocol
+// 测量 - 按照官方协议进行同步 READ:RL? / READ:IL:det#?
 //
-// The RL1 runs SCPI commands synchronously. READ:RL? triggers the
-// measurement AND returns the result in one call. No separate trigger/fetch.
-// Can take up to 10 seconds in 4km length bin with Standard mode.
+// RL1 同步执行 SCPI 命令。READ:RL? 在一次调用中触发
+// 测量并返回结果，无需单独的触发/获取步骤。
+// 在4km长度档位的标准模式下可能需要最多10秒。
 // ---------------------------------------------------------------------------
 
 bool CSantecDriver::TakeMeasurement()
@@ -887,7 +887,7 @@ bool CSantecDriver::TakeMeasurement()
     {
         for (size_t ci = 0; ci < m_channels.size(); ++ci)
         {
-            // Select channel via internal switch
+            // 通过内部开关选择通道
             if (m_channels.size() > 1 || m_channels[0] != 1)
             {
                 SetOutputChannel(m_channels[ci]);
@@ -901,10 +901,10 @@ bool CSantecDriver::TakeMeasurement()
                 result.channel = m_channels[ci];
                 result.wavelength = m_wavelengths[wi];
 
-                // Enable laser at this wavelength
+                // 在此波长启用激光
                 EnableLaser(wavNm);
 
-                // READ:IL:det1? <nm> - synchronous IL read
+                // READ:IL:det1? <nm> - 同步插入损耗读取
                 try
                 {
                     result.insertionLoss = ReadIL(1, wavNm);
@@ -914,7 +914,7 @@ bool CSantecDriver::TakeMeasurement()
                     m_logger.Warning("IL read failed: %s", e.what());
                 }
 
-                // READ:RL? <nm> - synchronous RL read (returns RLA,RLB,RLTOTAL,Length)
+                // READ:RL? <nm> - 同步回波损耗读取（返回 RLA,RLB,RLTOTAL,长度）
                 if (m_model == MODEL_RL1 || m_model == MODEL_RLM_100 ||
                     m_model == MODEL_BRM_100 || m_model == MODEL_UNKNOWN)
                 {
@@ -965,7 +965,7 @@ bool CSantecDriver::TakeMeasurement()
 }
 
 // ---------------------------------------------------------------------------
-// Direct synchronous measurement reads (official RL1 protocol)
+// 直接同步测量读取（官方 RL1 协议）
 // ---------------------------------------------------------------------------
 
 MeasurementResult CSantecDriver::ReadRL(int wavelengthNm)
@@ -1043,7 +1043,7 @@ double CSantecDriver::ReadMonitorPower(int wavelengthNm)
 }
 
 // ---------------------------------------------------------------------------
-// Results
+// 结果
 // ---------------------------------------------------------------------------
 
 std::vector<MeasurementResult> CSantecDriver::GetResults()
@@ -1052,7 +1052,7 @@ std::vector<MeasurementResult> CSantecDriver::GetResults()
 }
 
 // ---------------------------------------------------------------------------
-// Utility
+// 工具函数
 // ---------------------------------------------------------------------------
 
 std::vector<double> CSantecDriver::ParseDoubleList(const std::string& csv)

@@ -129,7 +129,7 @@ BOOL CDriverTestApp3Dlg::OnInitDialog()
 }
 
 // ---------------------------------------------------------------------------
-// Prevent accidental dialog close
+// 防止意外关闭对话框
 // ---------------------------------------------------------------------------
 
 void CDriverTestApp3Dlg::OnOK()
@@ -159,7 +159,7 @@ void CDriverTestApp3Dlg::OnClose()
 }
 
 // ---------------------------------------------------------------------------
-// DLL Loading / Unloading
+// DLL 加载 / 卸载
 // ---------------------------------------------------------------------------
 
 void CDriverTestApp3Dlg::OnBnClickedLoadDll()
@@ -207,7 +207,7 @@ void CDriverTestApp3Dlg::OnBnClickedUnloadDll()
 }
 
 // ---------------------------------------------------------------------------
-// Async worker infrastructure
+// 异步工作线程基础设施
 // ---------------------------------------------------------------------------
 
 void CDriverTestApp3Dlg::RunAsync(const CString& operationName,
@@ -271,7 +271,7 @@ LRESULT CDriverTestApp3Dlg::OnWorkerDone(WPARAM /*wParam*/, LPARAM lParam)
 }
 
 // ---------------------------------------------------------------------------
-// Busy state management
+// 忙碌状态管理
 // ---------------------------------------------------------------------------
 
 void CDriverTestApp3Dlg::SetBusy(bool busy, const CString& statusText)
@@ -326,7 +326,7 @@ void CDriverTestApp3Dlg::SetBusy(bool busy, const CString& statusText)
 }
 
 // ---------------------------------------------------------------------------
-// Log handling
+// 日志处理
 // ---------------------------------------------------------------------------
 
 LRESULT CDriverTestApp3Dlg::OnLogMessage(WPARAM /*wParam*/, LPARAM lParam)
@@ -403,7 +403,7 @@ void CDriverTestApp3Dlg::EnableControls(bool connected)
 }
 
 // ---------------------------------------------------------------------------
-// Device type change
+// 设备类型切换
 // ---------------------------------------------------------------------------
 
 void CDriverTestApp3Dlg::OnCbnSelchangeDeviceType()
@@ -433,7 +433,7 @@ void CDriverTestApp3Dlg::OnBnClickedOverride()
 }
 
 // ---------------------------------------------------------------------------
-// Connection (async) -- uses dynamic loader C API
+// 连接（异步）-- 使用动态加载器 C API
 // ---------------------------------------------------------------------------
 
 void CDriverTestApp3Dlg::OnBnClickedConnect()
@@ -509,7 +509,7 @@ void CDriverTestApp3Dlg::OnBnClickedDisconnect()
 }
 
 // ---------------------------------------------------------------------------
-// Initialize (async)
+// 初始化（异步）
 // ---------------------------------------------------------------------------
 
 void CDriverTestApp3Dlg::OnBnClickedInitialize()
@@ -540,7 +540,7 @@ void CDriverTestApp3Dlg::OnBnClickedInitialize()
 }
 
 // ---------------------------------------------------------------------------
-// ORL Configuration (async) -- via C API ConfigureORL
+// ORL 配置（异步）-- 通过 C API ConfigureORL
 // ---------------------------------------------------------------------------
 
 void CDriverTestApp3Dlg::OnBnClickedConfigureOrl()
@@ -582,7 +582,7 @@ void CDriverTestApp3Dlg::OnBnClickedConfigureOrl()
 }
 
 // ---------------------------------------------------------------------------
-// Reference (async) -- configure wavelengths/channels then take reference
+// 参考（异步）-- 配置波长/通道后进行参考测量
 // ---------------------------------------------------------------------------
 
 void CDriverTestApp3Dlg::OnBnClickedTakeReference()
@@ -630,7 +630,7 @@ void CDriverTestApp3Dlg::OnBnClickedTakeReference()
 }
 
 // ---------------------------------------------------------------------------
-// Measurement (async)
+// 测量（异步）
 // ---------------------------------------------------------------------------
 
 void CDriverTestApp3Dlg::OnBnClickedTakeMeasurement()
@@ -663,7 +663,7 @@ void CDriverTestApp3Dlg::OnBnClickedTakeMeasurement()
 }
 
 // ---------------------------------------------------------------------------
-// Get Results (async)
+// 获取结果（异步）
 // ---------------------------------------------------------------------------
 
 void CDriverTestApp3Dlg::OnBnClickedGetResults()
@@ -696,7 +696,7 @@ void CDriverTestApp3Dlg::OnBnClickedGetResults()
 }
 
 // ---------------------------------------------------------------------------
-// Run Full Test (async) -- decomposed: Reference + Measurement + GetResults
+// 运行完整测试（异步）-- 分解为：参考 + 测量 + 获取结果
 // ---------------------------------------------------------------------------
 
 void CDriverTestApp3Dlg::OnBnClickedRunFullTest()
@@ -764,7 +764,7 @@ void CDriverTestApp3Dlg::OnBnClickedRunFullTest()
 }
 
 // ---------------------------------------------------------------------------
-// Clear Log
+// 清除日志
 // ---------------------------------------------------------------------------
 
 void CDriverTestApp3Dlg::OnBnClickedClearLog()
@@ -773,7 +773,7 @@ void CDriverTestApp3Dlg::OnBnClickedClearLog()
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
+// 辅助函数
 // ---------------------------------------------------------------------------
 
 std::vector<double> CDriverTestApp3Dlg::GetSelectedWavelengths()

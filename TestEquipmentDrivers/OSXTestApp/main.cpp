@@ -4,8 +4,8 @@
 using namespace OSXSwitch;
 
 // ---------------------------------------------------------------------------
-// Interactive console debug tool for the OSX Optical Switch driver.
-// Connects to a real OSX device or the OSXSimulator on localhost:5025.
+// OSX 光开关驱动的交互式控制台调试工具。
+// 连接到真实的 OSX 设备或 localhost:5025 上的 OSXSimulator。
 // ---------------------------------------------------------------------------
 
 static COSXDriver* g_driver = nullptr;
@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
 
         try
         {
-            // Parse numeric commands
+            // 解析数字命令
             int cmdNum = -1;
             if (input[0] >= '0' && input[0] <= '9')
                 cmdNum = atoi(input.c_str());

@@ -7,7 +7,7 @@
 namespace ViaviNSantecTester {
 
 // ---------------------------------------------------------------------------
-// Construction / Destruction
+// 构造 / 析构
 // ---------------------------------------------------------------------------
 
 CViaviPCTDriver::CViaviPCTDriver(const std::string& ipAddress,
@@ -34,12 +34,12 @@ CViaviPCTDriver::~CViaviPCTDriver()
 }
 
 // ---------------------------------------------------------------------------
-// Two-Level Connection
+// 两级连接
 // ---------------------------------------------------------------------------
 
 bool CViaviPCTDriver::Connect()
 {
-    // Step 1: Connect to Chassis (port 8100) with proper timeout
+    // 步骤1：连接到机箱（端口8100），使用适当的超时
     m_logger.Info("Connecting to Chassis at %s:%d", m_ipAddress.c_str(), CHASSIS_PORT);
 
     m_chassisSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -76,13 +76,13 @@ bool CViaviPCTDriver::Connect()
 
     m_logger.Info("Chassis connection established.");
 
-    // Step 2: Launch Super Application
+    // 步骤2：启动 Super Application
     m_logger.Info("Launching Super Application (PCT)...");
     SendChassisCommand("SUPER:LAUNCH PCT");
     m_logger.Info("Waiting %d ms for Super App to start...", SUPER_APP_WAIT_MS);
     Sleep(SUPER_APP_WAIT_MS);
 
-    // Step 3: Connect to PCT Module via base class (includes ValidateConnection)
+    // 步骤3：通过基类连接到 PCT 模块（包括 ValidateConnection）
     m_logger.Info("Connecting to PCT Module at slot %d (port %d)", m_slot, m_config.port);
     return CBaseEquipmentDriver::Connect();
 }
@@ -133,7 +133,7 @@ std::string CViaviPCTDriver::SendChassisCommand(const std::string& command)
 }
 
 // ---------------------------------------------------------------------------
-// Post-connection validation: query SYST:ERR? to confirm device is responsive
+// 连接后验证：查询 SYST:ERR? 以确认设备已就绪
 // ---------------------------------------------------------------------------
 
 bool CViaviPCTDriver::ValidateConnection()
@@ -158,7 +158,7 @@ bool CViaviPCTDriver::ValidateConnection()
 }
 
 // ---------------------------------------------------------------------------
-// Error Handling
+// 错误处理
 // ---------------------------------------------------------------------------
 
 ErrorInfo CViaviPCTDriver::CheckError()
@@ -174,7 +174,7 @@ ErrorInfo CViaviPCTDriver::CheckError()
             {
                 info.code = atoi(response.substr(0, commaPos).c_str());
                 info.message = response.substr(commaPos + 1);
-                // Trim leading space
+                // 去除前导空格
                 if (!info.message.empty() && info.message[0] == ' ')
                     info.message = info.message.substr(1);
             }
@@ -194,7 +194,7 @@ ErrorInfo CViaviPCTDriver::CheckError()
 }
 
 // ---------------------------------------------------------------------------
-// Device Info
+// 设备信息
 // ---------------------------------------------------------------------------
 
 DeviceInfo CViaviPCTDriver::GetDeviceInfo()
@@ -207,7 +207,7 @@ DeviceInfo CViaviPCTDriver::GetDeviceInfo()
 }
 
 // ---------------------------------------------------------------------------
-// Initialization
+// 初始化
 // ---------------------------------------------------------------------------
 
 bool CViaviPCTDriver::Initialize()
@@ -230,7 +230,7 @@ bool CViaviPCTDriver::Initialize()
 }
 
 // ---------------------------------------------------------------------------
-// Configuration
+// 配置
 // ---------------------------------------------------------------------------
 
 void CViaviPCTDriver::ConfigureWavelengths(const std::vector<double>& wavelengths)
@@ -247,7 +247,7 @@ void CViaviPCTDriver::ConfigureWavelengths(const std::vector<double>& wavelength
     SendCommand(cmd.str());
     AssertNoError();
 
-    // Verify
+    // 验证
     std::string response = SendCommand("SOURCE:LIST?");
     m_logger.Info("Wavelengths configured: %s nm", response.c_str());
 }
@@ -282,7 +282,7 @@ void CViaviPCTDriver::ConfigureORL(const ORLConfig& config)
 }
 
 // ---------------------------------------------------------------------------
-// Reference Measurement
+// 参考测量
 // ---------------------------------------------------------------------------
 
 bool CViaviPCTDriver::TakeReference(const ReferenceConfig& config)
@@ -302,25 +302,25 @@ bool CViaviPCTDriver::OverrideReference(double ilValue, double lengthValue)
         int ch = m_channels[i];
         std::ostringstream cmd;
 
-        // Set IL override
+        // 设置插入损耗覆盖值
         cmd.str(""); cmd.clear();
         cmd << "PATH:JUMPER:IL " << m_launchPort << "," << ch << "," << ilValue;
         SendCommand(cmd.str());
         AssertNoError();
 
-        // Activate IL override (0 = use override)
+        // 激活插入损耗覆盖（0 = 使用覆盖值）
         cmd.str(""); cmd.clear();
         cmd << "PATH:JUMPER:IL:AUTO " << m_launchPort << "," << ch << ",0";
         SendCommand(cmd.str());
         AssertNoError();
 
-        // Set length override
+        // 设置长度覆盖值
         cmd.str(""); cmd.clear();
         cmd << "PATH:JUMPER:LENGTH " << m_launchPort << "," << ch << "," << lengthValue;
         SendCommand(cmd.str());
         AssertNoError();
 
-        // Activate length override (0 = use override)
+        // 激活长度覆盖（0 = 使用覆盖值）
         cmd.str(""); cmd.clear();
         cmd << "PATH:JUMPER:LENGTH:AUTO " << m_launchPort << "," << ch << ",0";
         SendCommand(cmd.str());
@@ -335,7 +335,7 @@ bool CViaviPCTDriver::AutoReference()
 {
     m_logger.Info("Starting automatic reference measurement...");
 
-    // Deactivate all overrides (1 = auto/deactivate override)
+    // 取消所有覆盖（1 = 自动/取消覆盖）
     for (size_t i = 0; i < m_channels.size(); ++i)
     {
         int ch = m_channels[i];
@@ -352,28 +352,28 @@ bool CViaviPCTDriver::AutoReference()
         AssertNoError();
     }
 
-    // Switch to reference mode
+    // 切换到参考模式
     SendCommand("SENS:FUNC 0");
     AssertNoError();
 
-    // Start reference measurement
+    // 启动参考测量
     SendCommand("MEAS:START");
     return WaitForCompletion("Reference");
 }
 
 // ---------------------------------------------------------------------------
-// IL/RL Measurement
+// 插入损耗/回波损耗测量
 // ---------------------------------------------------------------------------
 
 bool CViaviPCTDriver::TakeMeasurement()
 {
     m_logger.Info("Starting IL/RL measurement...");
 
-    // Switch to measurement mode
+    // 切换到测量模式
     SendCommand("SENS:FUNC 1");
     AssertNoError();
 
-    // Start measurement
+    // 启动测量
     SendCommand("MEAS:START");
     return WaitForCompletion("Measurement");
 }
@@ -386,20 +386,20 @@ bool CViaviPCTDriver::WaitForCompletion(const std::string& operationName)
     {
         std::string state = SendCommand("MEAS:STATE?");
 
-        if (state == "1")   // Complete
+        if (state == "1")   // 完成
         {
             m_logger.Info("%s completed successfully.", operationName.c_str());
             AssertNoError();
             return true;
         }
-        else if (state == "3")  // Error
+        else if (state == "3")  // 错误
         {
             m_logger.Error("%s encountered an error.", operationName.c_str());
             ErrorInfo err = CheckError();
             m_logger.Error("Error [%d]: %s", err.code, err.message.c_str());
             return false;
         }
-        else if (state == "2")  // Running
+        else if (state == "2")  // 运行中
         {
             DWORD elapsed = GetTickCount() - startTick;
             if (elapsed > static_cast<DWORD>(MAX_POLL_TIME_MS))
@@ -418,14 +418,14 @@ bool CViaviPCTDriver::WaitForCompletion(const std::string& operationName)
 }
 
 // ---------------------------------------------------------------------------
-// Results Retrieval
+// 结果获取
 // ---------------------------------------------------------------------------
 
 std::vector<MeasurementResult> CViaviPCTDriver::GetResults()
 {
     std::vector<MeasurementResult> results;
 
-    // Re-query wavelengths for accurate mapping
+    // 重新查询波长以确保精确映射
     std::string wlResponse = SendCommand("SOURCE:LIST?");
     std::vector<double> wavelengths = ParseDoubleList(wlResponse);
     if (wavelengths.empty())
@@ -443,7 +443,7 @@ std::vector<MeasurementResult> CViaviPCTDriver::GetResults()
 
         for (size_t wi = 0; wi < wavelengths.size(); ++wi)
         {
-            // Each wavelength produces 5 values
+            // 每个波长产生5个值
             size_t startIdx = wi * 5;
             size_t endIdx = startIdx + 5;
 
@@ -454,9 +454,9 @@ std::vector<MeasurementResult> CViaviPCTDriver::GetResults()
 
             if (endIdx <= rawValues.size())
             {
-                // Index 3 = RL (confirmed from protocol analysis)
+                // 索引3 = 回波损耗（经协议分析确认）
                 result.returnLoss = rawValues[startIdx + 3];
-                // Index 0 used tentatively for IL
+                // 索引0 暂定用于插入损耗
                 result.insertionLoss = rawValues[startIdx];
 
                 int count = 0;
@@ -480,7 +480,7 @@ std::vector<MeasurementResult> CViaviPCTDriver::GetResults()
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
+// 辅助函数
 // ---------------------------------------------------------------------------
 
 std::string CViaviPCTDriver::BuildChannelString(const std::vector<int>& channels)
@@ -490,7 +490,7 @@ std::string CViaviPCTDriver::BuildChannelString(const std::vector<int>& channels
     std::vector<int> sorted(channels);
     std::sort(sorted.begin(), sorted.end());
 
-    // Check contiguous range
+    // 检查是否为连续范围
     bool contiguous = true;
     for (size_t i = 1; i < sorted.size(); ++i)
     {
@@ -524,7 +524,7 @@ std::vector<double> CViaviPCTDriver::ParseDoubleList(const std::string& csv)
     std::string token;
     while (std::getline(iss, token, ','))
     {
-        // Trim whitespace
+        // 去除空白字符
         size_t start = token.find_first_not_of(" \t\r\n");
         if (start == std::string::npos) continue;
         token = token.substr(start);

@@ -13,7 +13,7 @@
 namespace OSXSwitch {
 
 // ---------------------------------------------------------------------------
-// Connection State
+// 连接状态
 // ---------------------------------------------------------------------------
 enum ConnectionState
 {
@@ -24,18 +24,18 @@ enum ConnectionState
 };
 
 // ---------------------------------------------------------------------------
-// Switch configuration type (per OSX-100 datasheet)
+// 开关配置类型（根据 OSX-100 数据手册）
 // ---------------------------------------------------------------------------
 enum SwitchConfigType
 {
-    CONFIG_1A = 0,  // Single input, switched to any output
-    CONFIG_2A,      // Two switchable inputs, switched to any output
-    CONFIG_2B,      // Two inputs switched to synchronized outputs
-    CONFIG_2C       // Two inputs, second trailing first
+    CONFIG_1A = 0,  // 单输入，可切换到任意输出
+    CONFIG_2A,      // 两个可切换输入，可切换到任意输出
+    CONFIG_2B,      // 两个输入切换到同步输出
+    CONFIG_2C       // 两个输入，第二个跟随第一个
 };
 
 // ---------------------------------------------------------------------------
-// Log level
+// 日志级别
 // ---------------------------------------------------------------------------
 enum LogLevel
 {
@@ -46,16 +46,16 @@ enum LogLevel
 };
 
 // ---------------------------------------------------------------------------
-// Connection configuration
+// 连接配置
 // ---------------------------------------------------------------------------
 struct OSX_API ConnectionConfig
 {
     std::string ipAddress;
     int    port;
-    double timeout;             // seconds
+    double timeout;             // 秒
     int    bufferSize;
     int    reconnectAttempts;
-    double reconnectDelay;      // seconds
+    double reconnectDelay;      // 秒
 
     ConnectionConfig()
         : port(5025), timeout(3.0), bufferSize(4096)
@@ -64,7 +64,7 @@ struct OSX_API ConnectionConfig
 };
 
 // ---------------------------------------------------------------------------
-// Device identification info (parsed from *IDN?)
+// 设备识别信息（从 *IDN? 解析）
 // ---------------------------------------------------------------------------
 struct OSX_API DeviceInfo
 {
@@ -77,7 +77,7 @@ struct OSX_API DeviceInfo
 };
 
 // ---------------------------------------------------------------------------
-// Error info returned by CheckError()
+// CheckError() 返回的错误信息
 // ---------------------------------------------------------------------------
 struct OSX_API ErrorInfo
 {
@@ -90,17 +90,17 @@ struct OSX_API ErrorInfo
 };
 
 // ---------------------------------------------------------------------------
-// Module info (parsed from MODule:CATalog? and MODule#:INFO?)
+// 模块信息（从 MODule:CATalog? 和 MODule#:INFO? 解析）
 // ---------------------------------------------------------------------------
 struct OSX_API ModuleInfo
 {
-    int              index;          // 0-based module index
-    std::string      catalogEntry;   // e.g. "SX 1Ax24"
-    std::string      detailedInfo;   // from MODule#:INFO?
+    int              index;          // 从 0 开始的模块索引
+    std::string      catalogEntry;   // 例如 "SX 1Ax24"
+    std::string      detailedInfo;   // 来自 MODule#:INFO?
     SwitchConfigType configType;
     int              channelCount;
     int              currentChannel;
-    int              currentCommon;  // for 2A/2C configurations
+    int              currentCommon;  // 用于 2A/2C 配置
 
     ModuleInfo()
         : index(0), configType(CONFIG_1A)
@@ -109,7 +109,7 @@ struct OSX_API ModuleInfo
 };
 
 // ---------------------------------------------------------------------------
-// C-compatible structures for DLL export interface
+// 用于 DLL 导出接口的 C 兼容结构体
 // ---------------------------------------------------------------------------
 struct OSX_API CDeviceInfo
 {

@@ -5,8 +5,8 @@
 namespace ViaviNSantecTester {
 
 // ---------------------------------------------------------------------------
-// Communication adapter interface for Santec
-// Allows swapping between TCP, GPIB, USB, or DLL-based communication.
+// Santec 通信适配器接口
+// 允许在 TCP、GPIB、USB 或基于 DLL 的通信之间切换。
 // ---------------------------------------------------------------------------
 class DRIVER_API ISantecCommAdapter
 {
@@ -19,7 +19,7 @@ public:
     virtual void SendWrite(const std::string& command) = 0;
 };
 
-// Default TCP adapter (can be replaced with GPIB/USB/DLL adapters later)
+// 默认 TCP 适配器（后续可替换为 GPIB/USB/DLL 适配器）
 class DRIVER_API CSantecTcpAdapter : public ISantecCommAdapter
 {
 public:
@@ -41,63 +41,63 @@ private:
 
 
 // ---------------------------------------------------------------------------
-// Santec Driver for RL1 (Return Loss Meter)
+// Santec RL1 驱动（回波损耗测量仪）
 //
-// SCPI Command Reference:
-//   RLM User Manual M-RL1-001-07, Programming Guide (Table 11 & Table 12)
+// SCPI 命令参考：
+//   RLM 用户手册 M-RL1-001-07，编程指南（表11和表12）
 //
-// Communication:
-//   - TCP/IP on port 5025 (SCPI-RAW per LXI standard)
-//   - USB via USBTMC (requires VISA drivers)
-//   - Commands terminated with \n (linefeed)
-//   - RL1 runs SCPI commands synchronously
-//   - Use *OPC? for synchronization between commands
+// 通信方式：
+//   - TCP/IP 端口 5025（符合 LXI 标准的 SCPI-RAW）
+//   - USB 通过 USBTMC（需要 VISA 驱动）
+//   - 命令以 \n（换行符）结尾
+//   - RL1 同步执行 SCPI 命令
+//   - 使用 *OPC? 进行命令间同步
 // ---------------------------------------------------------------------------
 class DRIVER_API CSantecDriver : public CBaseEquipmentDriver
 {
 public:
     static const int DEFAULT_PORT           = 5025;
-    static const int MEAS_TIMEOUT_MS        = 15000;  // READ:RL? can take up to 10s
+    static const int MEAS_TIMEOUT_MS        = 15000;  // READ:RL? 最多可能需要10秒
     static const int DEFAULT_TIMEOUT_MS     = 5000;
-    static const int MAX_POLL_TIME_MS       = 300000;  // 5 minutes
+    static const int MAX_POLL_TIME_MS       = 300000;  // 5分钟
 
-    // Device model as identified from *IDN?
+    // 通过 *IDN? 识别的设备型号
     enum SantecModel
     {
         MODEL_UNKNOWN = 0,
-        MODEL_RL1,          // RL1 Automated Return Loss Meter (IL+RL)
-        MODEL_RLM_100,      // Legacy name alias for RL1
-        MODEL_ILM_100,      // Insertion Loss Meter (IL only)
-        MODEL_BRM_100       // Backreflection Meter
+        MODEL_RL1,          // RL1 自动回波损耗测量仪（插入损耗+回波损耗）
+        MODEL_RLM_100,      // RL1 的旧名称别名
+        MODEL_ILM_100,      // 插入损耗测量仪（仅插入损耗）
+        MODEL_BRM_100       // 背向反射测量仪
     };
 
-    // RL sensitivity / measurement speed (RL:SENSitivity command)
+    // 回波损耗灵敏度/测量速度（RL:SENSitivity 命令）
     enum RLSensitivity
     {
-        SENSITIVITY_FAST = 0,       // <1.5s per wavelength, RL limited to 75 dB
-        SENSITIVITY_STANDARD = 1    // <5s per wavelength, RL up to 85 dB
+        SENSITIVITY_FAST = 0,       // 每波长 <1.5秒，回波损耗限制为75 dB
+        SENSITIVITY_STANDARD = 1    // 每波长 <5秒，回波损耗可达85 dB
     };
 
-    // DUT length bin (DUT:LENGTH command)
+    // 被测器件长度档位（DUT:LENGTH 命令）
     enum DUTLengthBin
     {
-        LENGTH_BIN_100  = 100,      // <100m (fastest)
-        LENGTH_BIN_1500 = 1500,     // <1500m
-        LENGTH_BIN_4000 = 4000      // <4000m
+        LENGTH_BIN_100  = 100,      // <100米（最快）
+        LENGTH_BIN_1500 = 1500,     // <1500米
+        LENGTH_BIN_4000 = 4000      // <4000米
     };
 
-    // RL gain mode (RL:GAIN command)
+    // 回波损耗增益模式（RL:GAIN 命令）
     enum RLGainMode
     {
-        GAIN_NORMAL = 0,    // 40 to 85 dB (recommended for most applications)
-        GAIN_LOW    = 1     // 30 to 40 dB
+        GAIN_NORMAL = 0,    // 40至85 dB（推荐用于大多数应用）
+        GAIN_LOW    = 1     // 30至40 dB
     };
 
-    // RLB position definition (RL:POSB command)
+    // 回波损耗B位置定义（RL:POSB 命令）
     enum RLPosB
     {
-        POSB_EOF  = 0,      // backward from end of fiber (default)
-        POSB_ZERO = 1       // forward from position zero
+        POSB_EOF  = 0,      // 从光纤末端向后（默认）
+        POSB_ZERO = 1       // 从零位向前
     };
 
     CSantecDriver(const std::string& ipAddress,
@@ -106,7 +106,7 @@ public:
                   CommType commType = COMM_TCP);
     virtual ~CSantecDriver();
 
-    // IEquipmentDriver overrides
+    // IEquipmentDriver 覆盖
     virtual bool Connect() override;
     virtual void Disconnect() override;
     virtual bool IsConnected() const override;
@@ -119,15 +119,15 @@ public:
     virtual bool TakeMeasurement() override;
     virtual std::vector<MeasurementResult> GetResults() override;
 
-    // Set a custom communication adapter (for GPIB/USB/DLL support)
+    // 设置自定义通信适配器（用于 GPIB/USB/DLL 支持）
     void SetCommAdapter(ISantecCommAdapter* adapter, bool takeOwnership = true);
 
-    // Santec-specific accessors
+    // Santec 特定访问器
     SantecModel GetModel() const { return m_model; }
     std::string GetFiberType() const { return m_fiberType; }
     std::vector<int> GetSupportedWavelengths() const { return m_supportedWavelengths; }
 
-    // RL1-specific configuration (Table 12 commands)
+    // RL1 特定配置（表12命令）
     void SetRLSensitivity(RLSensitivity sens);
     RLSensitivity GetRLSensitivity() const { return m_sensitivity; }
 
@@ -149,22 +149,22 @@ public:
     void SetDUTInsertionLoss(double ilDB);
     double GetDUTInsertionLoss() const { return m_dutIL; }
 
-    // Laser control
+    // 激光控制
     void EnableLaser(int wavelengthNm);
     void DisableLaser();
     int  QueryEnabledLaser();
 
-    // Switch control
+    // 开关控制
     void SetOutputChannel(int channel);
     int  GetOutputChannel();
     void SetSwitchChannel(int switchNum, int channel);
     int  GetSwitchChannel(int switchNum);
 
-    // Power meter
+    // 功率计
     int  GetDetectorCount();
     std::string GetDetectorInfo(int detectorNum);
 
-    // Direct measurement reads (synchronous per official protocol)
+    // 直接同步测量读取（按照官方协议同步执行）
     MeasurementResult ReadRL(int wavelengthNm);
     MeasurementResult ReadRL(int wavelengthNm, double refLenA, double refLenB);
     double ReadIL(int detectorNum, int wavelengthNm);
@@ -175,15 +175,15 @@ protected:
     virtual bool ValidateConnection() override;
 
 private:
-    // Unified command interface: routes to adapter or base socket
+    // 统一命令接口：路由到适配器或基类套接字
     std::string Query(const std::string& command);
-    std::string QueryLong(const std::string& command);  // extended timeout for READ:RL?
+    std::string QueryLong(const std::string& command);  // READ:RL? 的延长超时
     void        Write(const std::string& command);
 
-    // Send command and wait for OPC (official synchronization method)
+    // 发送命令并等待 OPC（官方同步方法）
     void WriteAndSync(const std::string& command);
 
-    // Helpers
+    // 辅助函数
     void ParseIdentity(const std::string& idnResponse);
     static std::vector<double> ParseDoubleList(const std::string& csv);
     static std::string Trim(const std::string& s);
@@ -194,11 +194,11 @@ private:
     SantecModel             m_model;
     DeviceInfo              m_deviceInfo;
 
-    // Device capabilities (discovered during Initialize)
-    std::string             m_fiberType;        // "SM" or "MM"
+    // 设备能力（在 Initialize 期间发现）
+    std::string             m_fiberType;        // "SM" 或 "MM"
     std::vector<int>        m_supportedWavelengths;
 
-    // Configuration state
+    // 配置状态
     RLSensitivity           m_sensitivity;
     DUTLengthBin            m_dutLengthBin;
     RLGainMode              m_rlGain;
@@ -211,7 +211,7 @@ private:
     std::vector<int>        m_channels;
     bool                    m_referenced;
 
-    // Cached results from TakeMeasurement()
+    // TakeMeasurement() 的缓存结果
     std::vector<MeasurementResult> m_lastResults;
 };
 

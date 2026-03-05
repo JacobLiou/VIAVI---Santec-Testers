@@ -25,7 +25,7 @@ BOOL CDriverTestAppApp::InitInstance()
     CWinApp::InitInstance();
     AfxEnableControlContainer();
 
-    // Initialize Winsock
+    // 初始化 Winsock
     WSADATA wsaData;
     WSAStartup(MAKEWORD(2, 2), &wsaData);
 

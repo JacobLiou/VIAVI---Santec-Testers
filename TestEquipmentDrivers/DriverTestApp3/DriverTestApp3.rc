@@ -1,4 +1,4 @@
-// Microsoft Visual C++ generated resource script.
+// Microsoft Visual C++ 生成的资源脚本。
 //
 #include "resource.h"
 
@@ -14,7 +14,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Equipment Driver Test Application (Dynamic Loading)"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    // ===== Connection Group (expanded for DLL row) =====
+    // ===== 连接组（为 DLL 行扩展） =====
     GROUPBOX        "Connection",IDC_GROUP_CONNECTION,5,5,280,113
     LTEXT           "DLL Path:",IDC_STATIC_DLL_PATH,15,20,35,8
     EDITTEXT        IDC_EDIT_DLL_PATH,55,18,140,13,ES_AUTOHSCROLL
@@ -35,7 +35,7 @@ BEGIN
     PUSHBUTTON      "Disconnect",IDC_BTN_DISCONNECT,75,76,55,18
     PUSHBUTTON      "Initialize",IDC_BTN_INITIALIZE,135,76,55,18
     
-    // ===== Configuration Group =====
+    // ===== 配置组 =====
     GROUPBOX        "Configuration",IDC_GROUP_CONFIG,5,123,280,110
     LTEXT           "Wavelengths:",IDC_STATIC_WAVELENGTH,15,138,48,8
     CONTROL         "1310 nm",IDC_CHECK_1310,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,68,137,45,10
@@ -54,7 +54,7 @@ BEGIN
     EDITTEXT        IDC_EDIT_B_OFFSET,205,190,40,13,ES_AUTOHSCROLL
     PUSHBUTTON      "Apply ORL Config",IDC_BTN_CONFIGURE_ORL,15,210,90,16
 
-    // ===== Reference Group =====
+    // ===== 参考组 =====
     GROUPBOX        "Reference",IDC_GROUP_REFERENCE,5,238,280,55
     CONTROL         "Override Reference",IDC_CHECK_OVERRIDE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,253,80,10
     LTEXT           "IL (dB):",IDC_STATIC_IL,100,254,28,8
@@ -62,18 +62,18 @@ BEGIN
     LTEXT           "Length (m):",IDC_STATIC_LENGTH,172,254,40,8
     EDITTEXT        IDC_EDIT_LENGTH_VALUE,215,252,35,13,ES_AUTOHSCROLL
 
-    // ===== Operation Group =====
+    // ===== 操作组 =====
     GROUPBOX        "Operations",IDC_GROUP_OPERATION,5,298,280,45
     PUSHBUTTON      "Take Reference",IDC_BTN_TAKE_REFERENCE,15,313,65,18
     PUSHBUTTON      "Take Measurement",IDC_BTN_TAKE_MEASUREMENT,85,313,70,18
     PUSHBUTTON      "Get Results",IDC_BTN_GET_RESULTS,160,313,55,18
     PUSHBUTTON      "Run Full Test",IDC_BTN_RUN_FULL_TEST,220,313,55,18
 
-    // ===== Results Group =====
+    // ===== 结果组 =====
     GROUPBOX        "Measurement Results",IDC_GROUP_RESULTS,290,5,285,240
     CONTROL         "",IDC_LIST_RESULTS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | WS_BORDER | WS_TABSTOP,295,18,275,222
 
-    // ===== Log Group =====
+    // ===== 日志组 =====
     GROUPBOX        "Communication Log",IDC_GROUP_LOG,290,250,285,243
     EDITTEXT        IDC_EDIT_LOG,295,263,275,208,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL
     PUSHBUTTON      "Clear Log",IDC_BTN_CLEAR_LOG,295,474,55,16

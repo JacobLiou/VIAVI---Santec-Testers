@@ -2,21 +2,21 @@
 #include "OSXDllLoader.h"
 
 // ---------------------------------------------------------------------------
-// OSXTestApp2 -- Dynamic-loading debug tool for UDL.OSX.dll
+// OSXTestApp2 -- UDL.OSX.dll 的动态加载调试工具
 //
-// Demonstrates the exact pattern the production framework uses:
+// 演示生产框架使用的确切模式：
 //   1. LoadLibrary("UDL.OSX.dll")
-//   2. GetProcAddress for each OSX_* function
-//   3. Call through function pointers
-//   4. FreeLibrary on exit
+//   2. 对每个 OSX_* 函数调用 GetProcAddress
+//   3. 通过函数指针进行调用
+//   4. 退出时调用 FreeLibrary
 //
-// No .h from UDL.OSX is included.  No .lib is linked.
+// 不包含 UDL.OSX 的任何 .h 文件。不链接任何 .lib 文件。
 // ---------------------------------------------------------------------------
 
 static COSXDllLoader g_loader;
 
 // ---------------------------------------------------------------------------
-// Log callback (will be called from inside the DLL)
+// 日志回调（将从 DLL 内部调用）
 // ---------------------------------------------------------------------------
 static void WINAPI LogHandler(int level, const char* source, const char* message)
 {
@@ -32,7 +32,7 @@ static void WINAPI LogHandler(int level, const char* source, const char* message
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
+// 辅助函数
 // ---------------------------------------------------------------------------
 
 static std::string ReadLine(const char* prompt)
@@ -55,7 +55,7 @@ static int ReadInt(const char* prompt, int defaultVal)
 }
 
 // ---------------------------------------------------------------------------
-// Menu
+// 菜单
 // ---------------------------------------------------------------------------
 
 static void PrintBanner()
@@ -112,7 +112,7 @@ static void PrintHelp()
 }
 
 // ---------------------------------------------------------------------------
-// Guard: check DLL loaded + driver connected
+// 守卫：检查 DLL 是否已加载 + 驱动是否已连接
 // ---------------------------------------------------------------------------
 
 static bool CheckDll()
@@ -137,7 +137,7 @@ static bool CheckConnected()
 }
 
 // ---------------------------------------------------------------------------
-// Commands
+// 命令
 // ---------------------------------------------------------------------------
 
 static void DoLoadDll()
@@ -229,7 +229,7 @@ static void DoDisconnect()
 }
 
 // ---------------------------------------------------------------------------
-// main
+// 主函数
 // ---------------------------------------------------------------------------
 
 int main(int argc, char* argv[])
@@ -243,7 +243,7 @@ int main(int argc, char* argv[])
         std::string input = ReadLine("> ");
         if (input.empty()) continue;
 
-        // Special two-char commands
+        // 特殊的两字符命令
         if (input == "00") { DoUnloadDll(); continue; }
 
         int cmdNum = -1;
@@ -252,12 +252,12 @@ int main(int argc, char* argv[])
 
         switch (cmdNum)
         {
-        // --- DLL ---
+        // --- DLL 管理 ---
         case 0:
             DoLoadDll();
             break;
 
-        // --- Connection ---
+        // --- 连接 ---
         case 1:  DoConnect(); break;
         case 2:  DoDisconnect(); break;
         case 3:
@@ -269,7 +269,7 @@ int main(int argc, char* argv[])
             }
             break;
 
-        // --- Device info ---
+        // --- 设备信息 ---
         case 10:
             if (CheckConnected())
             {
@@ -325,7 +325,7 @@ int main(int argc, char* argv[])
             }
             break;
 
-        // --- Modules ---
+        // --- 模块 ---
         case 20:
             if (CheckConnected())
                 printf("  Module count: %d\n", g_loader.GetModuleCount());
@@ -378,7 +378,7 @@ int main(int argc, char* argv[])
                 printf("  Selected module: %d\n", g_loader.GetSelectedModule());
             break;
 
-        // --- Channel switching ---
+        // --- 通道切换 ---
         case 30:
             if (CheckConnected())
             {
@@ -416,7 +416,7 @@ int main(int argc, char* argv[])
                 printf("  Channel count: %d\n", g_loader.GetChannelCount());
             break;
 
-        // --- Routing ---
+        // --- 路由 ---
         case 40:
             if (CheckConnected())
             {
@@ -488,7 +488,7 @@ int main(int argc, char* argv[])
             }
             break;
 
-        // --- Control ---
+        // --- 控制 ---
         case 50:
             if (CheckConnected())
             {
@@ -527,7 +527,7 @@ int main(int argc, char* argv[])
             }
             break;
 
-        // --- Raw SCPI ---
+        // --- 原始SCPI命令 ---
         case 60:
             if (CheckConnected())
             {

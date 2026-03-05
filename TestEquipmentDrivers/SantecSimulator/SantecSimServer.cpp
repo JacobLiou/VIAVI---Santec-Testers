@@ -42,7 +42,7 @@ CSantecSimServer::~CSantecSimServer()
 }
 
 // ---------------------------------------------------------------------------
-// Lifecycle
+// 生命周期
 // ---------------------------------------------------------------------------
 
 bool CSantecSimServer::Start(int port, SimModel model)
@@ -84,7 +84,7 @@ void CSantecSimServer::Stop()
 }
 
 // ---------------------------------------------------------------------------
-// Server thread
+// 服务器线程
 // ---------------------------------------------------------------------------
 
 DWORD WINAPI CSantecSimServer::ServerThreadProc(LPVOID param)
@@ -182,7 +182,7 @@ void CSantecSimServer::HandleClient(SOCKET clientSocket)
                 cmd.pop_back();
             if (cmd.empty()) continue;
 
-            // Handle chained commands separated by ';'
+            // 处理以 ';' 分隔的链式命令
             std::vector<std::string> subCmds;
             std::istringstream cmdStream(cmd);
             std::string subCmd;
@@ -222,7 +222,7 @@ void CSantecSimServer::HandleClient(SOCKET clientSocket)
 }
 
 // ---------------------------------------------------------------------------
-// SCPI Command Processing (official RL1 commands per M-RL1-001-07)
+// SCPI 命令处理（M-RL1-001-07 官方 RL1 命令）
 // ---------------------------------------------------------------------------
 
 std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
@@ -231,7 +231,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
     for (size_t i = 0; i < upper.size(); ++i)
         upper[i] = static_cast<char>(toupper(static_cast<unsigned char>(upper[i])));
 
-    // ---- IEEE 488.2 Common Commands (Table 11) ----
+    // ---- IEEE 488.2 通用命令 (表 11) ----
 
     if (upper == "*IDN?")
     {
@@ -278,7 +278,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ---- System (Table 11) ----
+    // ---- 系统 (表 11) ----
 
     if (upper == "SYST:ERR?" || upper == ":SYST:ERR?" || upper == "SYST:ERR:NEXT?")
     {
@@ -299,7 +299,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "1999.0";
     }
 
-    // ---- Laser Control (Table 12) ----
+    // ---- 激光器控制 (表 12) ----
 
     if (upper == "LAS:DISAB" || upper == "LASER:DISABLE" || upper == "LAS:DISABLE")
     {
@@ -339,14 +339,14 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return result;
     }
 
-    // ---- Fiber Info (Table 12) ----
+    // ---- 光纤信息 (表 12) ----
 
     if (upper == "FIBER:INFO?")
     {
         return m_fiberType;
     }
 
-    // ---- RL Sensitivity (Table 12) ----
+    // ---- RL 灵敏度 (表 12) ----
 
     if (upper.find("RL:SENS") == 0)
     {
@@ -365,7 +365,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ---- RL Gain (Table 12) ----
+    // ---- RL 增益 (表 12) ----
 
     if (upper.find("RL:GAIN") == 0)
     {
@@ -384,7 +384,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ---- RL POSB (Table 12) ----
+    // ---- RL POSB (表 12) ----
 
     if (upper.find("RL:POSB") == 0)
     {
@@ -403,7 +403,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ---- DUT Length (Table 12) ----
+    // ---- DUT 长度 (表 12) ----
 
     if (upper.find("DUT:LENGTH") == 0)
     {
@@ -423,7 +423,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ---- DUT IL (Table 12) ----
+    // ---- DUT IL (表 12) ----
 
     if (upper.find("DUT:IL") == 0)
     {
@@ -443,7 +443,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ---- Output / Internal Switch (Table 12) ----
+    // ---- 输出 / 内部开关 (表 12) ----
 
     if (upper.find("OUT:CLOS") == 0)
     {
@@ -463,7 +463,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ---- External Switch SW#:CLOSe (Table 12) ----
+    // ---- 外部开关 SW#:CLOSe (表 12) ----
 
     if (upper.find("SW") == 0 && upper.find(":CLOS") != std::string::npos)
     {
@@ -490,14 +490,14 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ---- SW#:INFO? (Table 12) ----
+    // ---- SW#:INFO? (表 12) ----
 
     if (upper.find("SW") == 0 && upper.find(":INFO?") != std::string::npos)
     {
         return "SX1";
     }
 
-    // ---- Local Control (Table 12) ----
+    // ---- 本地控制 (表 12) ----
 
     if (upper.find("LCL") == 0)
     {
@@ -515,7 +515,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ---- Auto Start (Table 12) ----
+    // ---- 自动启动 (表 12) ----
 
     if (upper.find("AUTO:ENAB") == 0)
     {
@@ -541,7 +541,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ---- RL Reference (Table 12) ----
+    // ---- RL 参考 (表 12) ----
 
     if (upper.find("REF:RL") == 0)
     {
@@ -555,7 +555,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         size_t sp = upper.find(' ');
         if (sp != std::string::npos)
         {
-            // REF:RL #,[#] - manually set MTJ1 and optional MTJ2 lengths
+            // REF:RL #,[#] - 手动设置 MTJ1 和可选的 MTJ2 长度
             std::string params = cmd.substr(sp + 1);
             size_t comma = params.find(',');
             if (comma != std::string::npos)
@@ -573,7 +573,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         }
         else
         {
-            // REF:RL with no params - auto-measure test jumper
+            // REF:RL 无参数 - 自动测量跳线
             Log("  [Reference] RL auto-reference measuring...");
             Sleep(m_measDelayMs > 0 ? m_measDelayMs : 1000);
             m_refMTJ1Length = 3.0 + (rand() % 100) * 0.001;
@@ -583,8 +583,8 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ---- IL Reference (Table 12) ----
-    // REF:IL:det# <wavelength>,<value>  or  REF:IL:det#? <wavelength>
+    // ---- IL 参考 (表 12) ----
+    // REF:IL:det# <wavelength>,<value>  或  REF:IL:det#? <wavelength>
 
     if (upper.find("REF:IL:DET") == 0 || upper.find("REF:IL:DET") == 0)
     {
@@ -637,7 +637,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ---- Power Meter (Table 12) ----
+    // ---- 功率计 (表 12) ----
 
     if (upper == "POW:NUM?")
     {
@@ -649,7 +649,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "SIM-DET001,2025-01-01,1.0.0,100,wired";
     }
 
-    // ---- Synchronous Measurement Reads (Table 12) ----
+    // ---- 同步测量读取 (表 12) ----
 
     // READ:IL:det#? <wavelength>
     if (upper.find("READ:IL:DET") == 0 || upper.find("READ:IL:DET") == 0)
@@ -667,7 +667,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return buf;
     }
 
-    // READ:RL? <wavelength> or READ:RL? <wavelength>,<refLenA>,<refLenB>
+    // READ:RL? <wavelength> 或 READ:RL? <wavelength>,<refLenA>,<refLenB>
     if (upper.find("READ:RL?") == 0)
     {
         if (m_model == SIM_ILM_100)
@@ -689,7 +689,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         Log("  [Meas] READ:RL Ch%d @%.0f nm (sensitivity=%s, lengthBin=%d)...",
             m_outputChannel, wavelength, m_rlSensitivity.c_str(), m_dutLengthBin);
 
-        // Simulate measurement delay based on sensitivity
+        // 根据灵敏度模拟测量延迟
         int delay = m_measDelayMs;
         if (m_rlSensitivity == "standard" && m_dutLengthBin >= 4000)
             delay = (std::max)(delay, 8000);
@@ -738,7 +738,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "SIM-BARCODE-001";
     }
 
-    // ---- Test Plan (Table 12) ----
+    // ---- 测试计划 (表 12) ----
 
     if (upper.find("TEST:NOTIFY") == 0)
     {
@@ -758,7 +758,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ---- Status registers (Table 11) ----
+    // ---- 状态寄存器 (表 11) ----
 
     if (upper.find("STAT:OPER") != std::string::npos)
     {
@@ -775,7 +775,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
         return "";
     }
 
-    // ---- Unknown command ----
+    // ---- 未知命令 ----
     Log("  [WARN] Unknown command: %s", cmd.c_str());
     {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -785,7 +785,7 @@ std::string CSantecSimServer::ProcessCommand(const std::string& cmd)
 }
 
 // ---------------------------------------------------------------------------
-// Data Generation
+// 数据生成
 // ---------------------------------------------------------------------------
 
 double CSantecSimServer::GenerateIL(int channel, double wavelength)
@@ -825,7 +825,7 @@ double CSantecSimServer::GenerateLength()
 }
 
 // ---------------------------------------------------------------------------
-// Logging
+// 日志
 // ---------------------------------------------------------------------------
 
 void CSantecSimServer::Log(const char* fmt, ...)

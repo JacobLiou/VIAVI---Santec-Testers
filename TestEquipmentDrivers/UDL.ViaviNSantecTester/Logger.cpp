@@ -95,7 +95,7 @@ void CLogger::Log(LogLevel level, const char* fmt, va_list args)
 
     std::string message(buffer);
 
-    // Instance callback takes priority
+    // 实例回调优先
     LogCallback cb = m_callback;
     if (!cb)
     {
@@ -109,7 +109,7 @@ void CLogger::Log(LogLevel level, const char* fmt, va_list args)
     }
     else
     {
-        // Default: OutputDebugString
+        // 默认：OutputDebugString
         time_t now = time(nullptr);
         struct tm tmNow;
         localtime_s(&tmNow, &now);
