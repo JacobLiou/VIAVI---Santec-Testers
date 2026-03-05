@@ -2,7 +2,7 @@
 
 #include "BaseEquipmentDriver.h"
 
-namespace ViaviNSantecTester {
+namespace SantecRLM {
 
 // ---------------------------------------------------------------------------
 // Santec 通信适配器接口
@@ -215,4 +215,4 @@ private:
     std::vector<MeasurementResult> m_lastResults;
 };
 
-} // namespace ViaviNSantecTester
+} // namespace SantecRLM

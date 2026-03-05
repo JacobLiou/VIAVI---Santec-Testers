@@ -1,7 +1,7 @@
 #pragma once
 
 #include "resource.h"
-#include "ViaviSantecDllLoader.h"
+#include "SantecRLMDllLoader.h"
 #include <vector>
 #include <thread>
 #include <functional>
@@ -87,6 +87,6 @@ private:
     CEdit       m_editLog;
 
     // 动态加载器（替代 IEquipmentDriver*）
-    CViaviSantecDllLoader m_loader;
+    CSantecRLMDllLoader m_loader;
     bool m_bBusy;
 };

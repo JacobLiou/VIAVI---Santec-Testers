@@ -39,9 +39,6 @@
     <ClInclude Include="Logger.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ViaviPCTDriver.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="SantecDriver.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -63,9 +60,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Logger.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="ViaviPCTDriver.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="SantecDriver.cpp">

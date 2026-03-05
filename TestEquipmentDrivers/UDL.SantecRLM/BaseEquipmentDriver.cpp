@@ -2,7 +2,7 @@
 #include "BaseEquipmentDriver.h"
 #include <stdexcept>
 
-namespace ViaviNSantecTester {
+namespace SantecRLM {
 
 CBaseEquipmentDriver::CBaseEquipmentDriver(const ConnectionConfig& config, const std::string& deviceType)
     : m_config(config)
@@ -428,4 +428,4 @@ std::vector<MeasurementResult> CBaseEquipmentDriver::RunFullTest(
     return results;
 }
 
-} // namespace ViaviNSantecTester
+} // namespace SantecRLM

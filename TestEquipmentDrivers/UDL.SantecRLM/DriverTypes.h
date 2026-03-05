@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef UDLVIAVINSANTECTESTER_EXPORTS
+#ifdef UDLSANTECRLM_EXPORTS
 #define DRIVER_API __declspec(dllexport)
 #else
 #define DRIVER_API __declspec(dllimport)
@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace ViaviNSantecTester {
+namespace SantecRLM {
 
 // ---------------------------------------------------------------------------
 // 连接状态
@@ -23,7 +23,7 @@ enum ConnectionState
 };
 
 // ---------------------------------------------------------------------------
-// 测量模式 (VIAVI: SENS:FUNC 0=参考, 1=测量)
+// 测量模式 (0=参考, 1=测量)
 // ---------------------------------------------------------------------------
 enum MeasurementMode
 {
@@ -32,7 +32,7 @@ enum MeasurementMode
 };
 
 // ---------------------------------------------------------------------------
-// 测量状态 (VIAVI: MEAS:STATE? 1=完成, 2=运行中, 3=错误)
+// 测量状态 (1=完成, 2=运行中, 3=错误)
 // ---------------------------------------------------------------------------
 enum MeasurementState
 {
@@ -43,26 +43,7 @@ enum MeasurementState
 };
 
 // ---------------------------------------------------------------------------
-// 回波损耗方法 (VIAVI: MEAS:ORL:SETUP method 参数)
-// ---------------------------------------------------------------------------
-enum ORLMethod
-{
-    ORL_INTEGRATION = 1,
-    ORL_DISCRETE = 2
-};
-
-// ---------------------------------------------------------------------------
-// 回波损耗起点 (VIAVI: MEAS:ORL:SETUP origin 参数)
-// ---------------------------------------------------------------------------
-enum ORLOrigin
-{
-    ORL_ORIGIN_AB_START = 1,    // A+B 锚定到被测器件起点
-    ORL_ORIGIN_AB_END = 2,      // A+B 锚定到被测器件终点
-    ORL_ORIGIN_A_START_B_END = 3 // A 从起点, B 从终点
-};
-
-// ---------------------------------------------------------------------------
-// 通信类型，用于未来 Santec 适配
+// 通信类型
 // ---------------------------------------------------------------------------
 enum CommType
 {
@@ -80,7 +61,7 @@ struct DRIVER_API MeasurementResult
     int    channel;
     double wavelength;          // 纳米 (nm)
     double insertionLoss;       // 分贝 (dB) - 插入损耗 (IL)
-    double returnLoss;          // 分贝 (dB) - 回波损耗 (RL) - 保留用于向后兼容 / VIAVI
+    double returnLoss;          // 分贝 (dB) - 回波损耗 (RL)
     double returnLossA;         // 分贝 (dB) - 回波损耗A (RLA) - Santec RL1: 位置A连接器回波损耗
     double returnLossB;         // 分贝 (dB) - 回波损耗B (RLB) - Santec RL1: 位置B连接器回波损耗
     double returnLossTotal;     // 分贝 (dB) - 总回波损耗 (RLTOTAL) - Santec RL1: 总ORL
@@ -145,26 +126,6 @@ struct DRIVER_API ErrorInfo
 };
 
 // ---------------------------------------------------------------------------
-// 回波损耗配置参数
-// ---------------------------------------------------------------------------
-struct DRIVER_API ORLConfig
-{
-    int channel;
-    ORLMethod method;
-    ORLOrigin origin;
-    double aOffset;             // 米
-    double bOffset;             // 米
-
-    ORLConfig()
-        : channel(1)
-        , method(ORL_DISCRETE)
-        , origin(ORL_ORIGIN_AB_START)
-        , aOffset(-0.5)
-        , bOffset(0.5)
-    {}
-};
-
-// ---------------------------------------------------------------------------
 // 参考覆盖参数
 // ---------------------------------------------------------------------------
 struct DRIVER_API ReferenceConfig
@@ -214,4 +175,4 @@ struct DRIVER_API CConnectionConfig
     double reconnectDelay;
 };
 
-} // namespace ViaviNSantecTester
+} // namespace SantecRLM

@@ -5,7 +5,7 @@
 #include <functional>
 #include <mutex>
 
-namespace ViaviNSantecTester {
+namespace SantecRLM {
 
 enum LogLevel
 {
@@ -46,4 +46,4 @@ private:
     static std::mutex s_mutex;
 };
 
-} // namespace ViaviNSantecTester
+} // namespace SantecRLM

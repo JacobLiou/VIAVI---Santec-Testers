@@ -1,11 +1,10 @@
 #pragma once
 
 // ---------------------------------------------------------------------------
-// CViaviSantecDllLoader -- UDL.ViaviNSantecTester.dll ?????????????
+// CSantecRLMDllLoader -- UDL.SantecRLM.dll 动态加载器
 //
-// ???????????????????? LoadLibrary / GetProcAddress ??????
-// ?????? UDL.ViaviNSantecTester ?????? .h ??????????????? .lib ?????
-// ????????????????????
+// 通过 LoadLibrary / GetProcAddress 动态加载驱动 DLL
+// 无需引用 UDL.SantecRLM 的头文件或 .lib 静态库
 // ---------------------------------------------------------------------------
 
 #include <Windows.h>
@@ -39,7 +38,7 @@ struct DriverDeviceInfo
 };
 
 // ---------------------------------------------------------------------------
-// ?????????????????? UDL.ViaviNSantecTester C ???????
+// UDL.SantecRLM C 导出函数指针类型定义
 // ---------------------------------------------------------------------------
 
 // ???????????
@@ -55,9 +54,6 @@ typedef BOOL (WINAPI *PFN_DriverIsConnected)(HANDLE hDriver);
 // ????
 typedef BOOL (WINAPI *PFN_DriverConfigureWavelengths)(HANDLE hDriver, double* wavelengths, int count);
 typedef BOOL (WINAPI *PFN_DriverConfigureChannels)(HANDLE hDriver, int* channels, int count);
-typedef BOOL (WINAPI *PFN_DriverConfigureORL)(HANDLE hDriver, int channel, int method, int origin,
-                                              double aOffset, double bOffset);
-
 // ????
 typedef BOOL (WINAPI *PFN_DriverTakeReference)(HANDLE hDriver, BOOL bOverride,
                                                double ilValue, double lengthValue);
@@ -88,13 +84,13 @@ typedef HANDLE (WINAPI *PFN_CreateDriverEx)(const char* type, const char* addres
 typedef int    (WINAPI *PFN_EnumerateVisaResources)(char* buffer, int bufferSize);
 
 // ---------------------------------------------------------------------------
-// CViaviSantecDllLoader ??
+// CSantecRLMDllLoader 类
 // ---------------------------------------------------------------------------
 
-class CViaviSantecDllLoader
+class CSantecRLMDllLoader
 {
 public:
-    CViaviSantecDllLoader()
+    CSantecRLMDllLoader()
         : m_hDll(NULL)
         , m_hDriver(NULL)
         , pfnCreateDriver(NULL)
@@ -105,7 +101,6 @@ public:
         , pfnIsConnected(NULL)
         , pfnConfigureWavelengths(NULL)
         , pfnConfigureChannels(NULL)
-        , pfnConfigureORL(NULL)
         , pfnTakeReference(NULL)
         , pfnTakeMeasurement(NULL)
         , pfnGetResults(NULL)
@@ -122,7 +117,7 @@ public:
     {
     }
 
-    ~CViaviSantecDllLoader()
+    ~CSantecRLMDllLoader()
     {
         DestroyDriver();
         UnloadDll();
@@ -164,7 +159,6 @@ public:
         LOAD_PROC(pfnIsConnected,              "DriverIsConnected");
         LOAD_PROC(pfnConfigureWavelengths,     "DriverConfigureWavelengths");
         LOAD_PROC(pfnConfigureChannels,        "DriverConfigureChannels");
-        LOAD_PROC(pfnConfigureORL,             "DriverConfigureORL");
         LOAD_PROC(pfnTakeReference,            "DriverTakeReference");
         LOAD_PROC(pfnTakeMeasurement,          "DriverTakeMeasurement");
         LOAD_PROC(pfnGetResults,               "DriverGetResults");
@@ -201,7 +195,6 @@ public:
             pfnIsConnected = NULL;
             pfnConfigureWavelengths = NULL;
             pfnConfigureChannels = NULL;
-            pfnConfigureORL = NULL;
             pfnTakeReference = NULL;
             pfnTakeMeasurement = NULL;
             pfnGetResults = NULL;
@@ -317,12 +310,6 @@ public:
         return pfnConfigureChannels(m_hDriver, channels, count);
     }
 
-    BOOL ConfigureORL(int channel, int method, int origin, double aOffset, double bOffset)
-    {
-        if (!m_hDriver || !pfnConfigureORL) return FALSE;
-        return pfnConfigureORL(m_hDriver, channel, method, origin, aOffset, bOffset);
-    }
-
     // -----------------------------------------------------------------------
     // ????
     // -----------------------------------------------------------------------
@@ -421,7 +408,6 @@ private:
     PFN_DriverIsConnected           pfnIsConnected;
     PFN_DriverConfigureWavelengths  pfnConfigureWavelengths;
     PFN_DriverConfigureChannels     pfnConfigureChannels;
-    PFN_DriverConfigureORL          pfnConfigureORL;
     PFN_DriverTakeReference         pfnTakeReference;
     PFN_DriverTakeMeasurement       pfnTakeMeasurement;
     PFN_DriverGetResults            pfnGetResults;

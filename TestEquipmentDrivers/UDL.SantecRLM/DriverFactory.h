@@ -5,13 +5,13 @@
 #include <string>
 #include <map>
 
-namespace ViaviNSantecTester {
+namespace SantecRLM {
 
 class DRIVER_API CDriverFactory
 {
 public:
     // 根据设备类型字符串创建驱动
-    // 支持的类型: "viavi", "viavi_pct", "map300", "santec"
+    // 支持的类型: "santec", "rlm"
     static IEquipmentDriver* Create(const std::string& equipmentType,
                                     const std::string& ipAddress,
                                     int port = 0,
@@ -32,4 +32,4 @@ public:
     static std::vector<std::string> SupportedTypes();
 };
 
-} // namespace ViaviNSantecTester
+} // namespace SantecRLM

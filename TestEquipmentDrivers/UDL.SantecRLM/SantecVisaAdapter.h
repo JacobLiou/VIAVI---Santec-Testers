@@ -3,7 +3,7 @@
 #include "SantecDriver.h"
 #include "../Common/VisaHelper.h"
 
-namespace ViaviNSantecTester {
+namespace SantecRLM {
 
 // ---------------------------------------------------------------------------
 // CSantecVisaAdapter -- 通过 VISA (USBTMC) 与 Santec 设备通信
@@ -36,4 +36,4 @@ private:
     int                      m_bufferSize;
 };
 
-} // namespace ViaviNSantecTester
+} // namespace SantecRLM

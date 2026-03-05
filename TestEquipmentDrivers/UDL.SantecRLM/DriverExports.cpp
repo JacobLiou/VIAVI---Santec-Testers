@@ -1,14 +1,13 @@
 #include "stdafx.h"
 #include "DriverExports.h"
 #include "DriverFactory.h"
-#include "ViaviPCTDriver.h"
 #include "SantecDriver.h"
 #include "Logger.h"
 #include "../Common/VisaHelper.h"
 #include <cstring>
 #include <algorithm>
 
-using namespace ViaviNSantecTester;
+using namespace SantecRLM;
 
 // 验证句柄并转换为驱动指针
 static IEquipmentDriver* ToDriver(HANDLE h)
@@ -94,27 +93,6 @@ DRIVER_C_API BOOL WINAPI DriverConfigureChannels(HANDLE hDriver, int* channels, 
     {
         std::vector<int> ch(channels, channels + count);
         ToDriver(hDriver)->ConfigureChannels(ch);
-        return TRUE;
-    }
-    catch (...) { return FALSE; }
-}
-
-DRIVER_C_API BOOL WINAPI DriverConfigureORL(HANDLE hDriver, int channel, int method, int origin,
-                                            double aOffset, double bOffset)
-{
-    if (!hDriver) return FALSE;
-    try
-    {
-        CViaviPCTDriver* viavi = dynamic_cast<CViaviPCTDriver*>(ToDriver(hDriver));
-        if (!viavi) return FALSE; // ORL 配置仅限 VIAVI
-
-        ORLConfig cfg;
-        cfg.channel = channel;
-        cfg.method = static_cast<ORLMethod>(method);
-        cfg.origin = static_cast<ORLOrigin>(origin);
-        cfg.aOffset = aOffset;
-        cfg.bOffset = bOffset;
-        viavi->ConfigureORL(cfg);
         return TRUE;
     }
     catch (...) { return FALSE; }

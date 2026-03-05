@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-namespace ViaviNSantecTester {
+namespace SantecRLM {
 
 class DRIVER_API IEquipmentDriver
 {
@@ -43,4 +43,4 @@ public:
         const ReferenceConfig& refConfig) = 0;
 };
 
-} // namespace ViaviNSantecTester
+} // namespace SantecRLM

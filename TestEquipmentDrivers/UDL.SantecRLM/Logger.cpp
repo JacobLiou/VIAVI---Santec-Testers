@@ -3,7 +3,7 @@
 #include <cstdarg>
 #include <ctime>
 
-namespace ViaviNSantecTester {
+namespace SantecRLM {
 
 LogCallback CLogger::s_globalCallback = nullptr;
 LogLevel CLogger::s_globalLevel = LOG_DEBUG;
@@ -124,4 +124,4 @@ void CLogger::Log(LogLevel level, const char* fmt, va_list args)
     }
 }
 
-} // namespace ViaviNSantecTester
+} // namespace SantecRLM

@@ -4,7 +4,7 @@
 
 using namespace VisaHelper;
 
-namespace ViaviNSantecTester {
+namespace SantecRLM {
 
 CSantecVisaAdapter::CSantecVisaAdapter()
     : m_defaultRM(VI_NULL)
@@ -139,4 +139,4 @@ void CSantecVisaAdapter::SetReadTimeout(DWORD timeoutMs)
     }
 }
 
-} // namespace ViaviNSantecTester
+} // namespace SantecRLM

@@ -80,14 +80,13 @@ BOOL CDriverTestApp3Dlg::OnInitDialog()
 
     g_pDlg = this;
 
-    m_editDllPath.SetWindowText(_T("UDL.ViaviNSantecTester.dll"));
+    m_editDllPath.SetWindowText(_T("UDL.SantecRLM.dll"));
 
-    m_comboDeviceType.AddString(_T("VIAVI MAP300 PCT"));
     m_comboDeviceType.AddString(_T("Santec"));
     m_comboDeviceType.SetCurSel(0);
 
     m_editIP.SetWindowText(_T("10.14.132.194"));
-    m_editPort.SetWindowText(_T("8301"));
+    m_editPort.SetWindowText(_T("5025"));
     m_editSlot.SetWindowText(_T("1"));
 
     m_check1310.SetCheck(BST_CHECKED);
@@ -408,21 +407,10 @@ void CDriverTestApp3Dlg::EnableControls(bool connected)
 
 void CDriverTestApp3Dlg::OnCbnSelchangeDeviceType()
 {
-    int sel = m_comboDeviceType.GetCurSel();
-    if (sel == 0)
-    {
-        m_editPort.SetWindowText(_T("8301"));
-        m_editSlot.SetWindowText(_T("1"));
-        GetDlgItem(IDC_EDIT_SLOT)->EnableWindow(TRUE);
-        GetDlgItem(IDC_BTN_CONFIGURE_ORL)->ShowWindow(SW_SHOW);
-    }
-    else
-    {
-        m_editPort.SetWindowText(_T("5025"));
-        m_editSlot.SetWindowText(_T("0"));
-        GetDlgItem(IDC_EDIT_SLOT)->EnableWindow(FALSE);
-        GetDlgItem(IDC_BTN_CONFIGURE_ORL)->ShowWindow(SW_HIDE);
-    }
+    m_editPort.SetWindowText(_T("5025"));
+    m_editSlot.SetWindowText(_T("0"));
+    GetDlgItem(IDC_EDIT_SLOT)->EnableWindow(FALSE);
+    GetDlgItem(IDC_BTN_CONFIGURE_ORL)->ShowWindow(SW_HIDE);
 }
 
 void CDriverTestApp3Dlg::OnBnClickedOverride()
@@ -454,7 +442,7 @@ void CDriverTestApp3Dlg::OnBnClickedConnect()
 
     CStringA addrA(ip);
     std::string addrStr(addrA.GetString());
-    std::string typeStr = (sel == 0) ? "viavi" : "santec";
+    std::string typeStr = "santec";
 
     // 检测 VISA 资源字符串：以 "USB" 或 "TCPIP" 开头则使用 VISA 模式
     bool useVisa = false;
@@ -487,7 +475,7 @@ void CDriverTestApp3Dlg::OnBnClickedConnect()
     CString modeText = useVisa ? _T("Connecting (VISA)...") : _T("Connecting (TCP)...");
     AppendLog(modeText);
 
-    CViaviSantecDllLoader* pLoader = &m_loader;
+    CSantecRLMDllLoader* pLoader = &m_loader;
     RunAsync(modeText, [pLoader]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
@@ -518,7 +506,7 @@ void CDriverTestApp3Dlg::OnBnClickedDisconnect()
 {
     if (!m_loader.GetDriverHandle()) return;
 
-    CViaviSantecDllLoader* pLoader = &m_loader;
+    CSantecRLMDllLoader* pLoader = &m_loader;
     RunAsync(_T("Disconnecting..."), [pLoader]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
@@ -538,7 +526,7 @@ void CDriverTestApp3Dlg::OnBnClickedInitialize()
 {
     if (!m_loader.GetDriverHandle()) return;
 
-    CViaviSantecDllLoader* pLoader = &m_loader;
+    CSantecRLMDllLoader* pLoader = &m_loader;
     RunAsync(_T("Initializing..."), [pLoader]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
@@ -562,45 +550,12 @@ void CDriverTestApp3Dlg::OnBnClickedInitialize()
 }
 
 // ---------------------------------------------------------------------------
-// ORL 配置（异步）-- 通过 C API ConfigureORL
+// ORL 配置（已移除 -- Santec RLM 不需要独立 ORL 配置）
 // ---------------------------------------------------------------------------
 
 void CDriverTestApp3Dlg::OnBnClickedConfigureOrl()
 {
-    if (!m_loader.GetDriverHandle()) return;
-
-    CString aStr, bStr;
-    m_editAOffset.GetWindowText(aStr);
-    m_editBOffset.GetWindowText(bStr);
-
-    int channel = 1;
-    int method = m_comboOrlMethod.GetCurSel() + 1;
-    int origin = m_comboOrlOrigin.GetCurSel() + 1;
-    double aOffset = _ttof(aStr);
-    double bOffset = _ttof(bStr);
-
-    CViaviSantecDllLoader* pLoader = &m_loader;
-    RunAsync(_T("Configuring ORL..."),
-        [pLoader, channel, method, origin, aOffset, bOffset]() -> WorkerResult*
-    {
-        WorkerResult* r = new WorkerResult();
-        try
-        {
-            r->success = pLoader->ConfigureORL(channel, method, origin, aOffset, bOffset) != FALSE;
-            r->logMessage = r->success
-                ? _T("ORL configuration applied.")
-                : _T("ORL configuration failed.");
-            r->statusText = r->success
-                ? _T("ORL Configured - Ready")
-                : _T("ORL Config Failed");
-        }
-        catch (...)
-        {
-            r->logMessage = _T("ORL config error.");
-            r->statusText = _T("ORL Config Error");
-        }
-        return r;
-    });
+    AppendLog(_T("ORL configuration is not applicable for Santec RLM."));
 }
 
 // ---------------------------------------------------------------------------
@@ -623,7 +578,7 @@ void CDriverTestApp3Dlg::OnBnClickedTakeReference()
 
     AppendLog(_T("Taking reference..."));
 
-    CViaviSantecDllLoader* pLoader = &m_loader;
+    CSantecRLMDllLoader* pLoader = &m_loader;
     RunAsync(_T("Taking reference..."),
         [pLoader, wavelengths, channels, bOverride, ilValue, lengthValue]() -> WorkerResult*
     {
@@ -661,7 +616,7 @@ void CDriverTestApp3Dlg::OnBnClickedTakeMeasurement()
 
     AppendLog(_T("Taking measurement..."));
 
-    CViaviSantecDllLoader* pLoader = &m_loader;
+    CSantecRLMDllLoader* pLoader = &m_loader;
     RunAsync(_T("Measuring..."), [pLoader]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
@@ -692,7 +647,7 @@ void CDriverTestApp3Dlg::OnBnClickedGetResults()
 {
     if (!m_loader.GetDriverHandle()) return;
 
-    CViaviSantecDllLoader* pLoader = &m_loader;
+    CSantecRLMDllLoader* pLoader = &m_loader;
     RunAsync(_T("Retrieving results..."), [pLoader]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
@@ -737,7 +692,7 @@ void CDriverTestApp3Dlg::OnBnClickedRunFullTest()
 
     AppendLog(_T("=== Running Full Test ==="));
 
-    CViaviSantecDllLoader* pLoader = &m_loader;
+    CSantecRLMDllLoader* pLoader = &m_loader;
     RunAsync(_T("Running full test..."),
         [pLoader, wavelengths, channels, bOverride, ilValue, lengthValue]() -> WorkerResult*
     {

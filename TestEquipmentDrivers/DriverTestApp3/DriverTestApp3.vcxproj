@@ -147,7 +147,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="DriverTestApp3.h" />
     <ClInclude Include="DriverTestApp3Dlg.h" />
-    <ClInclude Include="ViaviSantecDllLoader.h" />
+    <ClInclude Include="SantecRLMDllLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DriverTestApp3.rc" />

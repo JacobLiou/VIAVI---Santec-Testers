@@ -5,7 +5,7 @@
 #include <sstream>
 #include <cmath>
 
-namespace ViaviNSantecTester {
+namespace SantecRLM {
 
 // ===========================================================================
 // Santec RL1 官方 SCPI 命令定义
@@ -1137,4 +1137,4 @@ std::string CSantecDriver::Trim(const std::string& s)
     return s.substr(start, end - start + 1);
 }
 
-} // namespace ViaviNSantecTester
+} // namespace SantecRLM

@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace ViaviNSantecTester {
+namespace SantecRLM {
 
 class DRIVER_API CBaseEquipmentDriver : public IEquipmentDriver
 {
@@ -65,4 +65,4 @@ protected:
     CLogger         m_logger;
 };
 
-} // namespace ViaviNSantecTester
+} // namespace SantecRLM

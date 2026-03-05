@@ -1,11 +1,10 @@
 #include "stdafx.h"
 #include "DriverFactory.h"
-#include "ViaviPCTDriver.h"
 #include "SantecDriver.h"
 #include <algorithm>
 #include <stdexcept>
 
-namespace ViaviNSantecTester {
+namespace SantecRLM {
 
 static std::string ToLower(const std::string& s)
 {
@@ -21,15 +20,10 @@ IEquipmentDriver* CDriverFactory::Create(const std::string& equipmentType,
 {
     std::string key = ToLower(equipmentType);
 
-    // 去除空白字符
     while (!key.empty() && key.front() == ' ') key.erase(key.begin());
     while (!key.empty() && key.back() == ' ') key.pop_back();
 
-    if (key == "viavi" || key == "viavi_pct" || key == "map300")
-    {
-        return new CViaviPCTDriver(ipAddress, slot);
-    }
-    else if (key == "santec")
+    if (key == "santec" || key == "rlm")
     {
         int santecPort = (port > 0) ? port : CSantecDriver::DEFAULT_PORT;
         return new CSantecDriver(ipAddress, santecPort);
@@ -38,7 +32,7 @@ IEquipmentDriver* CDriverFactory::Create(const std::string& equipmentType,
     {
         throw std::invalid_argument(
             std::string("Unsupported equipment type: '") + equipmentType
-            + "'. Supported: viavi, viavi_pct, map300, santec");
+            + "'. Supported: santec, rlm");
     }
 }
 
@@ -52,11 +46,7 @@ IEquipmentDriver* CDriverFactory::Create(const std::string& equipmentType,
     while (!key.empty() && key.front() == ' ') key.erase(key.begin());
     while (!key.empty() && key.back() == ' ') key.pop_back();
 
-    if (key == "viavi" || key == "viavi_pct" || key == "map300")
-    {
-        return new CViaviPCTDriver(address, slot);
-    }
-    else if (key == "santec")
+    if (key == "santec" || key == "rlm")
     {
         int santecPort = (port > 0) ? port : CSantecDriver::DEFAULT_PORT;
         return new CSantecDriver(address, santecPort, 5.0, commType);
@@ -65,7 +55,7 @@ IEquipmentDriver* CDriverFactory::Create(const std::string& equipmentType,
     {
         throw std::invalid_argument(
             std::string("Unsupported equipment type: '") + equipmentType
-            + "'. Supported: viavi, viavi_pct, map300, santec");
+            + "'. Supported: santec, rlm");
     }
 }
 
@@ -81,11 +71,9 @@ void CDriverFactory::Destroy(IEquipmentDriver* driver)
 std::vector<std::string> CDriverFactory::SupportedTypes()
 {
     std::vector<std::string> types;
-    types.push_back("viavi");
-    types.push_back("viavi_pct");
-    types.push_back("map300");
     types.push_back("santec");
+    types.push_back("rlm");
     return types;
 }
 
-} // namespace ViaviNSantecTester
+} // namespace SantecRLM

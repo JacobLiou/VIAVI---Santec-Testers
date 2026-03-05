@@ -9,17 +9,17 @@
 
 #include "DriverTypes.h"
 
-#ifdef UDLVIAVINSANTECTESTER_EXPORTS
+#ifdef UDLSANTECRLM_EXPORTS
 #define DRIVER_C_API extern "C" __declspec(dllexport)
 #else
 #define DRIVER_C_API extern "C" __declspec(dllimport)
 #endif
 
 // 创建驱动实例。返回 HANDLE（不透明指针）。
-// type: "viavi" 或 "santec"
+// type: "santec" 或 "rlm"
 // ip: 设备 IP 地址（例如 "10.14.132.194"）
-// port: TCP 端口（0 = 使用该类型的默认端口）
-// slot: 插槽号（仅 VIAVI 使用，Santec 忽略）
+// port: TCP 端口（0 = 使用默认端口）
+// slot: 保留参数（当前忽略）
 DRIVER_C_API HANDLE WINAPI CreateDriver(const char* type, const char* ip, int port, int slot);
 
 // 销毁驱动实例并释放资源
@@ -43,10 +43,6 @@ DRIVER_C_API BOOL WINAPI DriverConfigureWavelengths(HANDLE hDriver, double* wave
 // 配置测量通道（整数数组）
 DRIVER_C_API BOOL WINAPI DriverConfigureChannels(HANDLE hDriver, int* channels, int count);
 
-// 配置回波损耗参数（VIAVI 特定；其他类型为空操作）
-DRIVER_C_API BOOL WINAPI DriverConfigureORL(HANDLE hDriver, int channel, int method, int origin,
-                                            double aOffset, double bOffset);
-
 // 执行参考测量
 // bOverride: TRUE 使用覆盖值，FALSE 使用自动测量
 DRIVER_C_API BOOL WINAPI DriverTakeReference(HANDLE hDriver, BOOL bOverride,
@@ -59,11 +55,11 @@ DRIVER_C_API BOOL WINAPI DriverTakeMeasurement(HANDLE hDriver);
 // results: 预分配的 CMeasurementResult 数组
 // maxCount: 数组大小
 DRIVER_C_API int WINAPI DriverGetResults(HANDLE hDriver,
-                                         ViaviNSantecTester::CMeasurementResult* results,
+                                         SantecRLM::CMeasurementResult* results,
                                          int maxCount);
 
 // 获取设备信息
-DRIVER_C_API BOOL WINAPI DriverGetDeviceInfo(HANDLE hDriver, ViaviNSantecTester::CDeviceInfo* info);
+DRIVER_C_API BOOL WINAPI DriverGetDeviceInfo(HANDLE hDriver, SantecRLM::CDeviceInfo* info);
 
 // 检查最近的错误。返回错误代码（0 = 无错误）。
 // message: 接收错误消息的缓冲区
