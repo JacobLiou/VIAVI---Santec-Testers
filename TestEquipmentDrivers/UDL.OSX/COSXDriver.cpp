@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "COSXDriver.h"
+#include "OSXTcpAdapter.h"
+#include "OSXVisaAdapter.h"
 #include <cstdarg>
 #include <cmath>
 
@@ -77,8 +79,11 @@ void COSXDriver::SetGlobalLogLevel(LogLevel level)
 // 构造 / 析构
 // ===========================================================================
 
-COSXDriver::COSXDriver(const std::string& ipAddress, int port, double timeout)
-    : m_socket(INVALID_SOCKET)
+COSXDriver::COSXDriver(const std::string& ipAddress, int port, double timeout,
+                       CommType commType)
+    : m_commType(commType)
+    , m_adapter(nullptr)
+    , m_ownsAdapter(false)
     , m_state(STATE_DISCONNECTED)
 {
     m_config.ipAddress = ipAddress;
@@ -92,6 +97,19 @@ COSXDriver::COSXDriver(const std::string& ipAddress, int port, double timeout)
 COSXDriver::~COSXDriver()
 {
     Disconnect();
+    if (m_ownsAdapter && m_adapter)
+    {
+        delete m_adapter;
+        m_adapter = nullptr;
+    }
+}
+
+void COSXDriver::SetCommAdapter(IOSXCommAdapter* adapter, bool takeOwnership)
+{
+    if (m_ownsAdapter && m_adapter)
+        delete m_adapter;
+    m_adapter = adapter;
+    m_ownsAdapter = takeOwnership;
 }
 
 // ===========================================================================
@@ -117,102 +135,8 @@ void COSXDriver::Log(LogLevel level, const char* fmt, ...)
 }
 
 // ===========================================================================
-// TCP 连接
+// 连接验证
 // ===========================================================================
-
-bool COSXDriver::ConnectSocket(SOCKET sock, const sockaddr_in& addr, double timeoutSec)
-{
-    u_long nonBlocking = 1;
-    ioctlsocket(sock, FIONBIO, &nonBlocking);
-
-    int ret = connect(sock, (const sockaddr*)&addr, sizeof(addr));
-    if (ret == 0)
-    {
-        u_long blocking = 0;
-        ioctlsocket(sock, FIONBIO, &blocking);
-        return true;
-    }
-
-    int err = WSAGetLastError();
-    if (err != WSAEWOULDBLOCK)
-    {
-        Log(LOG_ERROR, "connect() failed immediately: WSA %d", err);
-        return false;
-    }
-
-    fd_set writefds, exceptfds;
-    FD_ZERO(&writefds);
-    FD_ZERO(&exceptfds);
-    FD_SET(sock, &writefds);
-    FD_SET(sock, &exceptfds);
-
-    timeval tv;
-    tv.tv_sec = static_cast<long>(timeoutSec);
-    tv.tv_usec = static_cast<long>((timeoutSec - tv.tv_sec) * 1000000);
-
-    ret = select(0, NULL, &writefds, &exceptfds, &tv);
-    if (ret == 0)
-    {
-        Log(LOG_ERROR, "Connection timed out after %.1f seconds.", timeoutSec);
-        return false;
-    }
-    if (ret == SOCKET_ERROR)
-    {
-        Log(LOG_ERROR, "select() failed: WSA %d", WSAGetLastError());
-        return false;
-    }
-
-    if (FD_ISSET(sock, &exceptfds))
-    {
-        int optError = 0;
-        int optLen = sizeof(optError);
-        getsockopt(sock, SOL_SOCKET, SO_ERROR, (char*)&optError, &optLen);
-        Log(LOG_ERROR, "Connection failed: socket error %d", optError);
-        return false;
-    }
-
-    if (!FD_ISSET(sock, &writefds))
-    {
-        Log(LOG_ERROR, "Connection failed: socket not writable after select.");
-        return false;
-    }
-
-    int optError = 0;
-    int optLen = sizeof(optError);
-    getsockopt(sock, SOL_SOCKET, SO_ERROR, (char*)&optError, &optLen);
-    if (optError != 0)
-    {
-        Log(LOG_ERROR, "Connection failed: SO_ERROR = %d", optError);
-        return false;
-    }
-
-    u_long blocking = 0;
-    ioctlsocket(sock, FIONBIO, &blocking);
-    return true;
-}
-
-void COSXDriver::EnableKeepAlive(SOCKET sock)
-{
-    BOOL keepAlive = TRUE;
-    setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, (const char*)&keepAlive, sizeof(keepAlive));
-
-    struct tcp_keepalive ka = {};
-    ka.onoff = 1;
-    ka.keepalivetime = 10000;
-    ka.keepaliveinterval = 2000;
-    DWORD bytesReturned = 0;
-    WSAIoctl(sock, SIO_KEEPALIVE_VALS, &ka, sizeof(ka),
-             NULL, 0, &bytesReturned, NULL, NULL);
-}
-
-void COSXDriver::CleanupSocket()
-{
-    if (m_socket != INVALID_SOCKET)
-    {
-        closesocket(m_socket);
-        m_socket = INVALID_SOCKET;
-    }
-}
 
 bool COSXDriver::ValidateConnection()
 {
@@ -255,81 +179,130 @@ bool COSXDriver::Connect()
 
     m_state = STATE_CONNECTING;
 
-    for (int attempt = 1; attempt <= m_config.reconnectAttempts; ++attempt)
+    switch (m_commType)
     {
-        Log(LOG_INFO, "Connecting to %s:%d (attempt %d/%d)",
-            m_config.ipAddress.c_str(), m_config.port,
-            attempt, m_config.reconnectAttempts);
-
-        m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-        if (m_socket == INVALID_SOCKET)
+    case COMM_TCP:
+    {
+        if (!m_adapter)
         {
-            Log(LOG_ERROR, "Failed to create socket: %d", WSAGetLastError());
-            continue;
+            m_adapter = new COSXTcpAdapter();
+            m_ownsAdapter = true;
         }
 
-        sockaddr_in addr = {};
-        addr.sin_family = AF_INET;
-        addr.sin_port = htons(static_cast<u_short>(m_config.port));
-
-        if (inet_pton(AF_INET, m_config.ipAddress.c_str(), &addr.sin_addr) != 1)
+        for (int attempt = 1; attempt <= m_config.reconnectAttempts; ++attempt)
         {
-            Log(LOG_ERROR, "Invalid IP address: %s", m_config.ipAddress.c_str());
-            CleanupSocket();
-            m_state = STATE_ERROR;
-            return false;
+            Log(LOG_INFO, "TCP 连接 %s:%d (尝试 %d/%d)",
+                m_config.ipAddress.c_str(), m_config.port,
+                attempt, m_config.reconnectAttempts);
+
+            if (!m_adapter->Open(m_config.ipAddress, m_config.port, m_config.timeout))
+            {
+                Log(LOG_ERROR, "连接尝试 %d 失败。", attempt);
+                if (attempt < m_config.reconnectAttempts)
+                    Sleep(static_cast<DWORD>(m_config.reconnectDelay * 1000));
+                continue;
+            }
+
+            m_state = STATE_CONNECTED;
+            if (!ValidateConnection())
+            {
+                Log(LOG_ERROR, "验证失败 (尝试 %d)。", attempt);
+                m_adapter->Close();
+                m_state = STATE_CONNECTING;
+                if (attempt < m_config.reconnectAttempts)
+                    Sleep(static_cast<DWORD>(m_config.reconnectDelay * 1000));
+                continue;
+            }
+
+            Log(LOG_INFO, "TCP 连接已建立并验证。");
+            return true;
         }
 
-        if (!ConnectSocket(m_socket, addr, m_config.timeout))
-        {
-            Log(LOG_ERROR, "Connection attempt %d failed.", attempt);
-            CleanupSocket();
-            if (attempt < m_config.reconnectAttempts)
-                Sleep(static_cast<DWORD>(m_config.reconnectDelay * 1000));
-            continue;
-        }
-
-        DWORD timeoutMs = static_cast<DWORD>(m_config.timeout * 1000);
-        setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeoutMs, sizeof(timeoutMs));
-        setsockopt(m_socket, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeoutMs, sizeof(timeoutMs));
-        EnableKeepAlive(m_socket);
-
-        m_state = STATE_CONNECTED;
-        if (!ValidateConnection())
-        {
-            Log(LOG_ERROR, "Post-connection validation failed (attempt %d).", attempt);
-            m_state = STATE_CONNECTING;
-            CleanupSocket();
-            if (attempt < m_config.reconnectAttempts)
-                Sleep(static_cast<DWORD>(m_config.reconnectDelay * 1000));
-            continue;
-        }
-
-        Log(LOG_INFO, "Connection established and validated.");
-        return true;
+        m_state = STATE_ERROR;
+        Log(LOG_ERROR, "所有 TCP 连接尝试已耗尽。");
+        return false;
     }
 
-    m_state = STATE_ERROR;
-    Log(LOG_ERROR, "All connection attempts exhausted.");
-    return false;
+    case COMM_USB:
+    {
+        if (!m_adapter)
+        {
+            m_adapter = new COSXVisaAdapter();
+            m_ownsAdapter = true;
+        }
+
+        for (int attempt = 1; attempt <= m_config.reconnectAttempts; ++attempt)
+        {
+            Log(LOG_INFO, "VISA 连接 %s (尝试 %d/%d)",
+                m_config.ipAddress.c_str(),
+                attempt, m_config.reconnectAttempts);
+
+            try
+            {
+                if (!m_adapter->Open(m_config.ipAddress, m_config.port, m_config.timeout))
+                {
+                    Log(LOG_ERROR, "VISA 连接尝试 %d 失败。", attempt);
+                    if (attempt < m_config.reconnectAttempts)
+                        Sleep(static_cast<DWORD>(m_config.reconnectDelay * 1000));
+                    continue;
+                }
+            }
+            catch (const std::exception& ex)
+            {
+                Log(LOG_ERROR, "VISA 连接异常: %s", ex.what());
+                if (attempt < m_config.reconnectAttempts)
+                    Sleep(static_cast<DWORD>(m_config.reconnectDelay * 1000));
+                continue;
+            }
+
+            m_state = STATE_CONNECTED;
+            if (!ValidateConnection())
+            {
+                Log(LOG_ERROR, "VISA 验证失败 (尝试 %d)。", attempt);
+                m_adapter->Close();
+                m_state = STATE_CONNECTING;
+                if (attempt < m_config.reconnectAttempts)
+                    Sleep(static_cast<DWORD>(m_config.reconnectDelay * 1000));
+                continue;
+            }
+
+            Log(LOG_INFO, "VISA 连接已建立并验证。");
+            return true;
+        }
+
+        m_state = STATE_ERROR;
+        Log(LOG_ERROR, "所有 VISA 连接尝试已耗尽。");
+        return false;
+    }
+
+    case COMM_GPIB:
+        Log(LOG_WARNING, "GPIB 通信尚未实现。");
+        return false;
+
+    case COMM_DLL:
+        Log(LOG_WARNING, "DLL 通信尚未实现。");
+        return false;
+
+    default:
+        Log(LOG_ERROR, "未知通信类型: %d", static_cast<int>(m_commType));
+        return false;
+    }
 }
 
 void COSXDriver::Disconnect()
 {
-    if (m_socket != INVALID_SOCKET)
+    if (m_adapter && m_adapter->IsOpen())
     {
-        try { Write(SCPI::CLS); } catch (...) {}
-        shutdown(m_socket, SD_BOTH);
-        closesocket(m_socket);
-        m_socket = INVALID_SOCKET;
-        Log(LOG_INFO, "Disconnected.");
+        try { Write("*CLS"); } catch (...) {}
+        m_adapter->Close();
+        Log(LOG_INFO, "已断开连接。");
     }
     m_state = STATE_DISCONNECTED;
 }
 
 bool COSXDriver::Reconnect()
 {
-    Log(LOG_INFO, "Reconnecting...");
+    Log(LOG_INFO, "正在重新连接...");
     Disconnect();
     Sleep(static_cast<DWORD>(m_config.reconnectDelay * 1000));
     return Connect();
@@ -337,109 +310,63 @@ bool COSXDriver::Reconnect()
 
 bool COSXDriver::IsConnected() const
 {
-    return m_state == STATE_CONNECTED && m_socket != INVALID_SOCKET;
+    return m_state == STATE_CONNECTED && m_adapter != nullptr && m_adapter->IsOpen();
 }
 
 // ===========================================================================
-// 底层 SCPI 通信
+// SCPI 通信（通过适配器路由）
 // ===========================================================================
-
-std::string COSXDriver::ReceiveResponse()
-{
-    std::string data;
-    std::vector<char> buf(m_config.bufferSize + 1, 0);
-
-    while (true)
-    {
-        int received = recv(m_socket, buf.data(), m_config.bufferSize, 0);
-        if (received == SOCKET_ERROR)
-        {
-            int err = WSAGetLastError();
-            if (err == WSAETIMEDOUT)
-            {
-                Log(LOG_WARNING, "Response timeout. Partial: %s", data.c_str());
-                throw std::runtime_error("Response timeout.");
-            }
-            m_state = STATE_ERROR;
-            throw std::runtime_error(std::string("Receive error: WSA ") + std::to_string(err));
-        }
-        if (received == 0)
-        {
-            m_state = STATE_ERROR;
-            throw std::runtime_error("Connection closed by remote host.");
-        }
-
-        buf[received] = '\0';
-        data.append(buf.data(), received);
-
-        if (data.find('\n') != std::string::npos)
-            break;
-    }
-
-    while (!data.empty() && (data.back() == '\n' || data.back() == '\r' || data.back() == ' '))
-        data.pop_back();
-
-    Log(LOG_DEBUG, "RX: %s", data.c_str());
-    return data;
-}
 
 std::string COSXDriver::Query(const std::string& command)
 {
     if (!IsConnected())
-        throw std::runtime_error("Not connected to OSX device.");
+        throw std::runtime_error("未连接到 OSX 设备。");
 
-    std::string fullCmd = command + "\n";
     Log(LOG_DEBUG, "TX: %s", command.c_str());
 
-    int sent = send(m_socket, fullCmd.c_str(), static_cast<int>(fullCmd.size()), 0);
-    if (sent == SOCKET_ERROR)
+    try
     {
-        int wsaErr = WSAGetLastError();
-        Log(LOG_WARNING, "Send failed (WSA %d). Attempting reconnect...", wsaErr);
-
+        std::string response = m_adapter->SendQuery(command);
+        Log(LOG_DEBUG, "RX: %s", response.c_str());
+        return response;
+    }
+    catch (const std::exception& ex)
+    {
+        Log(LOG_WARNING, "查询失败: %s。尝试重连...", ex.what());
         if (Reconnect())
         {
-            Log(LOG_INFO, "Reconnected. Retrying: %s", command.c_str());
-            sent = send(m_socket, fullCmd.c_str(), static_cast<int>(fullCmd.size()), 0);
+            Log(LOG_INFO, "已重连。重试: %s", command.c_str());
+            std::string response = m_adapter->SendQuery(command);
+            Log(LOG_DEBUG, "RX: %s", response.c_str());
+            return response;
         }
-
-        if (sent == SOCKET_ERROR)
-        {
-            m_state = STATE_ERROR;
-            throw std::runtime_error(std::string("Send failed, WSA error: ")
-                + std::to_string(WSAGetLastError()));
-        }
+        m_state = STATE_ERROR;
+        throw;
     }
-
-    return ReceiveResponse();
 }
 
 void COSXDriver::Write(const std::string& command)
 {
     if (!IsConnected())
-        throw std::runtime_error("Not connected to OSX device.");
+        throw std::runtime_error("未连接到 OSX 设备。");
 
-    std::string fullCmd = command + "\n";
     Log(LOG_DEBUG, "TX: %s", command.c_str());
 
-    int sent = send(m_socket, fullCmd.c_str(), static_cast<int>(fullCmd.size()), 0);
-    if (sent == SOCKET_ERROR)
+    try
     {
-        int wsaErr = WSAGetLastError();
-        Log(LOG_WARNING, "Send failed (WSA %d). Attempting reconnect...", wsaErr);
-
+        m_adapter->SendWrite(command);
+    }
+    catch (const std::exception& ex)
+    {
+        Log(LOG_WARNING, "写入失败: %s。尝试重连...", ex.what());
         if (Reconnect())
         {
-            Log(LOG_INFO, "Reconnected. Retrying: %s", command.c_str());
-            sent = send(m_socket, fullCmd.c_str(), static_cast<int>(fullCmd.size()), 0);
+            Log(LOG_INFO, "已重连。重试: %s", command.c_str());
+            m_adapter->SendWrite(command);
+            return;
         }
-
-        if (sent == SOCKET_ERROR)
-        {
-            m_state = STATE_ERROR;
-            throw std::runtime_error(std::string("Send failed, WSA error: ")
-                + std::to_string(WSAGetLastError()));
-        }
+        m_state = STATE_ERROR;
+        throw;
     }
 }
 

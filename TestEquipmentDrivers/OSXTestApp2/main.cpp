@@ -73,7 +73,9 @@ static void PrintHelp()
     printf("  0  - Load UDL.OSX.dll\n");
     printf("  00 - Unload DLL\n");
     printf("\n--- Connection ---\n");
-    printf("  1  - Create driver + Connect\n");
+    printf("  1  - Create driver + Connect (TCP)\n");
+    printf("  1v - Create driver + Connect (USB/VISA)\n");
+    printf("  1e - Enumerate VISA resources\n");
     printf("  2  - Disconnect + Destroy driver\n");
     printf("  3  - Show connection status\n");
     printf("\n--- Device Info ---\n");
@@ -216,6 +218,88 @@ static void DoConnect()
     }
 }
 
+static void DoConnectVisa()
+{
+    if (!CheckDll()) return;
+    if (g_loader.GetDriverHandle())
+    {
+        printf("Driver already created. Destroy first.\n");
+        return;
+    }
+    if (!g_loader.HasVisaSupport())
+    {
+        printf("VISA support not available in this DLL version.\n");
+        return;
+    }
+
+    printf("Enter VISA resource string\n");
+    printf("  Example: USB0::0x1698::0x0337::SN12345::INSTR\n");
+    std::string rsrc = ReadLine("VISA resource: ");
+    if (rsrc.empty())
+    {
+        printf("No resource string entered.\n");
+        return;
+    }
+
+    printf("Creating driver (VISA/USB) for %s ...\n", rsrc.c_str());
+    if (!g_loader.CreateDriverEx(rsrc.c_str(), 0, 2))
+    {
+        printf("OSX_CreateDriverEx failed.\n");
+        return;
+    }
+
+    printf("Connecting...\n");
+    if (g_loader.Connect())
+    {
+        printf("Connected via VISA!\n");
+
+        OSXDeviceInfo di;
+        memset(&di, 0, sizeof(di));
+        if (g_loader.GetDeviceInfo(&di))
+        {
+            printf("  Manufacturer: %s\n", di.manufacturer);
+            printf("  Model:        %s\n", di.model);
+            printf("  Serial:       %s\n", di.serialNumber);
+            printf("  Firmware:     %s\n", di.firmwareVersion);
+        }
+    }
+    else
+    {
+        printf("VISA connection failed.\n");
+        g_loader.DestroyDriver();
+    }
+}
+
+static void DoEnumerateVisa()
+{
+    if (!CheckDll()) return;
+    if (!g_loader.HasVisaSupport())
+    {
+        printf("VISA support not available in this DLL version.\n");
+        return;
+    }
+
+    char buffer[4096] = {0};
+    int count = g_loader.EnumerateVisaResources(buffer, sizeof(buffer));
+    if (count <= 0)
+    {
+        printf("No VISA resources found (or VISA not installed).\n");
+        return;
+    }
+
+    printf("Found %d VISA resource(s):\n", count);
+    std::string list(buffer);
+    size_t pos = 0;
+    int idx = 1;
+    while (pos < list.size())
+    {
+        size_t semi = list.find(';', pos);
+        if (semi == std::string::npos) semi = list.size();
+        printf("  [%d] %s\n", idx++, list.substr(pos, semi - pos).c_str());
+        pos = semi + 1;
+    }
+}
+
 static void DoDisconnect()
 {
     if (!g_loader.GetDriverHandle())
@@ -243,8 +327,10 @@ int main(int argc, char* argv[])
         std::string input = ReadLine("> ");
         if (input.empty()) continue;
 
-        // 特殊的两字符命令
+        // 特殊的字符串命令
         if (input == "00") { DoUnloadDll(); continue; }
+        if (input == "1v" || input == "1V") { DoConnectVisa(); continue; }
+        if (input == "1e" || input == "1E") { DoEnumerateVisa(); continue; }
 
         int cmdNum = -1;
         if (input[0] >= '0' && input[0] <= '9')

@@ -86,6 +86,10 @@ typedef BOOL (WINAPI *PFN_OSX_SendCommand)(HANDLE hDriver, const char* command,
 typedef void (WINAPI *PFN_OSXLogCallback)(int level, const char* source, const char* message);
 typedef void (WINAPI *PFN_OSX_SetLogCallback)(PFN_OSXLogCallback callback);
 
+// VISA / USB 扩展
+typedef HANDLE (WINAPI *PFN_OSX_CreateDriverEx)(const char* address, int port, int commType);
+typedef int    (WINAPI *PFN_OSX_EnumerateVisaResources)(char* buffer, int bufferSize);
+
 // ---------------------------------------------------------------------------
 // COSXDllLoader 类
 // ---------------------------------------------------------------------------
@@ -129,6 +133,8 @@ public:
         , pfnWaitForOperation(NULL)
         , pfnSendCommand(NULL)
         , pfnSetLogCallback(NULL)
+        , pfnCreateDriverEx(NULL)
+        , pfnEnumerateVisaResources(NULL)
     {
     }
 
@@ -200,9 +206,15 @@ public:
         LOAD_PROC(SendCommand);
         LOAD_PROC(SetLogCallback);
 
+        // VISA 扩展（可选，不影响总数判断）
+        pfnCreateDriverEx = (PFN_OSX_CreateDriverEx)::GetProcAddress(m_hDll, "OSX_CreateDriverEx");
+        pfnEnumerateVisaResources = (PFN_OSX_EnumerateVisaResources)::GetProcAddress(m_hDll, "OSX_EnumerateVisaResources");
+
         #undef LOAD_PROC
 
         printf("[Loader] DLL loaded: %d/%d functions resolved.\n", resolved, total);
+        if (pfnCreateDriverEx) printf("[Loader] VISA extension: OSX_CreateDriverEx available.\n");
+        if (pfnEnumerateVisaResources) printf("[Loader] VISA extension: OSX_EnumerateVisaResources available.\n");
         return (resolved == total);
     }
 
@@ -237,6 +249,30 @@ public:
         }
         return true;
     }
+
+    // 扩展版本：支持指定通信类型 (0=TCP, 2=USB/VISA)
+    bool CreateDriverEx(const char* address, int port, int commType)
+    {
+        if (!pfnCreateDriverEx) { printf("[Loader] CreateDriverEx not available.\n"); return false; }
+        if (m_hDriver) { printf("[Loader] Driver already created. Destroy first.\n"); return false; }
+
+        m_hDriver = pfnCreateDriverEx(address, port, commType);
+        if (!m_hDriver)
+        {
+            printf("[Loader] OSX_CreateDriverEx failed.\n");
+            return false;
+        }
+        return true;
+    }
+
+    // 枚举 VISA 资源
+    int EnumerateVisaResources(char* buffer, int bufferSize)
+    {
+        if (!pfnEnumerateVisaResources) { printf("[Loader] EnumerateVisaResources not available.\n"); return 0; }
+        return pfnEnumerateVisaResources(buffer, bufferSize);
+    }
+
+    bool HasVisaSupport() const { return pfnCreateDriverEx != NULL; }
 
     void DestroyDriver()
     {
@@ -512,4 +548,8 @@ private:
     PFN_OSX_WaitForOperation  pfnWaitForOperation;
     PFN_OSX_SendCommand       pfnSendCommand;
     PFN_OSX_SetLogCallback    pfnSetLogCallback;
+
+    // VISA 扩展
+    PFN_OSX_CreateDriverEx          pfnCreateDriverEx;
+    PFN_OSX_EnumerateVisaResources  pfnEnumerateVisaResources;
 };

@@ -452,21 +452,43 @@ void CDriverTestApp3Dlg::OnBnClickedConnect()
     int slot = _ttoi(slotStr);
     int sel = m_comboDeviceType.GetCurSel();
 
-    CStringA ipA(ip);
-    std::string ipStr(ipA.GetString());
+    CStringA addrA(ip);
+    std::string addrStr(addrA.GetString());
     std::string typeStr = (sel == 0) ? "viavi" : "santec";
 
-    bool created = m_loader.CreateDriver(typeStr.c_str(), ipStr.c_str(), port, slot);
+    // 检测 VISA 资源字符串：以 "USB" 或 "TCPIP" 开头则使用 VISA 模式
+    bool useVisa = false;
+    if (addrStr.size() >= 3)
+    {
+        std::string upper3 = addrStr.substr(0, 5);
+        for (size_t i = 0; i < upper3.size(); ++i)
+            upper3[i] = (char)toupper((unsigned char)upper3[i]);
+        if (upper3.substr(0, 3) == "USB" || upper3.substr(0, 5) == "TCPIP")
+            useVisa = true;
+    }
+
+    bool created = false;
+    if (useVisa && m_loader.HasVisaSupport())
+    {
+        AppendLog(_T("Using VISA/USB mode: ") + ip);
+        created = m_loader.CreateDriverEx(typeStr.c_str(), addrStr.c_str(), port, slot, 2);
+    }
+    else
+    {
+        created = m_loader.CreateDriver(typeStr.c_str(), addrStr.c_str(), port, slot);
+    }
+
     if (!created)
     {
         AppendLog(_T("Failed to create driver instance."));
         return;
     }
 
-    AppendLog(_T("Connecting..."));
+    CString modeText = useVisa ? _T("Connecting (VISA)...") : _T("Connecting (TCP)...");
+    AppendLog(modeText);
 
     CViaviSantecDllLoader* pLoader = &m_loader;
-    RunAsync(_T("Connecting..."), [pLoader]() -> WorkerResult*
+    RunAsync(modeText, [pLoader]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
         try

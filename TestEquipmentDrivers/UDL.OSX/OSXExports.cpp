@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "OSXExports.h"
 #include "COSXDriver.h"
+#include "../Common/VisaHelper.h"
 #include <cstring>
 
 using namespace OSXSwitch;
@@ -377,5 +378,64 @@ OSX_C_API void WINAPI OSX_SetLogCallback(OSXLogCallback callback)
     else
     {
         COSXDriver::SetGlobalLogCallback(nullptr);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// VISA / USB 扩展导出
+// ---------------------------------------------------------------------------
+
+OSX_C_API HANDLE WINAPI OSX_CreateDriverEx(const char* address, int port, int commType)
+{
+    try
+    {
+        CommType ct = static_cast<CommType>(commType);
+        int actualPort = (port > 0) ? port : COSXDriver::DEFAULT_PORT;
+        COSXDriver* driver = new COSXDriver(address ? address : "", actualPort, 5.0, ct);
+        return reinterpret_cast<HANDLE>(driver);
+    }
+    catch (...)
+    {
+        return NULL;
+    }
+}
+
+OSX_C_API int WINAPI OSX_EnumerateVisaResources(char* buffer, int bufferSize)
+{
+    try
+    {
+        VisaHelper::CVisaLoader visa;
+        if (!visa.LoadVisa())
+        {
+            if (buffer && bufferSize > 0)
+                buffer[0] = '\0';
+            return 0;
+        }
+
+        std::vector<std::string> resources = visa.FindResources("USB?*INSTR");
+        if (resources.empty())
+        {
+            if (buffer && bufferSize > 0)
+                buffer[0] = '\0';
+            return 0;
+        }
+
+        std::string joined;
+        for (size_t i = 0; i < resources.size(); ++i)
+        {
+            if (i > 0) joined += ";";
+            joined += resources[i];
+        }
+
+        if (buffer && bufferSize > 0)
+            strncpy_s(buffer, bufferSize, joined.c_str(), _TRUNCATE);
+
+        return static_cast<int>(resources.size());
+    }
+    catch (...)
+    {
+        if (buffer && bufferSize > 0)
+            buffer[0] = '\0';
+        return 0;
     }
 }

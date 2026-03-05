@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IOSXDriver.h"
+#include "IOSXCommAdapter.h"
 #include <string>
 #include <vector>
 #include <functional>
@@ -16,7 +17,9 @@ typedef std::function<void(LogLevel level, const std::string& source, const std:
 // ---------------------------------------------------------------------------
 // COSXDriver -- OSX 光开关的具体驱动实现
 //
-// 通信方式：TCP/IP 端口 5025（符合 LXI 标准的 SCPI-RAW）
+// 通信方式：
+//   - TCP/IP 端口 5025（符合 LXI 标准的 SCPI-RAW）
+//   - USB 通过 USBTMC（需要 VISA 驱动）
 // 协议：    SCPI，命令以 \n 结尾
 // 异步模型：所有开关命令均为异步执行。发出命令后，
 //           需轮询 STAT:OPER:COND? 直到返回 0。
@@ -34,7 +37,8 @@ public:
 
     COSXDriver(const std::string& ipAddress,
                int port = DEFAULT_PORT,
-               double timeout = 5.0);
+               double timeout = 5.0,
+               CommType commType = COMM_TCP);
     virtual ~COSXDriver();
 
     // ---- IOSXDriver: 连接 ----
@@ -93,22 +97,22 @@ public:
     // ---- 访问器 ----
     ConnectionState GetState() const { return m_state; }
     const ConnectionConfig& GetConfig() const { return m_config; }
+    CommType GetCommType() const { return m_commType; }
+
+    // ---- 适配器注入 ----
+    void SetCommAdapter(IOSXCommAdapter* adapter, bool takeOwnership = true);
 
     // ---- 日志 ----
     static void SetGlobalLogCallback(LogCallback callback);
     static void SetGlobalLogLevel(LogLevel level);
 
 private:
-    // 底层 TCP 通信
-    bool ConnectSocket(SOCKET sock, const sockaddr_in& addr, double timeoutSec);
-    void EnableKeepAlive(SOCKET sock);
+    // 连接验证
     bool ValidateConnection();
-    void CleanupSocket();
 
-    // SCPI 命令辅助方法
+    // SCPI 命令辅助方法（通过适配器路由）
     std::string Query(const std::string& command);
     void        Write(const std::string& command);
-    std::string ReceiveResponse();
 
     // 发送命令后等待操作完成
     void WriteAndWait(const std::string& command, int timeoutMs = SWITCH_TIMEOUT_MS);
@@ -122,11 +126,15 @@ private:
     // 日志
     void Log(LogLevel level, const char* fmt, ...);
 
+    // 通信
+    CommType         m_commType;
+    IOSXCommAdapter* m_adapter;
+    bool             m_ownsAdapter;
+
     // 状态
-    SOCKET          m_socket;
     ConnectionConfig m_config;
-    ConnectionState m_state;
-    DeviceInfo      m_deviceInfo;
+    ConnectionState  m_state;
+    DeviceInfo       m_deviceInfo;
 
     // 日志
     static LogCallback s_globalCallback;

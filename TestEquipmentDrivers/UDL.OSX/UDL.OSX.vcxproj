@@ -78,6 +78,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -96,6 +97,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -112,6 +114,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -130,6 +133,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -140,14 +144,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="IOSXDriver.h" />
+    <ClInclude Include="IOSXCommAdapter.h" />
     <ClInclude Include="COSXDriver.h" />
+    <ClInclude Include="OSXTcpAdapter.h" />
+    <ClInclude Include="OSXVisaAdapter.h" />
     <ClInclude Include="OSXExports.h" />
     <ClInclude Include="OSXTypes.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="..\Common\VisaHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="COSXDriver.cpp" />
+    <ClCompile Include="OSXTcpAdapter.cpp" />
+    <ClCompile Include="OSXVisaAdapter.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="OSXExports.cpp" />
     <ClCompile Include="stdafx.cpp">

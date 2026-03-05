@@ -1,89 +1,94 @@
 #pragma once
 
 // ---------------------------------------------------------------------------
-// CViaviSantecDllLoader -- UDL.ViaviNSantecTester.dll 的纯动态绑定加载器
+// CViaviSantecDllLoader -- UDL.ViaviNSantecTester.dll ?????????????
 //
-// 所有与驱动的交互都通过 LoadLibrary / GetProcAddress 进行。
-// 不包含 UDL.ViaviNSantecTester 的任何 .h 文件；不链接任何 .lib 文件。
-// 这是生产框架将使用的模式。
+// ???????????????????? LoadLibrary / GetProcAddress ??????
+// ?????? UDL.ViaviNSantecTester ?????? .h ??????????????? .lib ?????
+// ????????????????????
 // ---------------------------------------------------------------------------
 
 #include <Windows.h>
 #include <string>
 
 // ---------------------------------------------------------------------------
-// C兼容结构体（与DLL导出二进制兼容）
+// C??????????DLL??????????????
 // ---------------------------------------------------------------------------
 
 struct DriverMeasurementResult
 {
-    int    channel;          // 通道号
-    double wavelength;       // 波长 (nm)
-    double insertionLoss;    // 插入损耗 (dB)
-    double returnLoss;       // 回波损耗 (dB)
-    double returnLossA;      // A点回波损耗 (dB)
-    double returnLossB;      // B点回波损耗 (dB)
-    double returnLossTotal;  // 总回波损耗 (dB)
-    double dutLength;        // 被测器件长度 (m)
-    double rawData[10];      // 原始数据
-    int    rawDataCount;     // 原始数据数量
+    int    channel;          // ?????
+    double wavelength;       // ???? (nm)
+    double insertionLoss;    // ??????? (dB)
+    double returnLoss;       // ?????? (dB)
+    double returnLossA;      // A??????? (dB)
+    double returnLossB;      // B??????? (dB)
+    double returnLossTotal;  // ??????? (dB)
+    double dutLength;        // ???????????? (m)
+    double rawData[10];      // ??????
+    int    rawDataCount;     // ??????????
 };
 
 struct DriverDeviceInfo
 {
-    char manufacturer[64];    // 制造商
-    char model[64];           // 型号
-    char serialNumber[64];    // 序列号
-    char firmwareVersion[64]; // 固件版本
-    int  slot;                // 插槽号
+    char manufacturer[64];    // ??????
+    char model[64];           // ???
+    char serialNumber[64];    // ??????
+    char firmwareVersion[64]; // ??????
+    int  slot;                // ????
 };
 
 // ---------------------------------------------------------------------------
-// 函数指针类型定义，匹配 UDL.ViaviNSantecTester C 导出接口
+// ?????????????????? UDL.ViaviNSantecTester C ???????
 // ---------------------------------------------------------------------------
 
-// 生命周期管理
+// ???????????
 typedef HANDLE (WINAPI *PFN_CreateDriver)(const char* type, const char* ip, int port, int slot);
 typedef void   (WINAPI *PFN_DestroyDriver)(HANDLE hDriver);
 
-// 连接管理
+// ???????
 typedef BOOL (WINAPI *PFN_DriverConnect)(HANDLE hDriver);
 typedef void (WINAPI *PFN_DriverDisconnect)(HANDLE hDriver);
 typedef BOOL (WINAPI *PFN_DriverInitialize)(HANDLE hDriver);
 typedef BOOL (WINAPI *PFN_DriverIsConnected)(HANDLE hDriver);
 
-// 配置
+// ????
 typedef BOOL (WINAPI *PFN_DriverConfigureWavelengths)(HANDLE hDriver, double* wavelengths, int count);
 typedef BOOL (WINAPI *PFN_DriverConfigureChannels)(HANDLE hDriver, int* channels, int count);
 typedef BOOL (WINAPI *PFN_DriverConfigureORL)(HANDLE hDriver, int channel, int method, int origin,
                                               double aOffset, double bOffset);
 
-// 测量
+// ????
 typedef BOOL (WINAPI *PFN_DriverTakeReference)(HANDLE hDriver, BOOL bOverride,
                                                double ilValue, double lengthValue);
 typedef BOOL (WINAPI *PFN_DriverTakeMeasurement)(HANDLE hDriver);
 typedef int  (WINAPI *PFN_DriverGetResults)(HANDLE hDriver, DriverMeasurementResult* results, int maxCount);
 
-// 信息 / 错误
+// ??? / ????
 typedef BOOL (WINAPI *PFN_DriverGetDeviceInfo)(HANDLE hDriver, DriverDeviceInfo* info);
 typedef int  (WINAPI *PFN_DriverCheckError)(HANDLE hDriver, char* message, int messageSize);
 
-// 原始SCPI命令
+// ??SCPI????
 typedef BOOL (WINAPI *PFN_DriverSendCommand)(HANDLE hDriver, const char* command,
                                              char* response, int responseSize);
 
-// 日志
+// ???
 typedef void (WINAPI *PFN_DriverLogCallback)(int level, const char* source, const char* message);
 typedef void (WINAPI *PFN_DriverSetLogCallback)(PFN_DriverLogCallback callback);
 
-// Santec专用
+// Santec???
 typedef BOOL (WINAPI *PFN_DriverSantecSetRLSensitivity)(HANDLE hDriver, int sensitivity);
 typedef BOOL (WINAPI *PFN_DriverSantecSetDUTLength)(HANDLE hDriver, int lengthBin);
 typedef BOOL (WINAPI *PFN_DriverSantecSetRLGain)(HANDLE hDriver, int gain);
 typedef BOOL (WINAPI *PFN_DriverSantecSetLocalMode)(HANDLE hDriver, BOOL enabled);
 
+// VISA / USB ???
+typedef HANDLE (WINAPI *PFN_CreateDriverEx)(const char* type, const char* address,
+                                            int port, int slot, int commType);
+typedef int    (WINAPI *PFN_EnumerateVisaResources)(char* buffer, int bufferSize);
+
 // ---------------------------------------------------------------------------
-// CViaviSantecDllLoader 类
+// CViaviSantecDllLoader ??
 // ---------------------------------------------------------------------------
 
 class CViaviSantecDllLoader
@@ -112,6 +117,8 @@ public:
         , pfnSantecSetDUTLength(NULL)
         , pfnSantecSetRLGain(NULL)
         , pfnSantecSetLocalMode(NULL)
+        , pfnCreateDriverEx(NULL)
+        , pfnEnumerateVisaResources(NULL)
     {
     }
 
@@ -122,21 +129,21 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // DLL 生命周期管理
+    // DLL ???????????
     // -----------------------------------------------------------------------
 
     bool LoadDll(const char* dllPath)
     {
         if (m_hDll)
         {
-            printf("[加载器] DLL已加载，请先卸载。\n");
+            printf("[??????] DLL???????????????\n");
             return false;
         }
 
         m_hDll = ::LoadLibraryA(dllPath);
         if (!m_hDll)
         {
-            printf("[加载器] LoadLibrary(\"%s\") 失败，错误码=%lu\n", dllPath, GetLastError());
+            printf("[??????] LoadLibrary(\"%s\") ??????????=%lu\n", dllPath, GetLastError());
             return false;
         }
 
@@ -147,7 +154,7 @@ public:
             ++total; \
             varName = (decltype(varName))::GetProcAddress(m_hDll, exportName); \
             if (varName) ++resolved; \
-            else printf("[加载器] 警告: %s 未找到\n", exportName);
+            else printf("[??????] ????: %s ?????\n", exportName);
 
         LOAD_PROC(pfnCreateDriver,             "CreateDriver");
         LOAD_PROC(pfnDestroyDriver,            "DestroyDriver");
@@ -170,9 +177,13 @@ public:
         LOAD_PROC(pfnSantecSetRLGain,          "DriverSantecSetRLGain");
         LOAD_PROC(pfnSantecSetLocalMode,       "DriverSantecSetLocalMode");
 
+        // VISA ????????????????????????
+        pfnCreateDriverEx = (PFN_CreateDriverEx)::GetProcAddress(m_hDll, "CreateDriverEx");
+        pfnEnumerateVisaResources = (PFN_EnumerateVisaResources)::GetProcAddress(m_hDll, "EnumerateVisaResources");
+
         #undef LOAD_PROC
 
-        printf("[加载器] DLL已加载: %d/%d 个函数已解析。\n", resolved, total);
+        printf("[??????] DLL?????: %d/%d ?????????????\n", resolved, total);
         return (resolved == total);
     }
 
@@ -202,29 +213,55 @@ public:
             pfnSantecSetDUTLength = NULL;
             pfnSantecSetRLGain = NULL;
             pfnSantecSetLocalMode = NULL;
-            printf("[加载器] DLL已卸载。\n");
+            pfnCreateDriverEx = NULL;
+            pfnEnumerateVisaResources = NULL;
+            printf("[??????] DLL???????\n");
         }
     }
 
     bool IsDllLoaded() const { return m_hDll != NULL; }
 
     // -----------------------------------------------------------------------
-    // 驱动实例生命周期管理
+    // ??????????????????
     // -----------------------------------------------------------------------
 
     bool CreateDriver(const char* type, const char* ip, int port, int slot)
     {
-        if (!pfnCreateDriver) { printf("[加载器] DLL未加载。\n"); return false; }
-        if (m_hDriver) { printf("[加载器] 驱动已创建，请先销毁。\n"); return false; }
+        if (!pfnCreateDriver) { printf("[??????] DLL???????\n"); return false; }
+        if (m_hDriver) { printf("[??????] ????????????????????\n"); return false; }
 
         m_hDriver = pfnCreateDriver(type, ip, port, slot);
         if (!m_hDriver)
         {
-            printf("[加载器] CreateDriver 失败。\n");
+            printf("[??????] CreateDriver ????\n");
             return false;
         }
         return true;
     }
+
+    // ????????????????????? (0=TCP, 1=GPIB, 2=USB/VISA)
+    bool CreateDriverEx(const char* type, const char* address, int port, int slot, int commType)
+    {
+        if (!pfnCreateDriverEx) { printf("[Loader] CreateDriverEx not available.\n"); return false; }
+        if (m_hDriver) { printf("[Loader] Driver already created. Destroy first.\n"); return false; }
+
+        m_hDriver = pfnCreateDriverEx(type, address, port, slot, commType);
+        if (!m_hDriver)
+        {
+            printf("[Loader] CreateDriverEx failed.\n");
+            return false;
+        }
+        return true;
+    }
+
+    // ??? VISA ???
+    int EnumerateVisaResources(char* buffer, int bufferSize)
+    {
+        if (!pfnEnumerateVisaResources) { printf("[Loader] EnumerateVisaResources not available.\n"); return 0; }
+        return pfnEnumerateVisaResources(buffer, bufferSize);
+    }
+
+    bool HasVisaSupport() const { return pfnCreateDriverEx != NULL; }
 
     void DestroyDriver()
     {
@@ -238,7 +275,7 @@ public:
     HANDLE GetDriverHandle() const { return m_hDriver; }
 
     // -----------------------------------------------------------------------
-    // 连接管理
+    // ???????
     // -----------------------------------------------------------------------
 
     BOOL Connect()
@@ -265,7 +302,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // 配置
+    // ????
     // -----------------------------------------------------------------------
 
     BOOL ConfigureWavelengths(double* wavelengths, int count)
@@ -287,7 +324,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // 测量
+    // ????
     // -----------------------------------------------------------------------
 
     BOOL TakeReference(BOOL bOverride, double ilValue, double lengthValue)
@@ -309,7 +346,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // 信息 / 错误
+    // ??? / ????
     // -----------------------------------------------------------------------
 
     BOOL GetDeviceInfo(DriverDeviceInfo* info)
@@ -325,7 +362,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // 原始SCPI命令
+    // ??SCPI????
     // -----------------------------------------------------------------------
 
     BOOL SendCommand(const char* command, char* response, int responseSize)
@@ -335,7 +372,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // 日志
+    // ???
     // -----------------------------------------------------------------------
 
     void SetLogCallback(PFN_DriverLogCallback callback)
@@ -344,7 +381,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // Santec专用功能
+    // Santec???????
     // -----------------------------------------------------------------------
 
     BOOL SantecSetRLSensitivity(int sensitivity)
@@ -372,10 +409,10 @@ public:
     }
 
 private:
-    HMODULE m_hDll;      // DLL模块句柄
-    HANDLE  m_hDriver;   // 驱动实例句柄
+    HMODULE m_hDll;      // DLL?????
+    HANDLE  m_hDriver;   // ??????????
 
-    // 函数指针 -- 在 LoadDll 时解析
+    // ??????? -- ?? LoadDll ?????
     PFN_CreateDriver                pfnCreateDriver;
     PFN_DestroyDriver               pfnDestroyDriver;
     PFN_DriverConnect               pfnConnect;
@@ -396,4 +433,8 @@ private:
     PFN_DriverSantecSetDUTLength    pfnSantecSetDUTLength;
     PFN_DriverSantecSetRLGain       pfnSantecSetRLGain;
     PFN_DriverSantecSetLocalMode    pfnSantecSetLocalMode;
+
+    // VISA ???
+    PFN_CreateDriverEx              pfnCreateDriverEx;
+    PFN_EnumerateVisaResources      pfnEnumerateVisaResources;
 };

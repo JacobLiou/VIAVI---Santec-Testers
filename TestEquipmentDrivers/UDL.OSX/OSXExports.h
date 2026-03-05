@@ -109,3 +109,18 @@ OSX_C_API BOOL WINAPI OSX_SendCommand(HANDLE hDriver, const char* command,
 
 typedef void (WINAPI *OSXLogCallback)(int level, const char* source, const char* message);
 OSX_C_API void WINAPI OSX_SetLogCallback(OSXLogCallback callback);
+
+// ---------------------------------------------------------------------------
+// VISA / USB 扩展
+// ---------------------------------------------------------------------------
+
+// 创建 OSX 驱动实例（扩展版本，支持指定通信类型）
+// commType: 0=TCP, 2=USB(VISA)
+// address: TCP 模式为 IP 地址，USB 模式为 VISA 资源字符串
+OSX_C_API HANDLE WINAPI OSX_CreateDriverEx(const char* address, int port, int commType);
+
+// 枚举可用的 VISA 资源（USB 设备）
+// buffer: 接收以分号分隔的资源字符串列表
+// bufferSize: 缓冲区大小
+// 返回值: 找到的资源数量
+OSX_C_API int WINAPI OSX_EnumerateVisaResources(char* buffer, int bufferSize);
