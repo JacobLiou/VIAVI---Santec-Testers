@@ -1,10 +1,25 @@
 #include "stdafx.h"
 #include "GMSApp.h"
 #include "GMSAppDlg.h"
+#include <fstream>
+#include <string>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+// #region agent log
+static void DebugLog(const char* location, const char* message, const char* extraJson = nullptr)
+{
+    std::ofstream f("C:\\Users\\menghl2\\WorkSpace\\Projects\\VIAVI---Santec-Testers\\debug-f1f921.log", std::ios::app);
+    if (f.is_open()) {
+        f << "{\"sessionId\":\"f1f921\",\"location\":\"" << location
+          << "\",\"message\":\"" << message << "\"";
+        if (extraJson) f << ",\"data\":{" << extraJson << "}";
+        f << ",\"timestamp\":" << GetTickCount64() << "}\n";
+    }
+}
+// #endregion
 
 // ---------------------------------------------------------------------------
 // 全局日志回调 -- 将驱动日志消息通过 PostMessage 转发到对话框
@@ -400,6 +415,9 @@ void CGMSAppDlg::OnBnClickedZeroing()
 
             if (!useSwitch)
             {
+                // #region agent log
+                DebugLog("GMSAppDlg.cpp:Zeroing:single", "single-ch path, NO stop check exists here", "\"hypothesisId\":\"B\",\"useSwitch\":false");
+                // #endregion
                 std::vector<int> ch = channels;
                 pRlm->ConfigureChannels(ch.data(), (int)ch.size());
                 BOOL ok = pRlm->TakeReference(bOverride, ilValue, lengthValue);
@@ -412,6 +430,9 @@ void CGMSAppDlg::OnBnClickedZeroing()
                 bool allOk = true;
                 for (size_t i = 0; i < channels.size(); ++i)
                 {
+                    // #region agent log
+                    DebugLog("GMSAppDlg.cpp:Zeroing:multi", "checking pStop before channel", "\"hypothesisId\":\"B\",\"useSwitch\":true");
+                    // #endregion
                     if (pStop->load()) { log += _T("\r\nStopped by user."); break; }
 
                     int ch = channels[i];
@@ -483,6 +504,9 @@ void CGMSAppDlg::OnBnClickedMeasure()
 
             if (!useSwitch)
             {
+                // #region agent log
+                DebugLog("GMSAppDlg.cpp:Measure:single", "single-ch path, NO stop check exists here", "\"hypothesisId\":\"B\",\"useSwitch\":false");
+                // #endregion
                 std::vector<int> ch = channels;
                 pRlm->ConfigureChannels(ch.data(), (int)ch.size());
 
@@ -504,6 +528,9 @@ void CGMSAppDlg::OnBnClickedMeasure()
                 bool allOk = true;
                 for (size_t i = 0; i < channels.size(); ++i)
                 {
+                    // #region agent log
+                    DebugLog("GMSAppDlg.cpp:Measure:multi", "checking pStop before channel", "\"hypothesisId\":\"B\",\"useSwitch\":true");
+                    // #endregion
                     if (pStop->load()) { log += _T("\r\nStopped by user."); break; }
 
                     int ch = channels[i];
@@ -597,6 +624,9 @@ void CGMSAppDlg::OnBnClickedContinuous()
             while (!pStop->load())
             {
                 ++iteration;
+                // #region agent log
+                { char buf[128]; sprintf_s(buf, "\"hypothesisId\":\"C\",\"iteration\":%d", iteration); DebugLog("GMSAppDlg.cpp:Continuous:loop", "start iteration, checking pStop", buf); }
+                // #endregion
                 CString iterLog;
                 iterLog.Format(_T("--- Iteration %d ---\r\n"), iteration);
                 log += iterLog;
@@ -681,8 +711,12 @@ void CGMSAppDlg::OnBnClickedContinuous()
 
 void CGMSAppDlg::OnBnClickedStop()
 {
+    // #region agent log
+    DebugLog("GMSAppDlg.cpp:OnBnClickedStop", "STOP button clicked!", "\"hypothesisId\":\"D\"");
+    // #endregion
     m_bStopRequested = true;
-    AppendLog(_T("Stop requested..."));
+    AppendLog(_T("Stop requested... waiting for current operation to finish."));
+    UpdateStatus(_T("Stopping..."));
 }
 
 // ---------------------------------------------------------------------------
@@ -759,6 +793,9 @@ void CGMSAppDlg::SetBusy(bool busy, const CString& statusText)
         UpdateStatus(statusText);
 
     EnableControls();
+    // #region agent log
+    DebugLog("GMSAppDlg.cpp:SetBusy", busy ? "SetBusy=TRUE,STOP should be enabled" : "SetBusy=FALSE,STOP should be disabled", busy ? "\"hypothesisId\":\"A\",\"busy\":true" : "\"hypothesisId\":\"A\",\"busy\":false");
+    // #endregion
 }
 
 void CGMSAppDlg::EnableControls()
