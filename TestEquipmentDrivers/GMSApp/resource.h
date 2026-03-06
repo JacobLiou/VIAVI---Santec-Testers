@@ -42,9 +42,6 @@
 #define IDC_BTN_CLEAR_LOG               1051
 #define IDC_GROUP_LOG                   1052
 
-// 连接模式 / TCP 端口
-#define IDC_COMBO_CONN_MODE             1060
-#define IDC_EDIT_RLM_PORT               1061
 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS

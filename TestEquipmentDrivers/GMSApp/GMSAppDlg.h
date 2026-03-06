@@ -37,7 +37,6 @@ protected:
     afx_msg void OnBnClickedStop();
     afx_msg void OnBnClickedClearLog();
     afx_msg void OnBnClickedOverride();
-    afx_msg void OnCbnSelchangeConnMode();
 
     afx_msg LRESULT OnLogMessage(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnWorkerDone(WPARAM wParam, LPARAM lParam);
@@ -47,7 +46,6 @@ private:
     void UpdateStatus(const CString& status);
     void EnableControls();
     void SetBusy(bool busy, const CString& statusText = _T(""));
-    bool IsVisaMode();
 
     void PopulateResultsList(const std::vector<DriverMeasurementResult>& results);
 
@@ -69,9 +67,7 @@ private:
 
     // UI Controls
     CEdit       m_editRlmDll;
-    CComboBox   m_comboConnMode;
     CComboBox   m_comboRlmAddr;
-    CEdit       m_editRlmPort;
     CButton     m_check1310;
     CButton     m_check1550;
     CEdit       m_editChFrom;

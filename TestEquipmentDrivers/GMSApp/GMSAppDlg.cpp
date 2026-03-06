@@ -1,25 +1,11 @@
 #include "stdafx.h"
 #include "GMSApp.h"
 #include "GMSAppDlg.h"
-#include <fstream>
 #include <string>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
-// #region agent log
-static void DebugLog(const char* location, const char* message, const char* extraJson = nullptr)
-{
-    std::ofstream f("C:\\Users\\menghl2\\WorkSpace\\Projects\\VIAVI---Santec-Testers\\debug-f1f921.log", std::ios::app);
-    if (f.is_open()) {
-        f << "{\"sessionId\":\"f1f921\",\"location\":\"" << location
-          << "\",\"message\":\"" << message << "\"";
-        if (extraJson) f << ",\"data\":{" << extraJson << "}";
-        f << ",\"timestamp\":" << GetTickCount64() << "}\n";
-    }
-}
-// #endregion
 
 // ---------------------------------------------------------------------------
 // 全局日志回调 -- 将驱动日志消息通过 PostMessage 转发到对话框
@@ -55,7 +41,6 @@ BEGIN_MESSAGE_MAP(CGMSAppDlg, CDialogEx)
     ON_BN_CLICKED(IDC_BTN_STOP, &CGMSAppDlg::OnBnClickedStop)
     ON_BN_CLICKED(IDC_BTN_CLEAR_LOG, &CGMSAppDlg::OnBnClickedClearLog)
     ON_BN_CLICKED(IDC_CHECK_OVERRIDE, &CGMSAppDlg::OnBnClickedOverride)
-    ON_CBN_SELCHANGE(IDC_COMBO_CONN_MODE, &CGMSAppDlg::OnCbnSelchangeConnMode)
     ON_MESSAGE(WM_LOG_MESSAGE, &CGMSAppDlg::OnLogMessage)
     ON_MESSAGE(WM_WORKER_DONE, &CGMSAppDlg::OnWorkerDone)
 END_MESSAGE_MAP()
@@ -81,9 +66,7 @@ void CGMSAppDlg::DoDataExchange(CDataExchange* pDX)
 {
     CDialogEx::DoDataExchange(pDX);
     DDX_Control(pDX, IDC_EDIT_RLM_DLL, m_editRlmDll);
-    DDX_Control(pDX, IDC_COMBO_CONN_MODE, m_comboConnMode);
     DDX_Control(pDX, IDC_COMBO_RLM_ADDR, m_comboRlmAddr);
-    DDX_Control(pDX, IDC_EDIT_RLM_PORT, m_editRlmPort);
     DDX_Control(pDX, IDC_CHECK_1310, m_check1310);
     DDX_Control(pDX, IDC_CHECK_1550, m_check1550);
     DDX_Control(pDX, IDC_EDIT_CH_FROM, m_editChFrom);
@@ -106,12 +89,6 @@ BOOL CGMSAppDlg::OnInitDialog()
     g_pDlg = this;
 
     m_editRlmDll.SetWindowText(_T("UDL.SantecRLM.dll"));
-
-    m_comboConnMode.AddString(_T("USB (VISA)"));
-    m_comboConnMode.AddString(_T("TCP (Ethernet)"));
-    m_comboConnMode.SetCurSel(0);
-
-    m_editRlmPort.SetWindowText(_T("5025"));
 
     m_check1310.SetCheck(BST_CHECKED);
     m_check1550.SetCheck(BST_CHECKED);
@@ -139,9 +116,9 @@ BOOL CGMSAppDlg::OnInitDialog()
     m_listResults.InsertColumn(7, _T("Length (m)"), LVCFMT_RIGHT, 75);
 
     EnableControls();
-    AppendLog(_T("GMS Application started (Integrated Mode)."));
-    AppendLog(_T("In integrated mode, PC connects to RLM only. RLM controls OSX switch via USB A port."));
-    AppendLog(_T("Load DLL, select connection mode (USB VISA / TCP), then connect."));
+    AppendLog(_T("GMS Application started (USB Integrated Mode)."));
+    AppendLog(_T("PC connects to RLM via USB. RLM controls OSX switch via USB A port."));
+    AppendLog(_T("Load DLL, enumerate VISA resources, then connect."));
 
     return TRUE;
 }
@@ -214,12 +191,6 @@ void CGMSAppDlg::OnBnClickedLoadRlm()
 
 void CGMSAppDlg::OnBnClickedEnumerate()
 {
-    if (!IsVisaMode())
-    {
-        AppendLog(_T("VISA enumeration is only available in USB (VISA) mode."));
-        return;
-    }
-
     m_comboRlmAddr.ResetContent();
 
     char buf[4096] = { 0 };
@@ -280,29 +251,12 @@ void CGMSAppDlg::OnBnClickedConnect()
     CStringA rlmAddrA(rlmAddr);
     std::string rlmStr(rlmAddrA.GetString());
 
-    bool useVisa = IsVisaMode();
-
-    CString rlmPortStr;
-    m_editRlmPort.GetWindowText(rlmPortStr);
-    int rlmPort = _ttoi(rlmPortStr);
-    if (rlmPort <= 0) rlmPort = 5025;
-
     int switchNum = GetSelectedSwitchNum();
 
     CSantecRLMDllLoader* pRlm = &m_rlmLoader;
 
-    bool rlmCreated = false;
-    if (useVisa)
-    {
-        rlmCreated = pRlm->CreateDriverEx("santec", rlmStr.c_str(), 0, 0, 2);
-        AppendLog(_T("[RLM] Creating driver (USB VISA)..."));
-    }
-    else
-    {
-        rlmCreated = pRlm->CreateDriver("santec", rlmStr.c_str(), rlmPort, 0);
-        CString msg; msg.Format(_T("[RLM] Creating driver (TCP %s:%d)..."), (LPCTSTR)rlmAddr, rlmPort);
-        AppendLog(msg);
-    }
+    AppendLog(_T("[RLM] Creating driver (USB VISA)..."));
+    bool rlmCreated = pRlm->CreateDriverEx("santec", rlmStr.c_str(), 0, 0, 2);
 
     if (!rlmCreated)
     {
@@ -415,9 +369,6 @@ void CGMSAppDlg::OnBnClickedZeroing()
 
             if (!useSwitch)
             {
-                // #region agent log
-                DebugLog("GMSAppDlg.cpp:Zeroing:single", "single-ch path, NO stop check exists here", "\"hypothesisId\":\"B\",\"useSwitch\":false");
-                // #endregion
                 std::vector<int> ch = channels;
                 pRlm->ConfigureChannels(ch.data(), (int)ch.size());
                 BOOL ok = pRlm->TakeReference(bOverride, ilValue, lengthValue);
@@ -430,9 +381,6 @@ void CGMSAppDlg::OnBnClickedZeroing()
                 bool allOk = true;
                 for (size_t i = 0; i < channels.size(); ++i)
                 {
-                    // #region agent log
-                    DebugLog("GMSAppDlg.cpp:Zeroing:multi", "checking pStop before channel", "\"hypothesisId\":\"B\",\"useSwitch\":true");
-                    // #endregion
                     if (pStop->load()) { log += _T("\r\nStopped by user."); break; }
 
                     int ch = channels[i];
@@ -504,9 +452,6 @@ void CGMSAppDlg::OnBnClickedMeasure()
 
             if (!useSwitch)
             {
-                // #region agent log
-                DebugLog("GMSAppDlg.cpp:Measure:single", "single-ch path, NO stop check exists here", "\"hypothesisId\":\"B\",\"useSwitch\":false");
-                // #endregion
                 std::vector<int> ch = channels;
                 pRlm->ConfigureChannels(ch.data(), (int)ch.size());
 
@@ -528,9 +473,6 @@ void CGMSAppDlg::OnBnClickedMeasure()
                 bool allOk = true;
                 for (size_t i = 0; i < channels.size(); ++i)
                 {
-                    // #region agent log
-                    DebugLog("GMSAppDlg.cpp:Measure:multi", "checking pStop before channel", "\"hypothesisId\":\"B\",\"useSwitch\":true");
-                    // #endregion
                     if (pStop->load()) { log += _T("\r\nStopped by user."); break; }
 
                     int ch = channels[i];
@@ -624,9 +566,6 @@ void CGMSAppDlg::OnBnClickedContinuous()
             while (!pStop->load())
             {
                 ++iteration;
-                // #region agent log
-                { char buf[128]; sprintf_s(buf, "\"hypothesisId\":\"C\",\"iteration\":%d", iteration); DebugLog("GMSAppDlg.cpp:Continuous:loop", "start iteration, checking pStop", buf); }
-                // #endregion
                 CString iterLog;
                 iterLog.Format(_T("--- Iteration %d ---\r\n"), iteration);
                 log += iterLog;
@@ -711,9 +650,6 @@ void CGMSAppDlg::OnBnClickedContinuous()
 
 void CGMSAppDlg::OnBnClickedStop()
 {
-    // #region agent log
-    DebugLog("GMSAppDlg.cpp:OnBnClickedStop", "STOP button clicked!", "\"hypothesisId\":\"D\"");
-    // #endregion
     m_bStopRequested = true;
     AppendLog(_T("Stop requested... waiting for current operation to finish."));
     UpdateStatus(_T("Stopping..."));
@@ -793,26 +729,19 @@ void CGMSAppDlg::SetBusy(bool busy, const CString& statusText)
         UpdateStatus(statusText);
 
     EnableControls();
-    // #region agent log
-    DebugLog("GMSAppDlg.cpp:SetBusy", busy ? "SetBusy=TRUE,STOP should be enabled" : "SetBusy=FALSE,STOP should be disabled", busy ? "\"hypothesisId\":\"A\",\"busy\":true" : "\"hypothesisId\":\"A\",\"busy\":false");
-    // #endregion
 }
 
 void CGMSAppDlg::EnableControls()
 {
     bool rlmLoaded = m_rlmLoader.IsDllLoaded();
     bool anyConnected = m_bRlmConnected;
-    bool visa = IsVisaMode();
 
     GetDlgItem(IDC_EDIT_RLM_DLL)->EnableWindow(!m_bBusy && !rlmLoaded);
     SetDlgItemText(IDC_BTN_LOAD_RLM, rlmLoaded ? _T("Unload") : _T("Load"));
     GetDlgItem(IDC_BTN_LOAD_RLM)->EnableWindow(!m_bBusy);
 
-    GetDlgItem(IDC_COMBO_CONN_MODE)->EnableWindow(!m_bBusy && !anyConnected);
-
-    GetDlgItem(IDC_BTN_ENUMERATE)->EnableWindow(!m_bBusy && visa && rlmLoaded);
+    GetDlgItem(IDC_BTN_ENUMERATE)->EnableWindow(!m_bBusy && rlmLoaded);
     GetDlgItem(IDC_COMBO_RLM_ADDR)->EnableWindow(!m_bBusy && rlmLoaded && !anyConnected);
-    GetDlgItem(IDC_EDIT_RLM_PORT)->EnableWindow(!m_bBusy && !visa && !anyConnected);
 
     GetDlgItem(IDC_BTN_CONNECT)->EnableWindow(!m_bBusy && rlmLoaded && !anyConnected);
     GetDlgItem(IDC_BTN_DISCONNECT)->EnableWindow(!m_bBusy && anyConnected);
@@ -895,22 +824,6 @@ void CGMSAppDlg::PopulateResultsList(const std::vector<DriverMeasurementResult>&
         m_listResults.SetItemText(idx, 6, rltStr);
         m_listResults.SetItemText(idx, 7, lenStr);
     }
-}
-
-// ---------------------------------------------------------------------------
-// 连接模式
-// ---------------------------------------------------------------------------
-
-bool CGMSAppDlg::IsVisaMode()
-{
-    return (m_comboConnMode.GetCurSel() == 0);
-}
-
-void CGMSAppDlg::OnCbnSelchangeConnMode()
-{
-    bool visa = IsVisaMode();
-    AppendLog(visa ? _T("Switched to USB (VISA) mode.") : _T("Switched to TCP (Ethernet) mode."));
-    EnableControls();
 }
 
 // ---------------------------------------------------------------------------
