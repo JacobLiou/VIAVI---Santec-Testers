@@ -24,6 +24,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ViaviPCTSimulator", "ViaviP
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ViaviOSWSimulator", "ViaviOSWSimulator\ViaviOSWSimulator.vcxproj", "{F2A3B4C5-D6E7-48F9-A0B1-2C3D4E5F6A71}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ViaviApp", "ViaviApp\ViaviApp.vcxproj", "{C1D2E3F4-A5B6-7890-CDEF-123456789ABC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -120,6 +122,14 @@ Global
 		{F2A3B4C5-D6E7-48F9-A0B1-2C3D4E5F6A71}.Release|Win32.Build.0 = Release|Win32
 		{F2A3B4C5-D6E7-48F9-A0B1-2C3D4E5F6A71}.Release|x64.ActiveCfg = Release|x64
 		{F2A3B4C5-D6E7-48F9-A0B1-2C3D4E5F6A71}.Release|x64.Build.0 = Release|x64
+		{C1D2E3F4-A5B6-7890-CDEF-123456789ABC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C1D2E3F4-A5B6-7890-CDEF-123456789ABC}.Debug|Win32.Build.0 = Debug|Win32
+		{C1D2E3F4-A5B6-7890-CDEF-123456789ABC}.Debug|x64.ActiveCfg = Debug|x64
+		{C1D2E3F4-A5B6-7890-CDEF-123456789ABC}.Debug|x64.Build.0 = Debug|x64
+		{C1D2E3F4-A5B6-7890-CDEF-123456789ABC}.Release|Win32.ActiveCfg = Release|Win32
+		{C1D2E3F4-A5B6-7890-CDEF-123456789ABC}.Release|Win32.Build.0 = Release|Win32
+		{C1D2E3F4-A5B6-7890-CDEF-123456789ABC}.Release|x64.ActiveCfg = Release|x64
+		{C1D2E3F4-A5B6-7890-CDEF-123456789ABC}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
