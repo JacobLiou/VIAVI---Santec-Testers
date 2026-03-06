@@ -12,6 +12,17 @@
 
 static CViaviAppDlg* g_pDlg = nullptr;
 
+static CString Utf8ToWide(const char* utf8)
+{
+    if (!utf8 || !*utf8) return CString();
+    int len = ::MultiByteToWideChar(CP_UTF8, 0, utf8, -1, nullptr, 0);
+    if (len <= 0) return CString();
+    CString result;
+    ::MultiByteToWideChar(CP_UTF8, 0, utf8, -1, result.GetBuffer(len), len);
+    result.ReleaseBuffer();
+    return result;
+}
+
 static void WINAPI PCTLogCallback(int level, const char* source, const char* message)
 {
     if (g_pDlg && ::IsWindow(g_pDlg->GetSafeHwnd()))
@@ -19,7 +30,8 @@ static void WINAPI PCTLogCallback(int level, const char* source, const char* mes
         static const char* levelNames[] = { "DEBUG", "INFO", "WARN", "ERROR" };
         const char* lvl = (level >= 0 && level <= 3) ? levelNames[level] : "???";
         CString* pMsg = new CString();
-        pMsg->Format(_T("[PCT][%S][%S] %S"), lvl, source, message);
+        pMsg->Format(_T("[PCT][%s][%s] %s"), (LPCTSTR)Utf8ToWide(lvl),
+                     (LPCTSTR)Utf8ToWide(source), (LPCTSTR)Utf8ToWide(message));
         g_pDlg->PostMessage(WM_LOG_MESSAGE, 0, (LPARAM)pMsg);
     }
 }
@@ -31,7 +43,8 @@ static void WINAPI OSWLogCallback(int level, const char* source, const char* mes
         static const char* levelNames[] = { "DEBUG", "INFO", "WARN", "ERROR" };
         const char* lvl = (level >= 0 && level <= 3) ? levelNames[level] : "???";
         CString* pMsg = new CString();
-        pMsg->Format(_T("[OSW][%S][%S] %S"), lvl, source, message);
+        pMsg->Format(_T("[OSW][%s][%s] %s"), (LPCTSTR)Utf8ToWide(lvl),
+                     (LPCTSTR)Utf8ToWide(source), (LPCTSTR)Utf8ToWide(message));
         g_pDlg->PostMessage(WM_LOG_MESSAGE, 0, (LPARAM)pMsg);
     }
 }
@@ -410,8 +423,10 @@ void CViaviAppDlg::OnBnClickedConnectPct()
             if (pPct->GetDeviceInfo(&info))
             {
                 CString infoMsg;
-                infoMsg.Format(_T("[PCT] SN: %S  FW: %S  Desc: %S"),
-                               info.serialNumber, info.firmwareVersion, info.description);
+                infoMsg.Format(_T("[PCT] SN: %s  FW: %s  Desc: %s"),
+                               (LPCTSTR)Utf8ToWide(info.serialNumber),
+                               (LPCTSTR)Utf8ToWide(info.firmwareVersion),
+                               (LPCTSTR)Utf8ToWide(info.description));
                 log += infoMsg;
             }
         }
@@ -515,8 +530,10 @@ void CViaviAppDlg::OnBnClickedConnectOsw()
             if (pOsw->GetDeviceInfo(&info))
             {
                 CString infoMsg;
-                infoMsg.Format(_T("[OSW] SN: %S  FW: %S  Desc: %S"),
-                               info.serialNumber, info.firmwareVersion, info.description);
+                infoMsg.Format(_T("[OSW] SN: %s  FW: %s  Desc: %s"),
+                               (LPCTSTR)Utf8ToWide(info.serialNumber),
+                               (LPCTSTR)Utf8ToWide(info.firmwareVersion),
+                               (LPCTSTR)Utf8ToWide(info.description));
                 log += infoMsg;
             }
 

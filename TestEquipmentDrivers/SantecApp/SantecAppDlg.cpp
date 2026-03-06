@@ -12,6 +12,17 @@
 
 static CSantecAppDlg* g_pDlg = nullptr;
 
+static CString Utf8ToWide(const char* utf8)
+{
+    if (!utf8 || !*utf8) return CString();
+    int len = ::MultiByteToWideChar(CP_UTF8, 0, utf8, -1, nullptr, 0);
+    if (len <= 0) return CString();
+    CString result;
+    ::MultiByteToWideChar(CP_UTF8, 0, utf8, -1, result.GetBuffer(len), len);
+    result.ReleaseBuffer();
+    return result;
+}
+
 static void WINAPI RLMLogCallback(int level, const char* source, const char* message)
 {
     if (g_pDlg && ::IsWindow(g_pDlg->GetSafeHwnd()))
@@ -19,7 +30,8 @@ static void WINAPI RLMLogCallback(int level, const char* source, const char* mes
         static const char* levelNames[] = { "DEBUG", "INFO", "WARN", "ERROR" };
         const char* lvl = (level >= 0 && level <= 3) ? levelNames[level] : "???";
         CString* pMsg = new CString();
-        pMsg->Format(_T("[RLM][%S][%S] %S"), lvl, source, message);
+        pMsg->Format(_T("[RLM][%s][%s] %s"), (LPCTSTR)Utf8ToWide(lvl),
+                     (LPCTSTR)Utf8ToWide(source), (LPCTSTR)Utf8ToWide(message));
         g_pDlg->PostMessage(WM_LOG_MESSAGE, 0, (LPARAM)pMsg);
     }
 }
@@ -31,7 +43,8 @@ static void WINAPI OSXLogCallback(int level, const char* source, const char* mes
         static const char* levelNames[] = { "DEBUG", "INFO", "WARN", "ERROR" };
         const char* lvl = (level >= 0 && level <= 3) ? levelNames[level] : "???";
         CString* pMsg = new CString();
-        pMsg->Format(_T("[OSX][%S][%S] %S"), lvl, source, message);
+        pMsg->Format(_T("[OSX][%s][%s] %s"), (LPCTSTR)Utf8ToWide(lvl),
+                     (LPCTSTR)Utf8ToWide(source), (LPCTSTR)Utf8ToWide(message));
         g_pDlg->PostMessage(WM_LOG_MESSAGE, 0, (LPARAM)pMsg);
     }
 }
@@ -314,9 +327,11 @@ void CSantecAppDlg::OnBnClickedConnectRlm()
             if (pRlm->GetDeviceInfo(&info))
             {
                 CString infoMsg;
-                infoMsg.Format(_T("[RLM] %S / %S  SN: %S  FW: %S"),
-                               info.manufacturer, info.model,
-                               info.serialNumber, info.firmwareVersion);
+                infoMsg.Format(_T("[RLM] %s / %s  SN: %s  FW: %s"),
+                               (LPCTSTR)Utf8ToWide(info.manufacturer),
+                               (LPCTSTR)Utf8ToWide(info.model),
+                               (LPCTSTR)Utf8ToWide(info.serialNumber),
+                               (LPCTSTR)Utf8ToWide(info.firmwareVersion));
                 log += infoMsg;
             }
         }
@@ -412,9 +427,11 @@ void CSantecAppDlg::OnBnClickedConnectOsx()
             if (pOsx->GetDeviceInfo(&info))
             {
                 CString infoMsg;
-                infoMsg.Format(_T("[OSX] %S / %S  SN: %S  FW: %S"),
-                               info.manufacturer, info.model,
-                               info.serialNumber, info.firmwareVersion);
+                infoMsg.Format(_T("[OSX] %s / %s  SN: %s  FW: %s"),
+                               (LPCTSTR)Utf8ToWide(info.manufacturer),
+                               (LPCTSTR)Utf8ToWide(info.model),
+                               (LPCTSTR)Utf8ToWide(info.serialNumber),
+                               (LPCTSTR)Utf8ToWide(info.firmwareVersion));
                 log += infoMsg;
             }
 
@@ -429,8 +446,9 @@ void CSantecAppDlg::OnBnClickedConnectOsx()
                 if (pOsx->GetModuleInfo(m, &mi))
                 {
                     CString mInfo;
-                    mInfo.Format(_T("\r\n[OSX] Module %d: %S  channels=%d  current=%d"),
-                                 m, mi.catalogEntry, mi.channelCount, mi.currentChannel);
+                    mInfo.Format(_T("\r\n[OSX] Module %d: %s  channels=%d  current=%d"),
+                                 m, (LPCTSTR)Utf8ToWide(mi.catalogEntry),
+                                 mi.channelCount, mi.currentChannel);
                     log += mInfo;
                 }
             }

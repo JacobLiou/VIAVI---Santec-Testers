@@ -13,6 +13,17 @@
 
 static CGMSAppDlg* g_pDlg = nullptr;
 
+static CString Utf8ToWide(const char* utf8)
+{
+    if (!utf8 || !*utf8) return CString();
+    int len = ::MultiByteToWideChar(CP_UTF8, 0, utf8, -1, nullptr, 0);
+    if (len <= 0) return CString();
+    CString result;
+    ::MultiByteToWideChar(CP_UTF8, 0, utf8, -1, result.GetBuffer(len), len);
+    result.ReleaseBuffer();
+    return result;
+}
+
 static void WINAPI RLMLogCallback(int level, const char* source, const char* message)
 {
     if (g_pDlg && ::IsWindow(g_pDlg->GetSafeHwnd()))
@@ -20,7 +31,8 @@ static void WINAPI RLMLogCallback(int level, const char* source, const char* mes
         static const char* levelNames[] = { "DEBUG", "INFO", "WARN", "ERROR" };
         const char* lvl = (level >= 0 && level <= 3) ? levelNames[level] : "???";
         CString* pMsg = new CString();
-        pMsg->Format(_T("[RLM][%S][%S] %S"), lvl, source, message);
+        pMsg->Format(_T("[RLM][%s][%s] %s"), (LPCTSTR)Utf8ToWide(lvl),
+                     (LPCTSTR)Utf8ToWide(source), (LPCTSTR)Utf8ToWide(message));
         g_pDlg->PostMessage(WM_LOG_MESSAGE, 0, (LPARAM)pMsg);
     }
 }
@@ -285,7 +297,7 @@ void CGMSAppDlg::OnBnClickedConnect()
             if (pRlm->GetSwitchInfo(switchNum, swInfo, sizeof(swInfo)))
             {
                 CString infoMsg;
-                infoMsg.Format(_T("[RLM] External switch SW%d info: %S\r\n"), switchNum, swInfo);
+                infoMsg.Format(_T("[RLM] External switch SW%d info: %s\r\n"), switchNum, (LPCTSTR)Utf8ToWide(swInfo));
                 log += infoMsg;
             }
             else
