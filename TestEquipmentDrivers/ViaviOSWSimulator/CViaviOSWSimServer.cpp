@@ -423,8 +423,6 @@ std::string CViaviOSWSimServer::ProcessCommand(const std::string& cmd)
 
 void CViaviOSWSimServer::Log(const char* fmt, ...)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
     time_t now = time(NULL);
     struct tm local;
     localtime_s(&local, &now);

@@ -626,6 +626,7 @@ void CViaviAppDlg::OnBnClickedZeroing()
                     if (pStop->load()) { log += _T("\r\nStopped by user."); break; }
 
                     int ch = channels[i];
+
                     CString chLog;
                     chLog.Format(_T("  CH%d: OSW switching device %d -> channel %d ..."),
                                  ch, oswDeviceNum, ch);

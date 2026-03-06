@@ -704,8 +704,6 @@ double CViaviPCTSimServer::GeneratePower(double wavelength)
 
 void CViaviPCTSimServer::Log(const char* fmt, ...)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
     time_t now = time(NULL);
     struct tm local;
     localtime_s(&local, &now);
