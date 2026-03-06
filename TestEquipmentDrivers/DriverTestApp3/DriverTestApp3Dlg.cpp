@@ -28,13 +28,14 @@ BEGIN_MESSAGE_MAP(CDriverTestApp3Dlg, CDialogEx)
     ON_BN_CLICKED(IDC_BTN_CONNECT, &CDriverTestApp3Dlg::OnBnClickedConnect)
     ON_BN_CLICKED(IDC_BTN_DISCONNECT, &CDriverTestApp3Dlg::OnBnClickedDisconnect)
     ON_BN_CLICKED(IDC_BTN_INITIALIZE, &CDriverTestApp3Dlg::OnBnClickedInitialize)
-    ON_BN_CLICKED(IDC_BTN_CONFIGURE_ORL, &CDriverTestApp3Dlg::OnBnClickedConfigureOrl)
+    ON_BN_CLICKED(IDC_BTN_ENUMERATE, &CDriverTestApp3Dlg::OnBnClickedEnumerate)
     ON_BN_CLICKED(IDC_BTN_TAKE_REFERENCE, &CDriverTestApp3Dlg::OnBnClickedTakeReference)
     ON_BN_CLICKED(IDC_BTN_TAKE_MEASUREMENT, &CDriverTestApp3Dlg::OnBnClickedTakeMeasurement)
     ON_BN_CLICKED(IDC_BTN_GET_RESULTS, &CDriverTestApp3Dlg::OnBnClickedGetResults)
     ON_BN_CLICKED(IDC_BTN_RUN_FULL_TEST, &CDriverTestApp3Dlg::OnBnClickedRunFullTest)
     ON_BN_CLICKED(IDC_BTN_CLEAR_LOG, &CDriverTestApp3Dlg::OnBnClickedClearLog)
     ON_CBN_SELCHANGE(IDC_COMBO_DEVICE_TYPE, &CDriverTestApp3Dlg::OnCbnSelchangeDeviceType)
+    ON_CBN_SELCHANGE(IDC_COMBO_CONN_MODE, &CDriverTestApp3Dlg::OnCbnSelchangeConnMode)
     ON_BN_CLICKED(IDC_CHECK_OVERRIDE, &CDriverTestApp3Dlg::OnBnClickedOverride)
     ON_MESSAGE(WM_LOG_MESSAGE, &CDriverTestApp3Dlg::OnLogMessage)
     ON_MESSAGE(WM_WORKER_DONE, &CDriverTestApp3Dlg::OnWorkerDone)
@@ -56,17 +57,14 @@ void CDriverTestApp3Dlg::DoDataExchange(CDataExchange* pDX)
     CDialogEx::DoDataExchange(pDX);
     DDX_Control(pDX, IDC_EDIT_DLL_PATH, m_editDllPath);
     DDX_Control(pDX, IDC_COMBO_DEVICE_TYPE, m_comboDeviceType);
-    DDX_Control(pDX, IDC_EDIT_IP, m_editIP);
+    DDX_Control(pDX, IDC_COMBO_CONN_MODE, m_comboConnMode);
+    DDX_Control(pDX, IDC_COMBO_ADDRESS, m_comboAddress);
     DDX_Control(pDX, IDC_EDIT_PORT, m_editPort);
     DDX_Control(pDX, IDC_EDIT_SLOT, m_editSlot);
     DDX_Control(pDX, IDC_CHECK_1310, m_check1310);
     DDX_Control(pDX, IDC_CHECK_1550, m_check1550);
     DDX_Control(pDX, IDC_EDIT_CH_FROM, m_editChFrom);
     DDX_Control(pDX, IDC_EDIT_CH_TO, m_editChTo);
-    DDX_Control(pDX, IDC_COMBO_ORL_METHOD, m_comboOrlMethod);
-    DDX_Control(pDX, IDC_COMBO_ORL_ORIGIN, m_comboOrlOrigin);
-    DDX_Control(pDX, IDC_EDIT_A_OFFSET, m_editAOffset);
-    DDX_Control(pDX, IDC_EDIT_B_OFFSET, m_editBOffset);
     DDX_Control(pDX, IDC_CHECK_OVERRIDE, m_checkOverride);
     DDX_Control(pDX, IDC_EDIT_IL_VALUE, m_editILValue);
     DDX_Control(pDX, IDC_EDIT_LENGTH_VALUE, m_editLengthValue);
@@ -85,27 +83,18 @@ BOOL CDriverTestApp3Dlg::OnInitDialog()
     m_comboDeviceType.AddString(_T("Santec"));
     m_comboDeviceType.SetCurSel(0);
 
-    m_editIP.SetWindowText(_T("10.14.132.194"));
+    m_comboConnMode.AddString(_T("USB (VISA)"));
+    m_comboConnMode.AddString(_T("TCP (Ethernet)"));
+    m_comboConnMode.SetCurSel(0);
+
     m_editPort.SetWindowText(_T("5025"));
-    m_editSlot.SetWindowText(_T("1"));
+    m_editSlot.SetWindowText(_T("0"));
 
     m_check1310.SetCheck(BST_CHECKED);
     m_check1550.SetCheck(BST_CHECKED);
 
     m_editChFrom.SetWindowText(_T("1"));
     m_editChTo.SetWindowText(_T("12"));
-
-    m_comboOrlMethod.AddString(_T("Integration (1)"));
-    m_comboOrlMethod.AddString(_T("Discrete (2)"));
-    m_comboOrlMethod.SetCurSel(1);
-
-    m_comboOrlOrigin.AddString(_T("A+B from DUT start (1)"));
-    m_comboOrlOrigin.AddString(_T("A+B from DUT end (2)"));
-    m_comboOrlOrigin.AddString(_T("A start / B end (3)"));
-    m_comboOrlOrigin.SetCurSel(0);
-
-    m_editAOffset.SetWindowText(_T("-0.5"));
-    m_editBOffset.SetWindowText(_T("0.5"));
 
     m_checkOverride.SetCheck(BST_CHECKED);
     m_editILValue.SetWindowText(_T("0.1"));
@@ -122,7 +111,7 @@ BOOL CDriverTestApp3Dlg::OnInitDialog()
 
     EnableConnectionControls(false);
     EnableControls(false);
-    AppendLog(_T("Application started. Load DLL first, then select device type and connect."));
+    AppendLog(_T("Application started. Load DLL first, then select connection mode and connect."));
 
     return TRUE;
 }
@@ -178,7 +167,12 @@ void CDriverTestApp3Dlg::OnBnClickedLoadDll()
     if (ok)
     {
         m_loader.SetLogCallback(GlobalLogCallback);
-        AppendLog(_T("DLL loaded successfully."));
+
+        CString visaMsg = m_loader.HasVisaSupport()
+            ? _T("DLL loaded successfully. VISA support available.")
+            : _T("DLL loaded successfully. (VISA not available, TCP only)");
+        AppendLog(visaMsg);
+
         UpdateStatus(_T("DLL Loaded - Disconnected"));
         EnableConnectionControls(true);
     }
@@ -282,12 +276,13 @@ void CDriverTestApp3Dlg::SetBusy(bool busy, const CString& statusText)
         static const int ids[] = {
             IDC_BTN_LOAD_DLL, IDC_BTN_UNLOAD_DLL,
             IDC_BTN_CONNECT, IDC_BTN_DISCONNECT, IDC_BTN_INITIALIZE,
-            IDC_BTN_CONFIGURE_ORL, IDC_BTN_TAKE_REFERENCE, IDC_BTN_TAKE_MEASUREMENT,
+            IDC_BTN_ENUMERATE,
+            IDC_BTN_TAKE_REFERENCE, IDC_BTN_TAKE_MEASUREMENT,
             IDC_BTN_GET_RESULTS, IDC_BTN_RUN_FULL_TEST,
-            IDC_COMBO_DEVICE_TYPE, IDC_EDIT_IP, IDC_EDIT_PORT, IDC_EDIT_SLOT,
+            IDC_COMBO_DEVICE_TYPE, IDC_COMBO_CONN_MODE,
+            IDC_COMBO_ADDRESS, IDC_EDIT_PORT, IDC_EDIT_SLOT,
             IDC_EDIT_DLL_PATH,
             IDC_CHECK_1310, IDC_CHECK_1550, IDC_EDIT_CH_FROM, IDC_EDIT_CH_TO,
-            IDC_COMBO_ORL_METHOD, IDC_COMBO_ORL_ORIGIN, IDC_EDIT_A_OFFSET, IDC_EDIT_B_OFFSET,
             IDC_CHECK_OVERRIDE, IDC_EDIT_IL_VALUE, IDC_EDIT_LENGTH_VALUE
         };
 
@@ -312,10 +307,6 @@ void CDriverTestApp3Dlg::SetBusy(bool busy, const CString& statusText)
         GetDlgItem(IDC_CHECK_1550)->EnableWindow(TRUE);
         GetDlgItem(IDC_EDIT_CH_FROM)->EnableWindow(TRUE);
         GetDlgItem(IDC_EDIT_CH_TO)->EnableWindow(TRUE);
-        GetDlgItem(IDC_COMBO_ORL_METHOD)->EnableWindow(TRUE);
-        GetDlgItem(IDC_COMBO_ORL_ORIGIN)->EnableWindow(TRUE);
-        GetDlgItem(IDC_EDIT_A_OFFSET)->EnableWindow(TRUE);
-        GetDlgItem(IDC_EDIT_B_OFFSET)->EnableWindow(TRUE);
         GetDlgItem(IDC_CHECK_OVERRIDE)->EnableWindow(TRUE);
 
         BOOL overrideOn = (m_checkOverride.GetCheck() == BST_CHECKED);
@@ -355,8 +346,98 @@ void CDriverTestApp3Dlg::UpdateStatus(const CString& status)
     SetDlgItemText(IDC_STATIC_STATUS, status);
 }
 
+// ---------------------------------------------------------------------------
+// 连接模式辅助
+// ---------------------------------------------------------------------------
+
+bool CDriverTestApp3Dlg::IsVisaMode()
+{
+    return (m_comboConnMode.GetCurSel() == 0);
+}
+
+void CDriverTestApp3Dlg::OnCbnSelchangeConnMode()
+{
+    bool visa = IsVisaMode();
+    AppendLog(visa ? _T("Switched to USB (VISA) mode.") : _T("Switched to TCP (Ethernet) mode."));
+
+    bool dllLoaded = m_loader.IsDllLoaded();
+    bool connected = dllLoaded && m_loader.IsConnected() != FALSE;
+
+    GetDlgItem(IDC_EDIT_PORT)->EnableWindow(!visa && dllLoaded && !connected);
+    GetDlgItem(IDC_EDIT_SLOT)->EnableWindow(!visa && dllLoaded && !connected);
+    GetDlgItem(IDC_BTN_ENUMERATE)->EnableWindow(visa && dllLoaded && !connected);
+
+    if (visa)
+    {
+        m_comboAddress.ResetContent();
+    }
+    else
+    {
+        m_comboAddress.ResetContent();
+        m_comboAddress.SetWindowText(_T("10.14.132.194"));
+    }
+}
+
+// ---------------------------------------------------------------------------
+// VISA 枚举
+// ---------------------------------------------------------------------------
+
+void CDriverTestApp3Dlg::OnBnClickedEnumerate()
+{
+    if (!IsVisaMode())
+    {
+        AppendLog(_T("VISA enumeration is only available in USB (VISA) mode."));
+        return;
+    }
+
+    if (!m_loader.IsDllLoaded() || !m_loader.HasVisaSupport())
+    {
+        AppendLog(_T("VISA enumeration not available. Load DLL with VISA support first."));
+        return;
+    }
+
+    char buf[4096] = { 0 };
+    int found = m_loader.EnumerateVisaResources(buf, sizeof(buf));
+
+    m_comboAddress.ResetContent();
+
+    if (found > 0)
+    {
+        std::string all(buf);
+        size_t pos = 0;
+        while (pos < all.size())
+        {
+            size_t next = all.find(';', pos);
+            std::string item = (next == std::string::npos)
+                ? all.substr(pos)
+                : all.substr(pos, next - pos);
+
+            if (!item.empty())
+                m_comboAddress.AddString(CString(item.c_str()));
+
+            if (next == std::string::npos) break;
+            pos = next + 1;
+        }
+        m_comboAddress.SetCurSel(0);
+
+        CString msg;
+        msg.Format(_T("Found %d VISA resource(s)."), found);
+        AppendLog(msg);
+    }
+    else
+    {
+        AppendLog(_T("No VISA resources found. Check USB connection."));
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 控件启用/禁用
+// ---------------------------------------------------------------------------
+
 void CDriverTestApp3Dlg::EnableConnectionControls(bool dllLoaded)
 {
+    bool visa = IsVisaMode();
+
     GetDlgItem(IDC_EDIT_DLL_PATH)->EnableWindow(!dllLoaded);
     GetDlgItem(IDC_BTN_LOAD_DLL)->EnableWindow(!dllLoaded);
     GetDlgItem(IDC_BTN_UNLOAD_DLL)->EnableWindow(dllLoaded);
@@ -366,8 +447,10 @@ void CDriverTestApp3Dlg::EnableConnectionControls(bool dllLoaded)
         GetDlgItem(IDC_BTN_CONNECT)->EnableWindow(FALSE);
         GetDlgItem(IDC_BTN_DISCONNECT)->EnableWindow(FALSE);
         GetDlgItem(IDC_BTN_INITIALIZE)->EnableWindow(FALSE);
+        GetDlgItem(IDC_BTN_ENUMERATE)->EnableWindow(FALSE);
         GetDlgItem(IDC_COMBO_DEVICE_TYPE)->EnableWindow(FALSE);
-        GetDlgItem(IDC_EDIT_IP)->EnableWindow(FALSE);
+        GetDlgItem(IDC_COMBO_CONN_MODE)->EnableWindow(FALSE);
+        GetDlgItem(IDC_COMBO_ADDRESS)->EnableWindow(FALSE);
         GetDlgItem(IDC_EDIT_PORT)->EnableWindow(FALSE);
         GetDlgItem(IDC_EDIT_SLOT)->EnableWindow(FALSE);
     }
@@ -377,24 +460,30 @@ void CDriverTestApp3Dlg::EnableConnectionControls(bool dllLoaded)
         GetDlgItem(IDC_BTN_CONNECT)->EnableWindow(!connected);
         GetDlgItem(IDC_BTN_DISCONNECT)->EnableWindow(connected);
         GetDlgItem(IDC_BTN_INITIALIZE)->EnableWindow(connected);
+        GetDlgItem(IDC_BTN_ENUMERATE)->EnableWindow(visa && !connected);
         GetDlgItem(IDC_COMBO_DEVICE_TYPE)->EnableWindow(!connected);
-        GetDlgItem(IDC_EDIT_IP)->EnableWindow(!connected);
-        GetDlgItem(IDC_EDIT_PORT)->EnableWindow(!connected);
-        GetDlgItem(IDC_EDIT_SLOT)->EnableWindow(!connected);
+        GetDlgItem(IDC_COMBO_CONN_MODE)->EnableWindow(!connected);
+        GetDlgItem(IDC_COMBO_ADDRESS)->EnableWindow(!connected);
+        GetDlgItem(IDC_EDIT_PORT)->EnableWindow(!visa && !connected);
+        GetDlgItem(IDC_EDIT_SLOT)->EnableWindow(!visa && !connected);
     }
 }
 
 void CDriverTestApp3Dlg::EnableControls(bool connected)
 {
-    GetDlgItem(IDC_BTN_CONNECT)->EnableWindow(m_loader.IsDllLoaded() && !connected);
+    bool visa = IsVisaMode();
+    bool dllLoaded = m_loader.IsDllLoaded();
+
+    GetDlgItem(IDC_BTN_CONNECT)->EnableWindow(dllLoaded && !connected);
     GetDlgItem(IDC_BTN_DISCONNECT)->EnableWindow(connected);
     GetDlgItem(IDC_BTN_INITIALIZE)->EnableWindow(connected);
-    GetDlgItem(IDC_COMBO_DEVICE_TYPE)->EnableWindow(m_loader.IsDllLoaded() && !connected);
-    GetDlgItem(IDC_EDIT_IP)->EnableWindow(m_loader.IsDllLoaded() && !connected);
-    GetDlgItem(IDC_EDIT_PORT)->EnableWindow(m_loader.IsDllLoaded() && !connected);
-    GetDlgItem(IDC_EDIT_SLOT)->EnableWindow(m_loader.IsDllLoaded() && !connected);
+    GetDlgItem(IDC_BTN_ENUMERATE)->EnableWindow(visa && dllLoaded && !connected);
+    GetDlgItem(IDC_COMBO_DEVICE_TYPE)->EnableWindow(dllLoaded && !connected);
+    GetDlgItem(IDC_COMBO_CONN_MODE)->EnableWindow(dllLoaded && !connected);
+    GetDlgItem(IDC_COMBO_ADDRESS)->EnableWindow(dllLoaded && !connected);
+    GetDlgItem(IDC_EDIT_PORT)->EnableWindow(!visa && dllLoaded && !connected);
+    GetDlgItem(IDC_EDIT_SLOT)->EnableWindow(!visa && dllLoaded && !connected);
 
-    GetDlgItem(IDC_BTN_CONFIGURE_ORL)->EnableWindow(connected);
     GetDlgItem(IDC_BTN_TAKE_REFERENCE)->EnableWindow(connected);
     GetDlgItem(IDC_BTN_TAKE_MEASUREMENT)->EnableWindow(connected);
     GetDlgItem(IDC_BTN_GET_RESULTS)->EnableWindow(connected);
@@ -409,8 +498,6 @@ void CDriverTestApp3Dlg::OnCbnSelchangeDeviceType()
 {
     m_editPort.SetWindowText(_T("5025"));
     m_editSlot.SetWindowText(_T("0"));
-    GetDlgItem(IDC_EDIT_SLOT)->EnableWindow(FALSE);
-    GetDlgItem(IDC_BTN_CONFIGURE_ORL)->ShowWindow(SW_HIDE);
 }
 
 void CDriverTestApp3Dlg::OnBnClickedOverride()
@@ -431,39 +518,41 @@ void CDriverTestApp3Dlg::OnBnClickedConnect()
         m_loader.DestroyDriver();
     }
 
-    CString ip, portStr, slotStr;
-    m_editIP.GetWindowText(ip);
+    CString addrText, portStr, slotStr;
+    m_comboAddress.GetWindowText(addrText);
     m_editPort.GetWindowText(portStr);
     m_editSlot.GetWindowText(slotStr);
 
+    if (addrText.IsEmpty())
+    {
+        AppendLog(_T("Please enter an address or select a VISA resource."));
+        return;
+    }
+
     int port = _ttoi(portStr);
     int slot = _ttoi(slotStr);
-    int sel = m_comboDeviceType.GetCurSel();
 
-    CStringA addrA(ip);
+    CStringA addrA(addrText);
     std::string addrStr(addrA.GetString());
     std::string typeStr = "santec";
 
-    // 检测 VISA 资源字符串：以 "USB" 或 "TCPIP" 开头则使用 VISA 模式
-    bool useVisa = false;
-    if (addrStr.size() >= 3)
-    {
-        std::string upper3 = addrStr.substr(0, 5);
-        for (size_t i = 0; i < upper3.size(); ++i)
-            upper3[i] = (char)toupper((unsigned char)upper3[i]);
-        if (upper3.substr(0, 3) == "USB" || upper3.substr(0, 5) == "TCPIP")
-            useVisa = true;
-    }
+    bool useVisa = IsVisaMode();
 
     bool created = false;
-    if (useVisa && m_loader.HasVisaSupport())
+    if (useVisa)
     {
-        AppendLog(_T("Using VISA/USB mode: ") + ip);
+        if (!m_loader.HasVisaSupport())
+        {
+            AppendLog(_T("VISA support not available in loaded DLL. Use TCP mode."));
+            return;
+        }
+        AppendLog(_T("Creating driver (VISA/USB): ") + addrText);
         created = m_loader.CreateDriverEx(typeStr.c_str(), addrStr.c_str(), port, slot, 2);
     }
     else
     {
-        created = m_loader.CreateDriver(typeStr.c_str(), addrStr.c_str(), port, slot);
+        AppendLog(_T("Creating driver (TCP): ") + addrText);
+        created = m_loader.CreateDriverEx(typeStr.c_str(), addrStr.c_str(), port, slot, 0);
     }
 
     if (!created)
@@ -547,15 +636,6 @@ void CDriverTestApp3Dlg::OnBnClickedInitialize()
         }
         return r;
     });
-}
-
-// ---------------------------------------------------------------------------
-// ORL 配置（已移除 -- Santec RLM 不需要独立 ORL 配置）
-// ---------------------------------------------------------------------------
-
-void CDriverTestApp3Dlg::OnBnClickedConfigureOrl()
-{
-    AppendLog(_T("ORL configuration is not applicable for Santec RLM."));
 }
 
 // ---------------------------------------------------------------------------

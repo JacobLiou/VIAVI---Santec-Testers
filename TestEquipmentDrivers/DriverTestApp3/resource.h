@@ -7,7 +7,7 @@
 
 // 设备选择组
 #define IDC_COMBO_DEVICE_TYPE           1000
-#define IDC_EDIT_IP                     1001
+#define IDC_COMBO_ADDRESS               1001
 #define IDC_EDIT_PORT                   1002
 #define IDC_EDIT_SLOT                   1003
 #define IDC_STATIC_IP                   1004
@@ -22,6 +22,11 @@
 #define IDC_STATIC_STATUS               1013
 #define IDC_STATIC_STATUS_INDICATOR     1014
 
+// 连接模式 / VISA
+#define IDC_COMBO_CONN_MODE             1015
+#define IDC_BTN_ENUMERATE               1016
+#define IDC_STATIC_CONN_MODE            1017
+
 // 波长配置
 #define IDC_CHECK_1310                  1020
 #define IDC_CHECK_1550                  1021
@@ -33,17 +38,6 @@
 #define IDC_STATIC_CHANNEL              1032
 #define IDC_STATIC_CH_DASH              1033
 
-// ORL 配置
-#define IDC_COMBO_ORL_METHOD            1040
-#define IDC_COMBO_ORL_ORIGIN            1041
-#define IDC_EDIT_A_OFFSET               1042
-#define IDC_EDIT_B_OFFSET               1043
-#define IDC_STATIC_ORL                  1044
-#define IDC_STATIC_METHOD               1045
-#define IDC_STATIC_ORIGIN               1046
-#define IDC_STATIC_A_OFFSET             1047
-#define IDC_STATIC_B_OFFSET             1048
-
 // 参考配置
 #define IDC_CHECK_OVERRIDE              1050
 #define IDC_EDIT_IL_VALUE               1051
@@ -52,7 +46,6 @@
 #define IDC_STATIC_LENGTH               1054
 
 // 操作按钮
-#define IDC_BTN_CONFIGURE_ORL           1060
 #define IDC_BTN_TAKE_REFERENCE          1061
 #define IDC_BTN_TAKE_MEASUREMENT        1062
 #define IDC_BTN_GET_RESULTS             1063
@@ -73,7 +66,7 @@
 #define IDC_GROUP_LOG                    1094
 #define IDC_GROUP_REFERENCE              1095
 
-// DLL 加载控件（DriverTestApp3 新增）
+// DLL 加载控件
 #define IDC_EDIT_DLL_PATH               1096
 #define IDC_BTN_LOAD_DLL                1097
 #define IDC_BTN_UNLOAD_DLL              1098

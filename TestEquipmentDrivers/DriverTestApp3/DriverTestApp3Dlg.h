@@ -31,13 +31,14 @@ protected:
     afx_msg void OnBnClickedConnect();
     afx_msg void OnBnClickedDisconnect();
     afx_msg void OnBnClickedInitialize();
-    afx_msg void OnBnClickedConfigureOrl();
+    afx_msg void OnBnClickedEnumerate();
     afx_msg void OnBnClickedTakeReference();
     afx_msg void OnBnClickedTakeMeasurement();
     afx_msg void OnBnClickedGetResults();
     afx_msg void OnBnClickedRunFullTest();
     afx_msg void OnBnClickedClearLog();
     afx_msg void OnCbnSelchangeDeviceType();
+    afx_msg void OnCbnSelchangeConnMode();
     afx_msg void OnBnClickedOverride();
 
     afx_msg LRESULT OnLogMessage(WPARAM wParam, LPARAM lParam);
@@ -50,6 +51,7 @@ private:
     void EnableConnectionControls(bool dllLoaded);
     void SetBusy(bool busy, const CString& statusText = _T(""));
     void PopulateResultsList(const std::vector<DriverMeasurementResult>& results);
+    bool IsVisaMode();
 
     std::vector<double> GetSelectedWavelengths();
     std::vector<int> GetSelectedChannels();
@@ -69,17 +71,14 @@ private:
     // 控件
     CEdit       m_editDllPath;
     CComboBox   m_comboDeviceType;
-    CEdit       m_editIP;
+    CComboBox   m_comboConnMode;
+    CComboBox   m_comboAddress;
     CEdit       m_editPort;
     CEdit       m_editSlot;
     CButton     m_check1310;
     CButton     m_check1550;
     CEdit       m_editChFrom;
     CEdit       m_editChTo;
-    CComboBox   m_comboOrlMethod;
-    CComboBox   m_comboOrlOrigin;
-    CEdit       m_editAOffset;
-    CEdit       m_editBOffset;
     CButton     m_checkOverride;
     CEdit       m_editILValue;
     CEdit       m_editLengthValue;
