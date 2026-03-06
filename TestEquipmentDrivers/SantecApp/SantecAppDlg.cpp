@@ -122,7 +122,7 @@ BOOL CSantecAppDlg::OnInitDialog()
     // OSX defaults
     m_editOsxDll.SetWindowText(_T("UDL.SantecOSX.dll"));
     m_editOsxIp.SetWindowText(_T("127.0.0.1"));
-    m_editOsxPort.SetWindowText(_T("5025"));
+    m_editOsxPort.SetWindowText(_T("5026"));
 
     // Test config defaults
     m_check1310.SetCheck(BST_CHECKED);
@@ -380,7 +380,7 @@ void CSantecAppDlg::OnBnClickedConnectOsx()
     CString portStr;
     m_editOsxPort.GetWindowText(portStr);
     int port = _ttoi(portStr);
-    if (port <= 0) port = 5025;
+    if (port <= 0) port = 5026;
 
     bool created = m_osxLoader.CreateDriver(ip.c_str(), port);
     {
