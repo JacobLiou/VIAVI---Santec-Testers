@@ -38,6 +38,10 @@
 #define IDC_STATIC_CHANNEL              1032
 #define IDC_STATIC_CH_DASH              1033
 
+// 探测器选择
+#define IDC_COMBO_DETECTOR              1034
+#define IDC_STATIC_DETECTOR             1035
+
 // 参考配置
 #define IDC_CHECK_OVERRIDE              1050
 #define IDC_EDIT_IL_VALUE               1051

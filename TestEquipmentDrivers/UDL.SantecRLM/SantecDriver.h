@@ -159,8 +159,13 @@ public:
     int  GetOutputChannel();
     void SetSwitchChannel(int switchNum, int channel);
     int  GetSwitchChannel(int switchNum);
+    std::string GetSwitchInfo(int switchNum);
 
-    // 功率计
+    // 探测器选择
+    void SetDetector(int detectorNum);
+    int  GetDetector() const { return m_detectorNum; }
+
+    // 功率计 / 探测器信息
     int  GetDetectorCount();
     std::string GetDetectorInfo(int detectorNum);
 
@@ -206,6 +211,8 @@ private:
     bool                    m_localMode;
     bool                    m_autoStart;
     double                  m_dutIL;
+
+    int                     m_detectorNum;      // 当前活动探测器编号（1 或 2）
 
     std::vector<double>     m_wavelengths;
     std::vector<int>        m_channels;

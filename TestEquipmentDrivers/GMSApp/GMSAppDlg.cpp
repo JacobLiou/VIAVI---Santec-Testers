@@ -7,7 +7,7 @@
 #endif
 
 // ---------------------------------------------------------------------------
-// Global log callback -- forward driver log messages to the dialog via PostMessage
+// 全局日志回调 -- 将驱动日志消息通过 PostMessage 转发到对话框
 // ---------------------------------------------------------------------------
 
 static CGMSAppDlg* g_pDlg = nullptr;
@@ -24,26 +24,13 @@ static void WINAPI RLMLogCallback(int level, const char* source, const char* mes
     }
 }
 
-static void WINAPI OSXLogCallback(int level, const char* source, const char* message)
-{
-    if (g_pDlg && ::IsWindow(g_pDlg->GetSafeHwnd()))
-    {
-        static const char* levelNames[] = { "DEBUG", "INFO", "WARN", "ERROR" };
-        const char* lvl = (level >= 0 && level <= 3) ? levelNames[level] : "???";
-        CString* pMsg = new CString();
-        pMsg->Format(_T("[OSX][%S][%S] %S"), lvl, source, message);
-        g_pDlg->PostMessage(WM_LOG_MESSAGE, 0, (LPARAM)pMsg);
-    }
-}
-
 // ---------------------------------------------------------------------------
-// Message map
+// 消息映射
 // ---------------------------------------------------------------------------
 
 BEGIN_MESSAGE_MAP(CGMSAppDlg, CDialogEx)
     ON_WM_CLOSE()
     ON_BN_CLICKED(IDC_BTN_LOAD_RLM, &CGMSAppDlg::OnBnClickedLoadRlm)
-    ON_BN_CLICKED(IDC_BTN_LOAD_OSX, &CGMSAppDlg::OnBnClickedLoadOsx)
     ON_BN_CLICKED(IDC_BTN_ENUMERATE, &CGMSAppDlg::OnBnClickedEnumerate)
     ON_BN_CLICKED(IDC_BTN_CONNECT, &CGMSAppDlg::OnBnClickedConnect)
     ON_BN_CLICKED(IDC_BTN_DISCONNECT, &CGMSAppDlg::OnBnClickedDisconnect)
@@ -59,7 +46,7 @@ BEGIN_MESSAGE_MAP(CGMSAppDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 // ---------------------------------------------------------------------------
-// Construction / Destruction
+// 构造 / 析构
 // ---------------------------------------------------------------------------
 
 CGMSAppDlg::CGMSAppDlg(CWnd* pParent)
@@ -67,7 +54,6 @@ CGMSAppDlg::CGMSAppDlg(CWnd* pParent)
     , m_bBusy(false)
     , m_bStopRequested(false)
     , m_bRlmConnected(false)
-    , m_bOsxConnected(false)
 {
 }
 
@@ -80,17 +66,14 @@ void CGMSAppDlg::DoDataExchange(CDataExchange* pDX)
 {
     CDialogEx::DoDataExchange(pDX);
     DDX_Control(pDX, IDC_EDIT_RLM_DLL, m_editRlmDll);
-    DDX_Control(pDX, IDC_EDIT_OSX_DLL, m_editOsxDll);
     DDX_Control(pDX, IDC_COMBO_CONN_MODE, m_comboConnMode);
     DDX_Control(pDX, IDC_COMBO_RLM_ADDR, m_comboRlmAddr);
-    DDX_Control(pDX, IDC_COMBO_OSX_ADDR, m_comboOsxAddr);
     DDX_Control(pDX, IDC_EDIT_RLM_PORT, m_editRlmPort);
-    DDX_Control(pDX, IDC_EDIT_OSX_PORT, m_editOsxPort);
     DDX_Control(pDX, IDC_CHECK_1310, m_check1310);
     DDX_Control(pDX, IDC_CHECK_1550, m_check1550);
     DDX_Control(pDX, IDC_EDIT_CH_FROM, m_editChFrom);
     DDX_Control(pDX, IDC_EDIT_CH_TO, m_editChTo);
-    DDX_Control(pDX, IDC_COMBO_OSX_MODULE, m_comboOsxModule);
+    DDX_Control(pDX, IDC_COMBO_SWITCH_NUM, m_comboSwitchNum);
     DDX_Control(pDX, IDC_CHECK_OVERRIDE, m_checkOverride);
     DDX_Control(pDX, IDC_EDIT_IL_VALUE, m_editILValue);
     DDX_Control(pDX, IDC_EDIT_LENGTH_VALUE, m_editLengthValue);
@@ -99,7 +82,7 @@ void CGMSAppDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 // ---------------------------------------------------------------------------
-// Initialization
+// 初始化
 // ---------------------------------------------------------------------------
 
 BOOL CGMSAppDlg::OnInitDialog()
@@ -108,14 +91,12 @@ BOOL CGMSAppDlg::OnInitDialog()
     g_pDlg = this;
 
     m_editRlmDll.SetWindowText(_T("UDL.SantecRLM.dll"));
-    m_editOsxDll.SetWindowText(_T("UDL.SantecOSX.dll"));
 
     m_comboConnMode.AddString(_T("USB (VISA)"));
     m_comboConnMode.AddString(_T("TCP (Ethernet)"));
     m_comboConnMode.SetCurSel(0);
 
     m_editRlmPort.SetWindowText(_T("5025"));
-    m_editOsxPort.SetWindowText(_T("5025"));
 
     m_check1310.SetCheck(BST_CHECKED);
     m_check1550.SetCheck(BST_CHECKED);
@@ -123,11 +104,10 @@ BOOL CGMSAppDlg::OnInitDialog()
     m_editChFrom.SetWindowText(_T("1"));
     m_editChTo.SetWindowText(_T("4"));
 
-    m_comboOsxModule.AddString(_T("0"));
-    m_comboOsxModule.AddString(_T("1"));
-    m_comboOsxModule.AddString(_T("2"));
-    m_comboOsxModule.AddString(_T("3"));
-    m_comboOsxModule.SetCurSel(0);
+    // SW1 = 第一个外部开关, SW2 = 第二个外部开关
+    m_comboSwitchNum.AddString(_T("SW1"));
+    m_comboSwitchNum.AddString(_T("SW2"));
+    m_comboSwitchNum.SetCurSel(0);
 
     m_checkOverride.SetCheck(BST_CHECKED);
     m_editILValue.SetWindowText(_T("0.1"));
@@ -144,7 +124,9 @@ BOOL CGMSAppDlg::OnInitDialog()
     m_listResults.InsertColumn(7, _T("Length (m)"), LVCFMT_RIGHT, 75);
 
     EnableControls();
-    AppendLog(_T("GMS Application started. Load DLLs, select connection mode (USB VISA / TCP), then connect."));
+    AppendLog(_T("GMS Application started (Integrated Mode)."));
+    AppendLog(_T("In integrated mode, PC connects to RLM only. RLM controls OSX switch via USB A port."));
+    AppendLog(_T("Load DLL, select connection mode (USB VISA / TCP), then connect."));
 
     return TRUE;
 }
@@ -174,7 +156,7 @@ void CGMSAppDlg::OnClose()
 }
 
 // ---------------------------------------------------------------------------
-// DLL Loading
+// DLL 加载
 // ---------------------------------------------------------------------------
 
 void CGMSAppDlg::OnBnClickedLoadRlm()
@@ -211,42 +193,8 @@ void CGMSAppDlg::OnBnClickedLoadRlm()
     EnableControls();
 }
 
-void CGMSAppDlg::OnBnClickedLoadOsx()
-{
-    if (m_osxLoader.IsDllLoaded())
-    {
-        if (m_osxLoader.GetDriverHandle())
-        {
-            m_osxLoader.Disconnect();
-            m_osxLoader.DestroyDriver();
-        }
-        m_osxLoader.UnloadDll();
-        m_bOsxConnected = false;
-        AppendLog(_T("[OSX] DLL unloaded."));
-        EnableControls();
-        return;
-    }
-
-    CString path;
-    m_editOsxDll.GetWindowText(path);
-    if (path.IsEmpty()) { AppendLog(_T("Please enter OSX DLL path.")); return; }
-
-    CStringA pathA(path);
-    if (m_osxLoader.LoadDll(pathA.GetString()))
-    {
-        m_osxLoader.SetLogCallback(OSXLogCallback);
-        AppendLog(_T("[OSX] DLL loaded successfully."));
-    }
-    else
-    {
-        CString msg; msg.Format(_T("[OSX] Failed to load: %s"), (LPCTSTR)path);
-        AppendLog(msg);
-    }
-    EnableControls();
-}
-
 // ---------------------------------------------------------------------------
-// VISA Enumeration
+// VISA 枚举
 // ---------------------------------------------------------------------------
 
 void CGMSAppDlg::OnBnClickedEnumerate()
@@ -258,7 +206,6 @@ void CGMSAppDlg::OnBnClickedEnumerate()
     }
 
     m_comboRlmAddr.ResetContent();
-    m_comboOsxAddr.ResetContent();
 
     char buf[4096] = { 0 };
     int found = 0;
@@ -266,10 +213,6 @@ void CGMSAppDlg::OnBnClickedEnumerate()
     if (m_rlmLoader.IsDllLoaded() && m_rlmLoader.HasVisaSupport())
     {
         found = m_rlmLoader.EnumerateVisaResources(buf, sizeof(buf));
-    }
-    else if (m_osxLoader.IsDllLoaded() && m_osxLoader.HasVisaSupport())
-    {
-        found = m_osxLoader.EnumerateVisaResources(buf, sizeof(buf));
     }
 
     if (found > 0)
@@ -281,38 +224,30 @@ void CGMSAppDlg::OnBnClickedEnumerate()
         {
             token.Trim();
             if (!token.IsEmpty())
-            {
                 m_comboRlmAddr.AddString(token);
-                m_comboOsxAddr.AddString(token);
-            }
             token = all.Tokenize(_T(";"), pos);
         }
 
-        CString msg; msg.Format(_T("Found %d VISA resource(s)."), found);
+        CString msg; msg.Format(_T("Found %d VISA resource(s). Select the RLM device."), found);
         AppendLog(msg);
 
         if (m_comboRlmAddr.GetCount() > 0)
             m_comboRlmAddr.SetCurSel(0);
-        if (m_comboOsxAddr.GetCount() > 1)
-            m_comboOsxAddr.SetCurSel(1);
-        else if (m_comboOsxAddr.GetCount() > 0)
-            m_comboOsxAddr.SetCurSel(0);
     }
     else
     {
-        AppendLog(_T("No VISA resources found. Make sure R&S VISA is installed and devices are connected via USB."));
+        AppendLog(_T("No VISA resources found. Make sure R&S VISA is installed and the RLM is connected via USB."));
     }
 }
 
 // ---------------------------------------------------------------------------
-// Connect / Disconnect
+// 连接 / 断开
 // ---------------------------------------------------------------------------
 
 void CGMSAppDlg::OnBnClickedConnect()
 {
-    CString rlmAddr, osxAddr;
+    CString rlmAddr;
     m_comboRlmAddr.GetWindowText(rlmAddr);
-    m_comboOsxAddr.GetWindowText(osxAddr);
 
     if (rlmAddr.IsEmpty())
     {
@@ -325,33 +260,21 @@ void CGMSAppDlg::OnBnClickedConnect()
         m_rlmLoader.Disconnect();
         m_rlmLoader.DestroyDriver();
     }
-    if (m_osxLoader.GetDriverHandle())
-    {
-        m_osxLoader.Disconnect();
-        m_osxLoader.DestroyDriver();
-    }
     m_bRlmConnected = false;
-    m_bOsxConnected = false;
 
     CStringA rlmAddrA(rlmAddr);
     std::string rlmStr(rlmAddrA.GetString());
 
-    CStringA osxAddrA(osxAddr);
-    std::string osxStr(osxAddrA.GetString());
-
-    bool hasOsx = !osxStr.empty() && m_osxLoader.IsDllLoaded();
     bool useVisa = IsVisaMode();
 
-    CString rlmPortStr, osxPortStr;
+    CString rlmPortStr;
     m_editRlmPort.GetWindowText(rlmPortStr);
-    m_editOsxPort.GetWindowText(osxPortStr);
     int rlmPort = _ttoi(rlmPortStr);
-    int osxPort = _ttoi(osxPortStr);
     if (rlmPort <= 0) rlmPort = 5025;
-    if (osxPort <= 0) osxPort = 5025;
+
+    int switchNum = GetSelectedSwitchNum();
 
     CSantecRLMDllLoader* pRlm = &m_rlmLoader;
-    COSXDllLoader* pOsx = &m_osxLoader;
 
     bool rlmCreated = false;
     if (useVisa)
@@ -372,31 +295,11 @@ void CGMSAppDlg::OnBnClickedConnect()
         return;
     }
 
-    bool osxCreated = false;
-    if (hasOsx)
-    {
-        if (useVisa)
-        {
-            osxCreated = pOsx->CreateDriverEx(osxStr.c_str(), 0, 2);
-            AppendLog(_T("[OSX] Creating driver (USB VISA)..."));
-        }
-        else
-        {
-            osxCreated = pOsx->CreateDriver(osxStr.c_str(), osxPort);
-            CString msg; msg.Format(_T("[OSX] Creating driver (TCP %s:%d)..."), (LPCTSTR)osxAddr, osxPort);
-            AppendLog(msg);
-        }
-
-        if (!osxCreated)
-            AppendLog(_T("[OSX] Failed to create driver (will continue without OSX)."));
-    }
-
     AppendLog(_T("Connecting..."));
 
     bool* pRlmConn = &m_bRlmConnected;
-    bool* pOsxConn = &m_bOsxConnected;
 
-    RunAsync(_T("Connecting..."), [pRlm, pOsx, osxCreated, pRlmConn, pOsxConn]() -> WorkerResult*
+    RunAsync(_T("Connecting..."), [pRlm, pRlmConn, switchNum]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
         CString log;
@@ -407,31 +310,30 @@ void CGMSAppDlg::OnBnClickedConnect()
             *pRlmConn = true;
             pRlm->Initialize();
             log += _T("[RLM] Connected and initialized.\r\n");
+
+            // 查询外部开关信息以验证 OSX 是否连接到 RLM 的 USB A 端口
+            char swInfo[256] = { 0 };
+            if (pRlm->GetSwitchInfo(switchNum, swInfo, sizeof(swInfo)))
+            {
+                CString infoMsg;
+                infoMsg.Format(_T("[RLM] External switch SW%d info: %S\r\n"), switchNum, swInfo);
+                log += infoMsg;
+            }
+            else
+            {
+                CString warnMsg;
+                warnMsg.Format(_T("[RLM] Warning: Could not query SW%d info. External switch may not be connected.\r\n"), switchNum);
+                log += warnMsg;
+            }
         }
         else
         {
             log += _T("[RLM] Connection FAILED.\r\n");
         }
 
-        if (osxCreated)
-        {
-            BOOL osxOk = pOsx->Connect();
-            if (osxOk)
-            {
-                *pOsxConn = true;
-                log += _T("[OSX] Connected.\r\n");
-            }
-            else
-            {
-                log += _T("[OSX] Connection failed (continuing without OSX).\r\n");
-            }
-        }
-
         r->success = *pRlmConn;
         r->logMessage = log;
-        r->statusText = *pRlmConn
-            ? (*pOsxConn ? _T("RLM + OSX Connected") : _T("RLM Connected (no OSX)"))
-            : _T("Connection Failed");
+        r->statusText = *pRlmConn ? _T("RLM Connected (Integrated Mode)") : _T("Connection Failed");
 
         return r;
     });
@@ -440,25 +342,17 @@ void CGMSAppDlg::OnBnClickedConnect()
 void CGMSAppDlg::OnBnClickedDisconnect()
 {
     CSantecRLMDllLoader* pRlm = &m_rlmLoader;
-    COSXDllLoader* pOsx = &m_osxLoader;
     bool* pRlmConn = &m_bRlmConnected;
-    bool* pOsxConn = &m_bOsxConnected;
 
-    RunAsync(_T("Disconnecting..."), [pRlm, pOsx, pRlmConn, pOsxConn]() -> WorkerResult*
+    RunAsync(_T("Disconnecting..."), [pRlm, pRlmConn]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
-        if (pOsx->GetDriverHandle())
-        {
-            pOsx->Disconnect();
-            pOsx->DestroyDriver();
-        }
         if (pRlm->GetDriverHandle())
         {
             pRlm->Disconnect();
             pRlm->DestroyDriver();
         }
         *pRlmConn = false;
-        *pOsxConn = false;
         r->success = true;
         r->logMessage = _T("Disconnected.");
         r->statusText = _T("Disconnected");
@@ -467,7 +361,7 @@ void CGMSAppDlg::OnBnClickedDisconnect()
 }
 
 // ---------------------------------------------------------------------------
-// Zeroing (Reference)
+// 清零（参考测量）
 // ---------------------------------------------------------------------------
 
 void CGMSAppDlg::OnBnClickedZeroing()
@@ -476,7 +370,8 @@ void CGMSAppDlg::OnBnClickedZeroing()
 
     std::vector<double> wavelengths = GetSelectedWavelengths();
     std::vector<int> channels = GetSelectedChannels();
-    bool useOsx = m_bOsxConnected && m_osxLoader.GetDriverHandle();
+    int switchNum = GetSelectedSwitchNum();
+    bool useSwitch = (channels.size() > 1);
 
     BOOL bOverride = (m_checkOverride.GetCheck() == BST_CHECKED);
     CString ilStr, lenStr;
@@ -488,12 +383,11 @@ void CGMSAppDlg::OnBnClickedZeroing()
     AppendLog(_T("=== Zeroing (Reference) Started ==="));
 
     CSantecRLMDllLoader* pRlm = &m_rlmLoader;
-    COSXDllLoader* pOsx = &m_osxLoader;
     std::atomic<bool>* pStop = &m_bStopRequested;
     m_bStopRequested = false;
 
     RunAsync(_T("Zeroing..."),
-        [pRlm, pOsx, wavelengths, channels, useOsx,
+        [pRlm, wavelengths, channels, switchNum, useSwitch,
          bOverride, ilValue, lengthValue, pStop]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
@@ -504,12 +398,12 @@ void CGMSAppDlg::OnBnClickedZeroing()
             std::vector<double> wl = wavelengths;
             pRlm->ConfigureWavelengths(wl.data(), (int)wl.size());
 
-            if (!useOsx)
+            if (!useSwitch)
             {
                 std::vector<int> ch = channels;
                 pRlm->ConfigureChannels(ch.data(), (int)ch.size());
                 BOOL ok = pRlm->TakeReference(bOverride, ilValue, lengthValue);
-                log.Format(_T("Reference %s (all channels at once)."),
+                log.Format(_T("Reference %s (single channel, no switch needed)."),
                            ok ? _T("completed") : _T("FAILED"));
                 r->success = (ok != FALSE);
             }
@@ -522,11 +416,11 @@ void CGMSAppDlg::OnBnClickedZeroing()
 
                     int ch = channels[i];
                     CString chLog;
-                    chLog.Format(_T("  CH%d: Switching OSX -> channel %d ..."), ch, ch);
+                    chLog.Format(_T("  CH%d: Switching SW%d -> channel %d ..."), ch, switchNum, ch);
                     log += chLog;
 
-                    pOsx->SwitchChannel(ch);
-                    pOsx->WaitForOperation(10000);
+                    pRlm->SetSwitchChannel(switchNum, ch);
+                    Sleep(500);
 
                     std::vector<int> singleCh = { ch };
                     pRlm->ConfigureChannels(singleCh.data(), 1);
@@ -556,7 +450,7 @@ void CGMSAppDlg::OnBnClickedZeroing()
 }
 
 // ---------------------------------------------------------------------------
-// Measurement
+// 测量
 // ---------------------------------------------------------------------------
 
 void CGMSAppDlg::OnBnClickedMeasure()
@@ -565,17 +459,17 @@ void CGMSAppDlg::OnBnClickedMeasure()
 
     std::vector<double> wavelengths = GetSelectedWavelengths();
     std::vector<int> channels = GetSelectedChannels();
-    bool useOsx = m_bOsxConnected && m_osxLoader.GetDriverHandle();
+    int switchNum = GetSelectedSwitchNum();
+    bool useSwitch = (channels.size() > 1);
 
     AppendLog(_T("=== Measurement Started ==="));
 
     CSantecRLMDllLoader* pRlm = &m_rlmLoader;
-    COSXDllLoader* pOsx = &m_osxLoader;
     std::atomic<bool>* pStop = &m_bStopRequested;
     m_bStopRequested = false;
 
     RunAsync(_T("Measuring..."),
-        [pRlm, pOsx, wavelengths, channels, useOsx, pStop]() -> WorkerResult*
+        [pRlm, wavelengths, channels, switchNum, useSwitch, pStop]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
         CString log;
@@ -587,7 +481,7 @@ void CGMSAppDlg::OnBnClickedMeasure()
 
             std::vector<DriverMeasurementResult> allResults;
 
-            if (!useOsx)
+            if (!useSwitch)
             {
                 std::vector<int> ch = channels;
                 pRlm->ConfigureChannels(ch.data(), (int)ch.size());
@@ -614,11 +508,11 @@ void CGMSAppDlg::OnBnClickedMeasure()
 
                     int ch = channels[i];
                     CString chLog;
-                    chLog.Format(_T("  CH%d: Switching OSX ..."), ch);
+                    chLog.Format(_T("  CH%d: Switching SW%d ..."), ch, switchNum);
                     log += chLog;
 
-                    pOsx->SwitchChannel(ch);
-                    pOsx->WaitForOperation(10000);
+                    pRlm->SetSwitchChannel(switchNum, ch);
+                    Sleep(500);
 
                     std::vector<int> singleCh = { ch };
                     pRlm->ConfigureChannels(singleCh.data(), 1);
@@ -661,7 +555,7 @@ void CGMSAppDlg::OnBnClickedMeasure()
 }
 
 // ---------------------------------------------------------------------------
-// Continuous Test (Zeroing + Measurement loop)
+// 连续测试（清零 + 测量循环）
 // ---------------------------------------------------------------------------
 
 void CGMSAppDlg::OnBnClickedContinuous()
@@ -670,7 +564,8 @@ void CGMSAppDlg::OnBnClickedContinuous()
 
     std::vector<double> wavelengths = GetSelectedWavelengths();
     std::vector<int> channels = GetSelectedChannels();
-    bool useOsx = m_bOsxConnected && m_osxLoader.GetDriverHandle();
+    int switchNum = GetSelectedSwitchNum();
+    bool useSwitch = (channels.size() > 1);
 
     BOOL bOverride = (m_checkOverride.GetCheck() == BST_CHECKED);
     CString ilStr, lenStr;
@@ -683,11 +578,10 @@ void CGMSAppDlg::OnBnClickedContinuous()
     m_bStopRequested = false;
 
     CSantecRLMDllLoader* pRlm = &m_rlmLoader;
-    COSXDllLoader* pOsx = &m_osxLoader;
     std::atomic<bool>* pStop = &m_bStopRequested;
 
     RunAsync(_T("Continuous Test..."),
-        [pRlm, pOsx, wavelengths, channels, useOsx,
+        [pRlm, wavelengths, channels, switchNum, useSwitch,
          bOverride, ilValue, lengthValue, pStop]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
@@ -707,8 +601,8 @@ void CGMSAppDlg::OnBnClickedContinuous()
                 iterLog.Format(_T("--- Iteration %d ---\r\n"), iteration);
                 log += iterLog;
 
-                // Phase 1: Zeroing
-                if (!useOsx)
+                // Phase 1: 清零
+                if (!useSwitch)
                 {
                     std::vector<int> ch = channels;
                     pRlm->ConfigureChannels(ch.data(), (int)ch.size());
@@ -719,8 +613,8 @@ void CGMSAppDlg::OnBnClickedContinuous()
                     for (size_t i = 0; i < channels.size() && !pStop->load(); ++i)
                     {
                         int ch = channels[i];
-                        pOsx->SwitchChannel(ch);
-                        pOsx->WaitForOperation(10000);
+                        pRlm->SetSwitchChannel(switchNum, ch);
+                        Sleep(500);
                         std::vector<int> singleCh = { ch };
                         pRlm->ConfigureChannels(singleCh.data(), 1);
                         pRlm->TakeReference(bOverride, ilValue, lengthValue);
@@ -730,9 +624,9 @@ void CGMSAppDlg::OnBnClickedContinuous()
                 if (pStop->load()) break;
                 log += _T("  Zeroing done.\r\n");
 
-                // Phase 2: Measurement
+                // Phase 2: 测量
                 allResults.clear();
-                if (!useOsx)
+                if (!useSwitch)
                 {
                     std::vector<int> ch = channels;
                     pRlm->ConfigureChannels(ch.data(), (int)ch.size());
@@ -748,8 +642,8 @@ void CGMSAppDlg::OnBnClickedContinuous()
                     for (size_t i = 0; i < channels.size() && !pStop->load(); ++i)
                     {
                         int ch = channels[i];
-                        pOsx->SwitchChannel(ch);
-                        pOsx->WaitForOperation(10000);
+                        pRlm->SetSwitchChannel(switchNum, ch);
+                        Sleep(500);
                         std::vector<int> singleCh = { ch };
                         pRlm->ConfigureChannels(singleCh.data(), 1);
                         if (pRlm->TakeMeasurement())
@@ -792,7 +686,7 @@ void CGMSAppDlg::OnBnClickedStop()
 }
 
 // ---------------------------------------------------------------------------
-// Override checkbox
+// Override 复选框
 // ---------------------------------------------------------------------------
 
 void CGMSAppDlg::OnBnClickedOverride()
@@ -803,7 +697,7 @@ void CGMSAppDlg::OnBnClickedOverride()
 }
 
 // ---------------------------------------------------------------------------
-// Async Worker Infrastructure
+// 异步工作线程基础设施
 // ---------------------------------------------------------------------------
 
 void CGMSAppDlg::RunAsync(const CString& operationName,
@@ -855,7 +749,7 @@ LRESULT CGMSAppDlg::OnWorkerDone(WPARAM, LPARAM lParam)
 }
 
 // ---------------------------------------------------------------------------
-// UI State Management
+// UI 状态管理
 // ---------------------------------------------------------------------------
 
 void CGMSAppDlg::SetBusy(bool busy, const CString& statusText)
@@ -870,7 +764,6 @@ void CGMSAppDlg::SetBusy(bool busy, const CString& statusText)
 void CGMSAppDlg::EnableControls()
 {
     bool rlmLoaded = m_rlmLoader.IsDllLoaded();
-    bool osxLoaded = m_osxLoader.IsDllLoaded();
     bool anyConnected = m_bRlmConnected;
     bool visa = IsVisaMode();
 
@@ -878,17 +771,11 @@ void CGMSAppDlg::EnableControls()
     SetDlgItemText(IDC_BTN_LOAD_RLM, rlmLoaded ? _T("Unload") : _T("Load"));
     GetDlgItem(IDC_BTN_LOAD_RLM)->EnableWindow(!m_bBusy);
 
-    GetDlgItem(IDC_EDIT_OSX_DLL)->EnableWindow(!m_bBusy && !osxLoaded);
-    SetDlgItemText(IDC_BTN_LOAD_OSX, osxLoaded ? _T("Unload") : _T("Load"));
-    GetDlgItem(IDC_BTN_LOAD_OSX)->EnableWindow(!m_bBusy);
-
     GetDlgItem(IDC_COMBO_CONN_MODE)->EnableWindow(!m_bBusy && !anyConnected);
 
-    GetDlgItem(IDC_BTN_ENUMERATE)->EnableWindow(!m_bBusy && visa && (rlmLoaded || osxLoaded));
+    GetDlgItem(IDC_BTN_ENUMERATE)->EnableWindow(!m_bBusy && visa && rlmLoaded);
     GetDlgItem(IDC_COMBO_RLM_ADDR)->EnableWindow(!m_bBusy && rlmLoaded && !anyConnected);
-    GetDlgItem(IDC_COMBO_OSX_ADDR)->EnableWindow(!m_bBusy && osxLoaded && !anyConnected);
     GetDlgItem(IDC_EDIT_RLM_PORT)->EnableWindow(!m_bBusy && !visa && !anyConnected);
-    GetDlgItem(IDC_EDIT_OSX_PORT)->EnableWindow(!m_bBusy && !visa && !anyConnected);
 
     GetDlgItem(IDC_BTN_CONNECT)->EnableWindow(!m_bBusy && rlmLoaded && !anyConnected);
     GetDlgItem(IDC_BTN_DISCONNECT)->EnableWindow(!m_bBusy && anyConnected);
@@ -897,7 +784,7 @@ void CGMSAppDlg::EnableControls()
     GetDlgItem(IDC_CHECK_1550)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_EDIT_CH_FROM)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_EDIT_CH_TO)->EnableWindow(!m_bBusy);
-    GetDlgItem(IDC_COMBO_OSX_MODULE)->EnableWindow(!m_bBusy && m_bOsxConnected);
+    GetDlgItem(IDC_COMBO_SWITCH_NUM)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_CHECK_OVERRIDE)->EnableWindow(!m_bBusy);
 
     BOOL overrideOn = (m_checkOverride.GetCheck() == BST_CHECKED);
@@ -911,7 +798,7 @@ void CGMSAppDlg::EnableControls()
 }
 
 // ---------------------------------------------------------------------------
-// Log / Status
+// 日志 / 状态
 // ---------------------------------------------------------------------------
 
 LRESULT CGMSAppDlg::OnLogMessage(WPARAM, LPARAM lParam)
@@ -942,7 +829,7 @@ void CGMSAppDlg::OnBnClickedClearLog()
 }
 
 // ---------------------------------------------------------------------------
-// Results List
+// 结果列表
 // ---------------------------------------------------------------------------
 
 void CGMSAppDlg::PopulateResultsList(const std::vector<DriverMeasurementResult>& results)
@@ -974,7 +861,7 @@ void CGMSAppDlg::PopulateResultsList(const std::vector<DriverMeasurementResult>&
 }
 
 // ---------------------------------------------------------------------------
-// Connection Mode
+// 连接模式
 // ---------------------------------------------------------------------------
 
 bool CGMSAppDlg::IsVisaMode()
@@ -990,7 +877,7 @@ void CGMSAppDlg::OnCbnSelchangeConnMode()
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
+// 辅助函数
 // ---------------------------------------------------------------------------
 
 std::vector<double> CGMSAppDlg::GetSelectedWavelengths()
@@ -1024,16 +911,8 @@ std::vector<int> CGMSAppDlg::GetSelectedChannels()
     return ch;
 }
 
-int CGMSAppDlg::GetSelectedOSXModule()
+int CGMSAppDlg::GetSelectedSwitchNum()
 {
-    int sel = m_comboOsxModule.GetCurSel();
-    return (sel >= 0) ? sel : 0;
-}
-
-bool CGMSAppDlg::SwitchOSXChannel(int channel)
-{
-    if (!m_osxLoader.GetDriverHandle()) return false;
-    BOOL ok = m_osxLoader.SwitchChannel(channel);
-    if (ok) m_osxLoader.WaitForOperation(10000);
-    return ok != FALSE;
+    int sel = m_comboSwitchNum.GetCurSel();
+    return (sel >= 0) ? (sel + 1) : 1;
 }

@@ -53,6 +53,9 @@ private:
     void PopulateResultsList(const std::vector<DriverMeasurementResult>& results);
     bool IsVisaMode();
 
+    void PopulateDetectorCombo();
+    int  GetSelectedDetector();
+
     std::vector<double> GetSelectedWavelengths();
     std::vector<int> GetSelectedChannels();
 
@@ -60,10 +63,11 @@ private:
     {
         bool success;
         bool hasResults;
+        bool refreshDetectors;
         CString statusText;
         CString logMessage;
         std::vector<DriverMeasurementResult> results;
-        WorkerResult() : success(false), hasResults(false) {}
+        WorkerResult() : success(false), hasResults(false), refreshDetectors(false) {}
     };
 
     void RunAsync(const CString& operationName, std::function<WorkerResult*()> task);
@@ -79,6 +83,7 @@ private:
     CButton     m_check1550;
     CEdit       m_editChFrom;
     CEdit       m_editChTo;
+    CComboBox   m_comboDetector;
     CButton     m_checkOverride;
     CEdit       m_editILValue;
     CEdit       m_editLengthValue;

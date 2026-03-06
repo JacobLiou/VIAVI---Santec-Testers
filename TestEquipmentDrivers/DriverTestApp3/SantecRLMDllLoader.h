@@ -78,6 +78,18 @@ typedef BOOL (WINAPI *PFN_DriverSantecSetDUTLength)(HANDLE hDriver, int lengthBi
 typedef BOOL (WINAPI *PFN_DriverSantecSetRLGain)(HANDLE hDriver, int gain);
 typedef BOOL (WINAPI *PFN_DriverSantecSetLocalMode)(HANDLE hDriver, BOOL enabled);
 
+// 探测器选择
+typedef BOOL (WINAPI *PFN_DriverSetDetector)(HANDLE hDriver, int detectorNum);
+typedef int  (WINAPI *PFN_DriverGetDetectorCount)(HANDLE hDriver);
+typedef BOOL (WINAPI *PFN_DriverGetDetectorInfo)(HANDLE hDriver, int detectorNum,
+                                                 char* buffer, int bufferSize);
+
+// 外部开关控制
+typedef BOOL (WINAPI *PFN_DriverSetSwitchChannel)(HANDLE hDriver, int switchNum, int channel);
+typedef int  (WINAPI *PFN_DriverGetSwitchChannel)(HANDLE hDriver, int switchNum);
+typedef BOOL (WINAPI *PFN_DriverGetSwitchInfo)(HANDLE hDriver, int switchNum,
+                                               char* buffer, int bufferSize);
+
 // VISA / USB ???
 typedef HANDLE (WINAPI *PFN_CreateDriverEx)(const char* type, const char* address,
                                             int port, int slot, int commType);
@@ -112,6 +124,12 @@ public:
         , pfnSantecSetDUTLength(NULL)
         , pfnSantecSetRLGain(NULL)
         , pfnSantecSetLocalMode(NULL)
+        , pfnSetDetector(NULL)
+        , pfnGetDetectorCount(NULL)
+        , pfnGetDetectorInfo(NULL)
+        , pfnSetSwitchChannel(NULL)
+        , pfnGetSwitchChannel(NULL)
+        , pfnGetSwitchInfo(NULL)
         , pfnCreateDriverEx(NULL)
         , pfnEnumerateVisaResources(NULL)
     {
@@ -171,6 +189,14 @@ public:
         LOAD_PROC(pfnSantecSetRLGain,          "DriverSantecSetRLGain");
         LOAD_PROC(pfnSantecSetLocalMode,       "DriverSantecSetLocalMode");
 
+        LOAD_PROC(pfnSetDetector,              "DriverSetDetector");
+        LOAD_PROC(pfnGetDetectorCount,         "DriverGetDetectorCount");
+        LOAD_PROC(pfnGetDetectorInfo,          "DriverGetDetectorInfo");
+
+        LOAD_PROC(pfnSetSwitchChannel,         "DriverSetSwitchChannel");
+        LOAD_PROC(pfnGetSwitchChannel,         "DriverGetSwitchChannel");
+        LOAD_PROC(pfnGetSwitchInfo,            "DriverGetSwitchInfo");
+
         // VISA ????????????????????????
         pfnCreateDriverEx = (PFN_CreateDriverEx)::GetProcAddress(m_hDll, "CreateDriverEx");
         pfnEnumerateVisaResources = (PFN_EnumerateVisaResources)::GetProcAddress(m_hDll, "EnumerateVisaResources");
@@ -206,6 +232,12 @@ public:
             pfnSantecSetDUTLength = NULL;
             pfnSantecSetRLGain = NULL;
             pfnSantecSetLocalMode = NULL;
+            pfnSetDetector = NULL;
+            pfnGetDetectorCount = NULL;
+            pfnGetDetectorInfo = NULL;
+            pfnSetSwitchChannel = NULL;
+            pfnGetSwitchChannel = NULL;
+            pfnGetSwitchInfo = NULL;
             pfnCreateDriverEx = NULL;
             pfnEnumerateVisaResources = NULL;
             printf("[??????] DLL???????\n");
@@ -395,6 +427,50 @@ public:
         return pfnSantecSetLocalMode(m_hDriver, enabled);
     }
 
+    // -----------------------------------------------------------------------
+    // 探测器选择
+    // -----------------------------------------------------------------------
+
+    BOOL SetDetector(int detectorNum)
+    {
+        if (!m_hDriver || !pfnSetDetector) return FALSE;
+        return pfnSetDetector(m_hDriver, detectorNum);
+    }
+
+    int GetDetectorCount()
+    {
+        if (!m_hDriver || !pfnGetDetectorCount) return 0;
+        return pfnGetDetectorCount(m_hDriver);
+    }
+
+    BOOL GetDetectorInfo(int detectorNum, char* buffer, int bufferSize)
+    {
+        if (!m_hDriver || !pfnGetDetectorInfo || !buffer) return FALSE;
+        return pfnGetDetectorInfo(m_hDriver, detectorNum, buffer, bufferSize);
+    }
+
+    // -----------------------------------------------------------------------
+    // 外部开关控制（集成模式）
+    // -----------------------------------------------------------------------
+
+    BOOL SetSwitchChannel(int switchNum, int channel)
+    {
+        if (!m_hDriver || !pfnSetSwitchChannel) return FALSE;
+        return pfnSetSwitchChannel(m_hDriver, switchNum, channel);
+    }
+
+    int GetSwitchChannel(int switchNum)
+    {
+        if (!m_hDriver || !pfnGetSwitchChannel) return -1;
+        return pfnGetSwitchChannel(m_hDriver, switchNum);
+    }
+
+    BOOL GetSwitchInfo(int switchNum, char* buffer, int bufferSize)
+    {
+        if (!m_hDriver || !pfnGetSwitchInfo || !buffer) return FALSE;
+        return pfnGetSwitchInfo(m_hDriver, switchNum, buffer, bufferSize);
+    }
+
 private:
     HMODULE m_hDll;      // DLL?????
     HANDLE  m_hDriver;   // ??????????
@@ -419,6 +495,16 @@ private:
     PFN_DriverSantecSetDUTLength    pfnSantecSetDUTLength;
     PFN_DriverSantecSetRLGain       pfnSantecSetRLGain;
     PFN_DriverSantecSetLocalMode    pfnSantecSetLocalMode;
+
+    // 探测器选择
+    PFN_DriverSetDetector           pfnSetDetector;
+    PFN_DriverGetDetectorCount      pfnGetDetectorCount;
+    PFN_DriverGetDetectorInfo       pfnGetDetectorInfo;
+
+    // 外部开关控制
+    PFN_DriverSetSwitchChannel      pfnSetSwitchChannel;
+    PFN_DriverGetSwitchChannel      pfnGetSwitchChannel;
+    PFN_DriverGetSwitchInfo         pfnGetSwitchInfo;
 
     // VISA ???
     PFN_CreateDriverEx              pfnCreateDriverEx;

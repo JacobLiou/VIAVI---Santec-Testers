@@ -2,7 +2,6 @@
 
 #include "resource.h"
 #include "SantecRLMDllLoader.h"
-#include "OSXDllLoader.h"
 #include <vector>
 #include <thread>
 #include <functional>
@@ -29,7 +28,6 @@ protected:
 
     afx_msg void OnClose();
     afx_msg void OnBnClickedLoadRlm();
-    afx_msg void OnBnClickedLoadOsx();
     afx_msg void OnBnClickedEnumerate();
     afx_msg void OnBnClickedConnect();
     afx_msg void OnBnClickedDisconnect();
@@ -55,9 +53,7 @@ private:
 
     std::vector<double> GetSelectedWavelengths();
     std::vector<int> GetSelectedChannels();
-    int GetSelectedOSXModule();
-
-    bool SwitchOSXChannel(int channel);
+    int GetSelectedSwitchNum();
 
     struct WorkerResult
     {
@@ -73,29 +69,24 @@ private:
 
     // UI Controls
     CEdit       m_editRlmDll;
-    CEdit       m_editOsxDll;
     CComboBox   m_comboConnMode;
     CComboBox   m_comboRlmAddr;
-    CComboBox   m_comboOsxAddr;
     CEdit       m_editRlmPort;
-    CEdit       m_editOsxPort;
     CButton     m_check1310;
     CButton     m_check1550;
     CEdit       m_editChFrom;
     CEdit       m_editChTo;
-    CComboBox   m_comboOsxModule;
+    CComboBox   m_comboSwitchNum;
     CButton     m_checkOverride;
     CEdit       m_editILValue;
     CEdit       m_editLengthValue;
     CListCtrl   m_listResults;
     CEdit       m_editLog;
 
-    // Dynamic loaders
+    // Dynamic loader
     CSantecRLMDllLoader m_rlmLoader;
-    COSXDllLoader       m_osxLoader;
 
     bool m_bBusy;
     std::atomic<bool> m_bStopRequested;
     bool m_bRlmConnected;
-    bool m_bOsxConnected;
 };

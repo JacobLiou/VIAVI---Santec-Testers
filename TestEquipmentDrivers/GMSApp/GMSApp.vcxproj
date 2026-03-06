@@ -152,7 +152,6 @@
     <ClInclude Include="GMSApp.h" />
     <ClInclude Include="GMSAppDlg.h" />
     <ClInclude Include="SantecRLMDllLoader.h" />
-    <ClInclude Include="OSXDllLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GMSApp.rc" />

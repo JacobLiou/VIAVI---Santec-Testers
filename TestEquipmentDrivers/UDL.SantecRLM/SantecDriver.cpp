@@ -267,6 +267,7 @@ CSantecDriver::CSantecDriver(const std::string& ipAddress,
     , m_localMode(true)
     , m_autoStart(false)
     , m_dutIL(0.0)
+    , m_detectorNum(1)
     , m_referenced(false)
 {
     m_config.ipAddress = ipAddress;
@@ -815,8 +816,28 @@ int CSantecDriver::GetSwitchChannel(int switchNum)
     return atoi(resp.c_str());
 }
 
+std::string CSantecDriver::GetSwitchInfo(int switchNum)
+{
+    std::ostringstream cmd;
+    cmd << "SW" << switchNum << ":INFO?";
+    std::string resp = Query(cmd.str());
+    m_logger.Info("Switch %d info: %s", switchNum, resp.c_str());
+    return Trim(resp);
+}
+
 // ---------------------------------------------------------------------------
-// 功率计
+// 探测器选择
+// ---------------------------------------------------------------------------
+
+void CSantecDriver::SetDetector(int detectorNum)
+{
+    if (detectorNum < 1) detectorNum = 1;
+    m_detectorNum = detectorNum;
+    m_logger.Info("Active detector set to %d", m_detectorNum);
+}
+
+// ---------------------------------------------------------------------------
+// 功率计 / 探测器信息
 // ---------------------------------------------------------------------------
 
 int CSantecDriver::GetDetectorCount()
@@ -962,7 +983,7 @@ bool CSantecDriver::TakeMeasurement()
                 // READ:IL:det1? <nm> - 同步插入损耗读取
                 try
                 {
-                    result.insertionLoss = ReadIL(1, wavNm);
+                    result.insertionLoss = ReadIL(m_detectorNum, wavNm);
                 }
                 catch (const std::exception& e)
                 {

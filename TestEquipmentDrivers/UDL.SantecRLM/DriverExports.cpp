@@ -268,6 +268,94 @@ DRIVER_C_API BOOL WINAPI DriverSantecSetLocalMode(HANDLE hDriver, BOOL enabled)
 }
 
 // ---------------------------------------------------------------------------
+// 探测器选择导出
+// ---------------------------------------------------------------------------
+
+DRIVER_C_API BOOL WINAPI DriverSetDetector(HANDLE hDriver, int detectorNum)
+{
+    if (!hDriver) return FALSE;
+    try
+    {
+        CSantecDriver* santec = dynamic_cast<CSantecDriver*>(ToDriver(hDriver));
+        if (!santec) return FALSE;
+        santec->SetDetector(detectorNum);
+        return TRUE;
+    }
+    catch (...) { return FALSE; }
+}
+
+DRIVER_C_API int WINAPI DriverGetDetectorCount(HANDLE hDriver)
+{
+    if (!hDriver) return 0;
+    try
+    {
+        CSantecDriver* santec = dynamic_cast<CSantecDriver*>(ToDriver(hDriver));
+        if (!santec) return 0;
+        return santec->GetDetectorCount();
+    }
+    catch (...) { return 0; }
+}
+
+DRIVER_C_API BOOL WINAPI DriverGetDetectorInfo(HANDLE hDriver, int detectorNum,
+                                               char* buffer, int bufferSize)
+{
+    if (!hDriver || !buffer || bufferSize <= 0) return FALSE;
+    try
+    {
+        CSantecDriver* santec = dynamic_cast<CSantecDriver*>(ToDriver(hDriver));
+        if (!santec) return FALSE;
+        std::string info = santec->GetDetectorInfo(detectorNum);
+        strncpy_s(buffer, bufferSize, info.c_str(), _TRUNCATE);
+        return TRUE;
+    }
+    catch (...) { return FALSE; }
+}
+
+// ---------------------------------------------------------------------------
+// 外部开关控制导出
+// ---------------------------------------------------------------------------
+
+DRIVER_C_API BOOL WINAPI DriverSetSwitchChannel(HANDLE hDriver, int switchNum, int channel)
+{
+    if (!hDriver) return FALSE;
+    try
+    {
+        CSantecDriver* santec = dynamic_cast<CSantecDriver*>(ToDriver(hDriver));
+        if (!santec) return FALSE;
+        santec->SetSwitchChannel(switchNum, channel);
+        return TRUE;
+    }
+    catch (...) { return FALSE; }
+}
+
+DRIVER_C_API int WINAPI DriverGetSwitchChannel(HANDLE hDriver, int switchNum)
+{
+    if (!hDriver) return -1;
+    try
+    {
+        CSantecDriver* santec = dynamic_cast<CSantecDriver*>(ToDriver(hDriver));
+        if (!santec) return -1;
+        return santec->GetSwitchChannel(switchNum);
+    }
+    catch (...) { return -1; }
+}
+
+DRIVER_C_API BOOL WINAPI DriverGetSwitchInfo(HANDLE hDriver, int switchNum,
+                                             char* buffer, int bufferSize)
+{
+    if (!hDriver || !buffer || bufferSize <= 0) return FALSE;
+    try
+    {
+        CSantecDriver* santec = dynamic_cast<CSantecDriver*>(ToDriver(hDriver));
+        if (!santec) return FALSE;
+        std::string info = santec->GetSwitchInfo(switchNum);
+        strncpy_s(buffer, bufferSize, info.c_str(), _TRUNCATE);
+        return TRUE;
+    }
+    catch (...) { return FALSE; }
+}
+
+// ---------------------------------------------------------------------------
 // VISA / USB 扩展导出
 // ---------------------------------------------------------------------------
 

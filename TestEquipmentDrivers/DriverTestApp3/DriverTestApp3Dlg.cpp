@@ -65,6 +65,7 @@ void CDriverTestApp3Dlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_CHECK_1550, m_check1550);
     DDX_Control(pDX, IDC_EDIT_CH_FROM, m_editChFrom);
     DDX_Control(pDX, IDC_EDIT_CH_TO, m_editChTo);
+    DDX_Control(pDX, IDC_COMBO_DETECTOR, m_comboDetector);
     DDX_Control(pDX, IDC_CHECK_OVERRIDE, m_checkOverride);
     DDX_Control(pDX, IDC_EDIT_IL_VALUE, m_editILValue);
     DDX_Control(pDX, IDC_EDIT_LENGTH_VALUE, m_editLengthValue);
@@ -95,6 +96,10 @@ BOOL CDriverTestApp3Dlg::OnInitDialog()
 
     m_editChFrom.SetWindowText(_T("1"));
     m_editChTo.SetWindowText(_T("12"));
+
+    m_comboDetector.AddString(_T("Detector 1"));
+    m_comboDetector.SetCurSel(0);
+    m_comboDetector.EnableWindow(FALSE);
 
     m_checkOverride.SetCheck(BST_CHECKED);
     m_editILValue.SetWindowText(_T("0.1"));
@@ -248,6 +253,9 @@ LRESULT CDriverTestApp3Dlg::OnWorkerDone(WPARAM /*wParam*/, LPARAM lParam)
         if (result->hasResults)
             PopulateResultsList(result->results);
 
+        if (result->refreshDetectors)
+            PopulateDetectorCombo();
+
         if (!result->statusText.IsEmpty())
             UpdateStatus(result->statusText);
         else
@@ -283,6 +291,7 @@ void CDriverTestApp3Dlg::SetBusy(bool busy, const CString& statusText)
             IDC_COMBO_ADDRESS, IDC_EDIT_PORT, IDC_EDIT_SLOT,
             IDC_EDIT_DLL_PATH,
             IDC_CHECK_1310, IDC_CHECK_1550, IDC_EDIT_CH_FROM, IDC_EDIT_CH_TO,
+            IDC_COMBO_DETECTOR,
             IDC_CHECK_OVERRIDE, IDC_EDIT_IL_VALUE, IDC_EDIT_LENGTH_VALUE
         };
 
@@ -484,6 +493,7 @@ void CDriverTestApp3Dlg::EnableControls(bool connected)
     GetDlgItem(IDC_EDIT_PORT)->EnableWindow(!visa && dllLoaded && !connected);
     GetDlgItem(IDC_EDIT_SLOT)->EnableWindow(!visa && dllLoaded && !connected);
 
+    GetDlgItem(IDC_COMBO_DETECTOR)->EnableWindow(connected);
     GetDlgItem(IDC_BTN_TAKE_REFERENCE)->EnableWindow(connected);
     GetDlgItem(IDC_BTN_TAKE_MEASUREMENT)->EnableWindow(connected);
     GetDlgItem(IDC_BTN_GET_RESULTS)->EnableWindow(connected);
@@ -622,6 +632,7 @@ void CDriverTestApp3Dlg::OnBnClickedInitialize()
         try
         {
             r->success = pLoader->Initialize() != FALSE;
+            r->refreshDetectors = r->success;
             r->logMessage = r->success
                 ? _T("Initialization successful.")
                 : _T("Initialization failed.");
@@ -655,6 +666,9 @@ void CDriverTestApp3Dlg::OnBnClickedTakeReference()
     m_editLengthValue.GetWindowText(lenStr);
     double ilValue = _ttof(ilStr);
     double lengthValue = _ttof(lenStr);
+
+    int detectorNum = GetSelectedDetector();
+    m_loader.SetDetector(detectorNum);
 
     AppendLog(_T("Taking reference..."));
 
@@ -693,6 +707,9 @@ void CDriverTestApp3Dlg::OnBnClickedTakeReference()
 void CDriverTestApp3Dlg::OnBnClickedTakeMeasurement()
 {
     if (!m_loader.GetDriverHandle()) return;
+
+    int detectorNum = GetSelectedDetector();
+    m_loader.SetDetector(detectorNum);
 
     AppendLog(_T("Taking measurement..."));
 
@@ -770,6 +787,9 @@ void CDriverTestApp3Dlg::OnBnClickedRunFullTest()
     double ilValue = _ttof(ilStr);
     double lengthValue = _ttof(lenStr);
 
+    int detectorNum = GetSelectedDetector();
+    m_loader.SetDetector(detectorNum);
+
     AppendLog(_T("=== Running Full Test ==="));
 
     CSantecRLMDllLoader* pLoader = &m_loader;
@@ -832,6 +852,37 @@ void CDriverTestApp3Dlg::OnBnClickedClearLog()
 // ---------------------------------------------------------------------------
 // 辅助函数
 // ---------------------------------------------------------------------------
+
+void CDriverTestApp3Dlg::PopulateDetectorCombo()
+{
+    m_comboDetector.ResetContent();
+
+    int count = m_loader.GetDetectorCount();
+    if (count <= 0) count = 1;
+
+    for (int i = 1; i <= count; ++i)
+    {
+        CString label;
+        char info[256] = { 0 };
+        if (m_loader.GetDetectorInfo(i, info, sizeof(info)) && info[0] != '\0')
+            label.Format(_T("Detector %d (%S)"), i, info);
+        else
+            label.Format(_T("Detector %d"), i);
+
+        m_comboDetector.AddString(label);
+    }
+    m_comboDetector.SetCurSel(0);
+
+    CString msg;
+    msg.Format(_T("Detected %d detector(s)."), count);
+    AppendLog(msg);
+}
+
+int CDriverTestApp3Dlg::GetSelectedDetector()
+{
+    int sel = m_comboDetector.GetCurSel();
+    return (sel >= 0) ? sel + 1 : 1;
+}
 
 std::vector<double> CDriverTestApp3Dlg::GetSelectedWavelengths()
 {

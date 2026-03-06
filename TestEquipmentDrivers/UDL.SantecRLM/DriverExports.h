@@ -93,6 +93,40 @@ DRIVER_C_API BOOL WINAPI DriverSantecSetRLGain(HANDLE hDriver, int gain);
 DRIVER_C_API BOOL WINAPI DriverSantecSetLocalMode(HANDLE hDriver, BOOL enabled);
 
 // ---------------------------------------------------------------------------
+// 探测器选择
+// ---------------------------------------------------------------------------
+
+// 设置当前活动探测器编号（1=内置前面板探测器，2=外部遥控探头）
+DRIVER_C_API BOOL WINAPI DriverSetDetector(HANDLE hDriver, int detectorNum);
+
+// 获取已连接的探测器数量
+DRIVER_C_API int WINAPI DriverGetDetectorCount(HANDLE hDriver);
+
+// 获取指定探测器的信息字符串
+// buffer: 接收信息的缓冲区
+// bufferSize: 缓冲区大小
+DRIVER_C_API BOOL WINAPI DriverGetDetectorInfo(HANDLE hDriver, int detectorNum,
+                                               char* buffer, int bufferSize);
+
+// ---------------------------------------------------------------------------
+// 外部开关控制（集成模式：通过 RLM USB A 端口控制连接的 OSX 光开关）
+// ---------------------------------------------------------------------------
+
+// 设置外部开关通道（发送 SW#:CLOSe # 命令）
+// switchNum: 外部开关编号（1=SW1, 2=SW2; 0=内部开关）
+// channel: 目标通道号
+DRIVER_C_API BOOL WINAPI DriverSetSwitchChannel(HANDLE hDriver, int switchNum, int channel);
+
+// 查询外部开关当前通道（发送 SW#:CLOSe? 命令）
+DRIVER_C_API int WINAPI DriverGetSwitchChannel(HANDLE hDriver, int switchNum);
+
+// 查询外部开关信息（发送 SW#:INFO? 命令）
+// buffer: 接收信息的缓冲区
+// bufferSize: 缓冲区大小
+DRIVER_C_API BOOL WINAPI DriverGetSwitchInfo(HANDLE hDriver, int switchNum,
+                                             char* buffer, int bufferSize);
+
+// ---------------------------------------------------------------------------
 // VISA / USB 扩展
 // ---------------------------------------------------------------------------
 
