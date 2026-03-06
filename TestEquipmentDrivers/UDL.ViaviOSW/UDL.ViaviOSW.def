@@ -1,0 +1,21 @@
+LIBRARY "UDL.ViaviOSW"
+EXPORTS
+    OSW_CreateDriver
+    OSW_CreateDriverEx
+    OSW_DestroyDriver
+    OSW_Connect
+    OSW_Disconnect
+    OSW_IsConnected
+    OSW_GetDeviceInfo
+    OSW_CheckError
+    OSW_GetDeviceCount
+    OSW_GetSwitchInfo
+    OSW_SwitchChannel
+    OSW_GetCurrentChannel
+    OSW_GetChannelCount
+    OSW_SetLocalMode
+    OSW_Reset
+    OSW_WaitForIdle
+    OSW_SendCommand
+    OSW_SetLogCallback
+    OSW_EnumerateVisaResources

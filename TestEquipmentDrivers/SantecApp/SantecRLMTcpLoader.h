@@ -1,7 +1,7 @@
 #pragma once
 
 // ---------------------------------------------------------------------------
-// CSantecRLMDllLoader -- UDL.SantecRLM.dll 动态加载器
+// CSantecRLMTcpLoader -- UDL.SantecRLM.dll 动态加载器 (TCP 模式)
 //
 // 通过 LoadLibrary / GetProcAddress 动态加载驱动 DLL
 // 无需引用 UDL.SantecRLM 的头文件或 .lib 静态库
@@ -11,7 +11,7 @@
 #include <string>
 #include <cstdio>
 
-namespace GMSRLMLoaderDetail {
+namespace RLMLoaderDetail {
     static FARPROC ResolveProcAddress(HMODULE hDll, const char* name)
     {
         FARPROC p = ::GetProcAddress(hDll, name);
@@ -29,98 +29,79 @@ namespace GMSRLMLoaderDetail {
 }
 
 // ---------------------------------------------------------------------------
-// C??????????DLL??????????????
+// C 兼容结构体（与 DriverTypes.h 中 DLL 导出结构体对齐）
 // ---------------------------------------------------------------------------
 
-struct DriverMeasurementResult
+struct RLMMeasurementResult
 {
-    int    channel;          // ?????
-    double wavelength;       // ???? (nm)
-    double insertionLoss;    // ??????? (dB)
-    double returnLoss;       // ?????? (dB)
-    double returnLossA;      // A??????? (dB)
-    double returnLossB;      // B??????? (dB)
-    double returnLossTotal;  // ??????? (dB)
-    double dutLength;        // ???????????? (m)
-    double rawData[10];      // ??????
-    int    rawDataCount;     // ??????????
+    int    channel;
+    double wavelength;          // nm
+    double insertionLoss;       // dB (IL)
+    double returnLoss;          // dB (RL)
+    double returnLossA;         // dB (RLA)
+    double returnLossB;         // dB (RLB)
+    double returnLossTotal;     // dB (RLTotal)
+    double dutLength;           // m
+    double rawData[10];
+    int    rawDataCount;
 };
 
-struct DriverDeviceInfo
+struct RLMDeviceInfo
 {
-    char manufacturer[64];    // ??????
-    char model[64];           // ???
-    char serialNumber[64];    // ??????
-    char firmwareVersion[64]; // ??????
-    int  slot;                // ????
+    char manufacturer[64];
+    char model[64];
+    char serialNumber[64];
+    char firmwareVersion[64];
+    int  slot;
 };
 
 // ---------------------------------------------------------------------------
 // UDL.SantecRLM C 导出函数指针类型定义
 // ---------------------------------------------------------------------------
 
-// ???????????
-typedef HANDLE (WINAPI *PFN_CreateDriver)(const char* type, const char* ip, int port, int slot);
-typedef void   (WINAPI *PFN_DestroyDriver)(HANDLE hDriver);
+typedef HANDLE (WINAPI *PFN_RLM_CreateDriver)(const char* type, const char* ip, int port, int slot);
+typedef void   (WINAPI *PFN_RLM_DestroyDriver)(HANDLE hDriver);
 
-// ???????
-typedef BOOL (WINAPI *PFN_DriverConnect)(HANDLE hDriver);
-typedef void (WINAPI *PFN_DriverDisconnect)(HANDLE hDriver);
-typedef BOOL (WINAPI *PFN_DriverInitialize)(HANDLE hDriver);
-typedef BOOL (WINAPI *PFN_DriverIsConnected)(HANDLE hDriver);
+typedef BOOL (WINAPI *PFN_RLM_Connect)(HANDLE hDriver);
+typedef void (WINAPI *PFN_RLM_Disconnect)(HANDLE hDriver);
+typedef BOOL (WINAPI *PFN_RLM_Initialize)(HANDLE hDriver);
+typedef BOOL (WINAPI *PFN_RLM_IsConnected)(HANDLE hDriver);
 
-// ????
-typedef BOOL (WINAPI *PFN_DriverConfigureWavelengths)(HANDLE hDriver, double* wavelengths, int count);
-typedef BOOL (WINAPI *PFN_DriverConfigureChannels)(HANDLE hDriver, int* channels, int count);
-// ????
-typedef BOOL (WINAPI *PFN_DriverTakeReference)(HANDLE hDriver, BOOL bOverride,
-                                               double ilValue, double lengthValue);
-typedef BOOL (WINAPI *PFN_DriverTakeMeasurement)(HANDLE hDriver);
-typedef int  (WINAPI *PFN_DriverGetResults)(HANDLE hDriver, DriverMeasurementResult* results, int maxCount);
+typedef BOOL (WINAPI *PFN_RLM_ConfigureWavelengths)(HANDLE hDriver, double* wavelengths, int count);
+typedef BOOL (WINAPI *PFN_RLM_ConfigureChannels)(HANDLE hDriver, int* channels, int count);
 
-// ??? / ????
-typedef BOOL (WINAPI *PFN_DriverGetDeviceInfo)(HANDLE hDriver, DriverDeviceInfo* info);
-typedef int  (WINAPI *PFN_DriverCheckError)(HANDLE hDriver, char* message, int messageSize);
+typedef BOOL (WINAPI *PFN_RLM_TakeReference)(HANDLE hDriver, BOOL bOverride,
+                                              double ilValue, double lengthValue);
+typedef BOOL (WINAPI *PFN_RLM_TakeMeasurement)(HANDLE hDriver);
+typedef int  (WINAPI *PFN_RLM_GetResults)(HANDLE hDriver, RLMMeasurementResult* results, int maxCount);
 
-// ??SCPI????
-typedef BOOL (WINAPI *PFN_DriverSendCommand)(HANDLE hDriver, const char* command,
-                                             char* response, int responseSize);
+typedef BOOL (WINAPI *PFN_RLM_GetDeviceInfo)(HANDLE hDriver, RLMDeviceInfo* info);
+typedef int  (WINAPI *PFN_RLM_CheckError)(HANDLE hDriver, char* message, int messageSize);
 
-// ???
-typedef void (WINAPI *PFN_DriverLogCallback)(int level, const char* source, const char* message);
-typedef void (WINAPI *PFN_DriverSetLogCallback)(PFN_DriverLogCallback callback);
+typedef BOOL (WINAPI *PFN_RLM_SendCommand)(HANDLE hDriver, const char* command,
+                                            char* response, int responseSize);
 
-// Santec???
-typedef BOOL (WINAPI *PFN_DriverSantecSetRLSensitivity)(HANDLE hDriver, int sensitivity);
-typedef BOOL (WINAPI *PFN_DriverSantecSetDUTLength)(HANDLE hDriver, int lengthBin);
-typedef BOOL (WINAPI *PFN_DriverSantecSetRLGain)(HANDLE hDriver, int gain);
-typedef BOOL (WINAPI *PFN_DriverSantecSetLocalMode)(HANDLE hDriver, BOOL enabled);
+typedef void (WINAPI *PFN_RLMLogCallback)(int level, const char* source, const char* message);
+typedef void (WINAPI *PFN_RLM_SetLogCallback)(PFN_RLMLogCallback callback);
 
-// 探测器选择
-typedef BOOL (WINAPI *PFN_DriverSetDetector)(HANDLE hDriver, int detectorNum);
-typedef int  (WINAPI *PFN_DriverGetDetectorCount)(HANDLE hDriver);
-typedef BOOL (WINAPI *PFN_DriverGetDetectorInfo)(HANDLE hDriver, int detectorNum,
-                                                 char* buffer, int bufferSize);
+typedef BOOL (WINAPI *PFN_RLM_SantecSetRLSensitivity)(HANDLE hDriver, int sensitivity);
+typedef BOOL (WINAPI *PFN_RLM_SantecSetDUTLength)(HANDLE hDriver, int lengthBin);
+typedef BOOL (WINAPI *PFN_RLM_SantecSetRLGain)(HANDLE hDriver, int gain);
+typedef BOOL (WINAPI *PFN_RLM_SantecSetLocalMode)(HANDLE hDriver, BOOL enabled);
 
-// 外部开关控制
-typedef BOOL (WINAPI *PFN_DriverSetSwitchChannel)(HANDLE hDriver, int switchNum, int channel);
-typedef int  (WINAPI *PFN_DriverGetSwitchChannel)(HANDLE hDriver, int switchNum);
-typedef BOOL (WINAPI *PFN_DriverGetSwitchInfo)(HANDLE hDriver, int switchNum,
-                                               char* buffer, int bufferSize);
-
-// VISA / USB ???
-typedef HANDLE (WINAPI *PFN_CreateDriverEx)(const char* type, const char* address,
-                                            int port, int slot, int commType);
-typedef int    (WINAPI *PFN_EnumerateVisaResources)(char* buffer, int bufferSize);
+typedef BOOL (WINAPI *PFN_RLM_SetDetector)(HANDLE hDriver, int detectorNum);
+typedef int  (WINAPI *PFN_RLM_GetDetectorCount)(HANDLE hDriver);
+typedef BOOL (WINAPI *PFN_RLM_GetDetectorInfo)(HANDLE hDriver, int detectorNum,
+                                                char* buffer, int bufferSize);
 
 // ---------------------------------------------------------------------------
-// CSantecRLMDllLoader 类
+// CSantecRLMTcpLoader 类
 // ---------------------------------------------------------------------------
 
-class CSantecRLMDllLoader
+class CSantecRLMTcpLoader
 {
 public:
-    CSantecRLMDllLoader()
+    CSantecRLMTcpLoader()
         : m_hDll(NULL)
         , m_hDriver(NULL)
         , pfnCreateDriver(NULL)
@@ -145,47 +126,43 @@ public:
         , pfnSetDetector(NULL)
         , pfnGetDetectorCount(NULL)
         , pfnGetDetectorInfo(NULL)
-        , pfnSetSwitchChannel(NULL)
-        , pfnGetSwitchChannel(NULL)
-        , pfnGetSwitchInfo(NULL)
-        , pfnCreateDriverEx(NULL)
-        , pfnEnumerateVisaResources(NULL)
     {
     }
 
-    ~CSantecRLMDllLoader()
+    ~CSantecRLMTcpLoader()
     {
         DestroyDriver();
         UnloadDll();
     }
 
     // -----------------------------------------------------------------------
-    // DLL ???????????
+    // DLL 加载 / 卸载
     // -----------------------------------------------------------------------
 
     bool LoadDll(const char* dllPath)
     {
         if (m_hDll)
-        {
-            printf("[??????] DLL???????????????\n");
             return false;
-        }
 
         m_hDll = ::LoadLibraryA(dllPath);
+        // #region agent log
+        { char _modPath[512]={0}; if(m_hDll) ::GetModuleFileNameA(m_hDll, _modPath, 511);
+          FILE* _f = fopen("c:\\Users\\menghl2\\WorkSpace\\Projects\\VIAVI---Santec-Testers\\debug-021a55.log", "a");
+          if (_f) { fprintf(_f, "{\"sessionId\":\"021a55\",\"hypothesisId\":\"H1\",\"location\":\"SantecRLMTcpLoader.h:LoadDll\",\"message\":\"LoadLibraryA result\",\"data\":{\"dllPath\":\"%s\",\"hDll\":\"%p\",\"lastError\":%lu,\"fullPath\":\"%s\",\"ptrSize\":%d},\"timestamp\":%llu}\n", dllPath, m_hDll, m_hDll ? 0UL : ::GetLastError(), _modPath, (int)sizeof(void*), (unsigned long long)::GetTickCount64()); fclose(_f); } }
+        // #endregion
         if (!m_hDll)
-        {
-            printf("[??????] LoadLibrary(\"%s\") ??????????=%lu\n", dllPath, GetLastError());
             return false;
-        }
 
         int resolved = 0;
         int total = 0;
+        // #region agent log
+        std::string _failedExports;
+        // #endregion
 
         #define LOAD_PROC(varName, exportName) \
             ++total; \
-            varName = (decltype(varName))GMSRLMLoaderDetail::ResolveProcAddress(m_hDll, exportName); \
-            if (varName) ++resolved; \
-            else printf("[??????] ????: %s ?????\n", exportName);
+            varName = (decltype(varName))RLMLoaderDetail::ResolveProcAddress(m_hDll, exportName); \
+            if (varName) ++resolved; else { if(!_failedExports.empty()) _failedExports += ","; _failedExports += exportName; }
 
         LOAD_PROC(pfnCreateDriver,             "CreateDriver");
         LOAD_PROC(pfnDestroyDriver,            "DestroyDriver");
@@ -206,22 +183,17 @@ public:
         LOAD_PROC(pfnSantecSetDUTLength,       "DriverSantecSetDUTLength");
         LOAD_PROC(pfnSantecSetRLGain,          "DriverSantecSetRLGain");
         LOAD_PROC(pfnSantecSetLocalMode,       "DriverSantecSetLocalMode");
-
         LOAD_PROC(pfnSetDetector,              "DriverSetDetector");
         LOAD_PROC(pfnGetDetectorCount,         "DriverGetDetectorCount");
         LOAD_PROC(pfnGetDetectorInfo,          "DriverGetDetectorInfo");
 
-        LOAD_PROC(pfnSetSwitchChannel,         "DriverSetSwitchChannel");
-        LOAD_PROC(pfnGetSwitchChannel,         "DriverGetSwitchChannel");
-        LOAD_PROC(pfnGetSwitchInfo,            "DriverGetSwitchInfo");
-
-        // VISA ????????????????????????
-        pfnCreateDriverEx = (PFN_CreateDriverEx)GMSRLMLoaderDetail::ResolveProcAddress(m_hDll, "CreateDriverEx");
-        pfnEnumerateVisaResources = (PFN_EnumerateVisaResources)GMSRLMLoaderDetail::ResolveProcAddress(m_hDll, "EnumerateVisaResources");
-
         #undef LOAD_PROC
 
-        printf("[??????] DLL?????: %d/%d ?????????????\n", resolved, total);
+        // #region agent log
+        { FILE* _f = fopen("c:\\Users\\menghl2\\WorkSpace\\Projects\\VIAVI---Santec-Testers\\debug-021a55.log", "a");
+          if (_f) { fprintf(_f, "{\"sessionId\":\"021a55\",\"hypothesisId\":\"H2\",\"location\":\"SantecRLMTcpLoader.h:LoadDll\",\"message\":\"RLM resolve summary\",\"data\":{\"resolved\":%d,\"total\":%d,\"failed\":\"%s\"},\"timestamp\":%llu}\n", resolved, total, _failedExports.c_str(), (unsigned long long)::GetTickCount64()); fclose(_f); } }
+        // #endregion
+
         return (resolved == total);
     }
 
@@ -253,58 +225,21 @@ public:
             pfnSetDetector = NULL;
             pfnGetDetectorCount = NULL;
             pfnGetDetectorInfo = NULL;
-            pfnSetSwitchChannel = NULL;
-            pfnGetSwitchChannel = NULL;
-            pfnGetSwitchInfo = NULL;
-            pfnCreateDriverEx = NULL;
-            pfnEnumerateVisaResources = NULL;
-            printf("[??????] DLL???????\n");
         }
     }
 
     bool IsDllLoaded() const { return m_hDll != NULL; }
 
     // -----------------------------------------------------------------------
-    // ??????????????????
+    // 驱动实例管理 (TCP only)
     // -----------------------------------------------------------------------
 
     bool CreateDriver(const char* type, const char* ip, int port, int slot)
     {
-        if (!pfnCreateDriver) { printf("[??????] DLL???????\n"); return false; }
-        if (m_hDriver) { printf("[??????] ????????????????????\n"); return false; }
-
+        if (!pfnCreateDriver || m_hDriver) return false;
         m_hDriver = pfnCreateDriver(type, ip, port, slot);
-        if (!m_hDriver)
-        {
-            printf("[??????] CreateDriver ????\n");
-            return false;
-        }
-        return true;
+        return (m_hDriver != NULL);
     }
-
-    // ????????????????????? (0=TCP, 1=GPIB, 2=USB/VISA)
-    bool CreateDriverEx(const char* type, const char* address, int port, int slot, int commType)
-    {
-        if (!pfnCreateDriverEx) { printf("[Loader] CreateDriverEx not available.\n"); return false; }
-        if (m_hDriver) { printf("[Loader] Driver already created. Destroy first.\n"); return false; }
-
-        m_hDriver = pfnCreateDriverEx(type, address, port, slot, commType);
-        if (!m_hDriver)
-        {
-            printf("[Loader] CreateDriverEx failed.\n");
-            return false;
-        }
-        return true;
-    }
-
-    // ??? VISA ???
-    int EnumerateVisaResources(char* buffer, int bufferSize)
-    {
-        if (!pfnEnumerateVisaResources) { printf("[Loader] EnumerateVisaResources not available.\n"); return 0; }
-        return pfnEnumerateVisaResources(buffer, bufferSize);
-    }
-
-    bool HasVisaSupport() const { return pfnCreateDriverEx != NULL; }
 
     void DestroyDriver()
     {
@@ -318,7 +253,7 @@ public:
     HANDLE GetDriverHandle() const { return m_hDriver; }
 
     // -----------------------------------------------------------------------
-    // ???????
+    // 连接操作
     // -----------------------------------------------------------------------
 
     BOOL Connect()
@@ -345,7 +280,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // ????
+    // 配置
     // -----------------------------------------------------------------------
 
     BOOL ConfigureWavelengths(double* wavelengths, int count)
@@ -361,7 +296,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // ????
+    // 测量
     // -----------------------------------------------------------------------
 
     BOOL TakeReference(BOOL bOverride, double ilValue, double lengthValue)
@@ -376,17 +311,17 @@ public:
         return pfnTakeMeasurement(m_hDriver);
     }
 
-    int GetResults(DriverMeasurementResult* results, int maxCount)
+    int GetResults(RLMMeasurementResult* results, int maxCount)
     {
         if (!m_hDriver || !pfnGetResults) return 0;
         return pfnGetResults(m_hDriver, results, maxCount);
     }
 
     // -----------------------------------------------------------------------
-    // ??? / ????
+    // 设备信息 / 错误
     // -----------------------------------------------------------------------
 
-    BOOL GetDeviceInfo(DriverDeviceInfo* info)
+    BOOL GetDeviceInfo(RLMDeviceInfo* info)
     {
         if (!m_hDriver || !pfnGetDeviceInfo || !info) return FALSE;
         return pfnGetDeviceInfo(m_hDriver, info);
@@ -399,7 +334,7 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // ??SCPI????
+    // 原始 SCPI 命令
     // -----------------------------------------------------------------------
 
     BOOL SendCommand(const char* command, char* response, int responseSize)
@@ -409,16 +344,16 @@ public:
     }
 
     // -----------------------------------------------------------------------
-    // ???
+    // 日志
     // -----------------------------------------------------------------------
 
-    void SetLogCallback(PFN_DriverLogCallback callback)
+    void SetLogCallback(PFN_RLMLogCallback callback)
     {
         if (pfnSetLogCallback) pfnSetLogCallback(callback);
     }
 
     // -----------------------------------------------------------------------
-    // Santec???????
+    // Santec 特定设置
     // -----------------------------------------------------------------------
 
     BOOL SantecSetRLSensitivity(int sensitivity)
@@ -467,64 +402,30 @@ public:
         return pfnGetDetectorInfo(m_hDriver, detectorNum, buffer, bufferSize);
     }
 
-    // -----------------------------------------------------------------------
-    // 外部开关控制（集成模式）
-    // -----------------------------------------------------------------------
-
-    BOOL SetSwitchChannel(int switchNum, int channel)
-    {
-        if (!m_hDriver || !pfnSetSwitchChannel) return FALSE;
-        return pfnSetSwitchChannel(m_hDriver, switchNum, channel);
-    }
-
-    int GetSwitchChannel(int switchNum)
-    {
-        if (!m_hDriver || !pfnGetSwitchChannel) return -1;
-        return pfnGetSwitchChannel(m_hDriver, switchNum);
-    }
-
-    BOOL GetSwitchInfo(int switchNum, char* buffer, int bufferSize)
-    {
-        if (!m_hDriver || !pfnGetSwitchInfo || !buffer) return FALSE;
-        return pfnGetSwitchInfo(m_hDriver, switchNum, buffer, bufferSize);
-    }
-
 private:
-    HMODULE m_hDll;      // DLL?????
-    HANDLE  m_hDriver;   // ??????????
+    HMODULE m_hDll;
+    HANDLE  m_hDriver;
 
-    // ??????? -- ?? LoadDll ?????
-    PFN_CreateDriver                pfnCreateDriver;
-    PFN_DestroyDriver               pfnDestroyDriver;
-    PFN_DriverConnect               pfnConnect;
-    PFN_DriverDisconnect            pfnDisconnect;
-    PFN_DriverInitialize            pfnInitialize;
-    PFN_DriverIsConnected           pfnIsConnected;
-    PFN_DriverConfigureWavelengths  pfnConfigureWavelengths;
-    PFN_DriverConfigureChannels     pfnConfigureChannels;
-    PFN_DriverTakeReference         pfnTakeReference;
-    PFN_DriverTakeMeasurement       pfnTakeMeasurement;
-    PFN_DriverGetResults            pfnGetResults;
-    PFN_DriverGetDeviceInfo         pfnGetDeviceInfo;
-    PFN_DriverCheckError            pfnCheckError;
-    PFN_DriverSendCommand           pfnSendCommand;
-    PFN_DriverSetLogCallback        pfnSetLogCallback;
-    PFN_DriverSantecSetRLSensitivity pfnSantecSetRLSensitivity;
-    PFN_DriverSantecSetDUTLength    pfnSantecSetDUTLength;
-    PFN_DriverSantecSetRLGain       pfnSantecSetRLGain;
-    PFN_DriverSantecSetLocalMode    pfnSantecSetLocalMode;
-
-    // 探测器选择
-    PFN_DriverSetDetector           pfnSetDetector;
-    PFN_DriverGetDetectorCount      pfnGetDetectorCount;
-    PFN_DriverGetDetectorInfo       pfnGetDetectorInfo;
-
-    // 外部开关控制
-    PFN_DriverSetSwitchChannel      pfnSetSwitchChannel;
-    PFN_DriverGetSwitchChannel      pfnGetSwitchChannel;
-    PFN_DriverGetSwitchInfo         pfnGetSwitchInfo;
-
-    // VISA ???
-    PFN_CreateDriverEx              pfnCreateDriverEx;
-    PFN_EnumerateVisaResources      pfnEnumerateVisaResources;
+    PFN_RLM_CreateDriver             pfnCreateDriver;
+    PFN_RLM_DestroyDriver            pfnDestroyDriver;
+    PFN_RLM_Connect                  pfnConnect;
+    PFN_RLM_Disconnect               pfnDisconnect;
+    PFN_RLM_Initialize               pfnInitialize;
+    PFN_RLM_IsConnected              pfnIsConnected;
+    PFN_RLM_ConfigureWavelengths     pfnConfigureWavelengths;
+    PFN_RLM_ConfigureChannels        pfnConfigureChannels;
+    PFN_RLM_TakeReference            pfnTakeReference;
+    PFN_RLM_TakeMeasurement          pfnTakeMeasurement;
+    PFN_RLM_GetResults               pfnGetResults;
+    PFN_RLM_GetDeviceInfo            pfnGetDeviceInfo;
+    PFN_RLM_CheckError               pfnCheckError;
+    PFN_RLM_SendCommand              pfnSendCommand;
+    PFN_RLM_SetLogCallback           pfnSetLogCallback;
+    PFN_RLM_SantecSetRLSensitivity   pfnSantecSetRLSensitivity;
+    PFN_RLM_SantecSetDUTLength       pfnSantecSetDUTLength;
+    PFN_RLM_SantecSetRLGain          pfnSantecSetRLGain;
+    PFN_RLM_SantecSetLocalMode       pfnSantecSetLocalMode;
+    PFN_RLM_SetDetector              pfnSetDetector;
+    PFN_RLM_GetDetectorCount         pfnGetDetectorCount;
+    PFN_RLM_GetDetectorInfo          pfnGetDetectorInfo;
 };

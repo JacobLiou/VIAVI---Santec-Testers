@@ -1,0 +1,84 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+#include "afxres.h"
+#undef APSTUDIO_READONLY_SYMBOLS
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+
+IDD_SANTECAPP_DIALOG DIALOGEX 0, 0, 640, 580
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX
+CAPTION "Santec - RLM/OSX Debug Tool (TCP Mode)"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    // ===== RLM Connection Group =====
+    GROUPBOX        "RLM Connection (RL1 Series)",IDC_GROUP_RLM,5,3,630,60
+    LTEXT           "RLM DLL:",  -1,15,17,35,8
+    EDITTEXT        IDC_EDIT_RLM_DLL,55,15,200,13,ES_AUTOHSCROLL
+    PUSHBUTTON      "Load",IDC_BTN_LOAD_RLM,260,14,35,14
+
+    LTEXT           "IP Address:", -1,310,17,42,8
+    EDITTEXT        IDC_EDIT_RLM_IP,356,15,120,13,ES_AUTOHSCROLL
+    LTEXT           "Port:", -1,485,17,18,8
+    EDITTEXT        IDC_EDIT_RLM_PORT,506,15,40,13,ES_AUTOHSCROLL | ES_NUMBER
+
+    PUSHBUTTON      "Connect",IDC_BTN_CONNECT_RLM,15,40,60,16
+    PUSHBUTTON      "Disconnect",IDC_BTN_DISCONNECT_RLM,80,40,60,16
+    LTEXT           "Status:",  -1,155,43,25,8
+    LTEXT           "Not Connected",IDC_STATIC_RLM_STATUS,183,43,300,8
+
+    // ===== OSX Connection Group =====
+    GROUPBOX        "OSX Connection (OSX-100 Series)",IDC_GROUP_OSX,5,66,630,60
+    LTEXT           "OSX DLL:",  -1,15,80,35,8
+    EDITTEXT        IDC_EDIT_OSX_DLL,55,78,200,13,ES_AUTOHSCROLL
+    PUSHBUTTON      "Load",IDC_BTN_LOAD_OSX,260,77,35,14
+
+    LTEXT           "IP Address:", -1,310,80,42,8
+    EDITTEXT        IDC_EDIT_OSX_IP,356,78,120,13,ES_AUTOHSCROLL
+    LTEXT           "Port:", -1,485,80,18,8
+    EDITTEXT        IDC_EDIT_OSX_PORT,506,78,40,13,ES_AUTOHSCROLL | ES_NUMBER
+
+    PUSHBUTTON      "Connect",IDC_BTN_CONNECT_OSX,15,103,60,16
+    PUSHBUTTON      "Disconnect",IDC_BTN_DISCONNECT_OSX,80,103,60,16
+    LTEXT           "Status:",  -1,155,106,25,8
+    LTEXT           "Not Connected",IDC_STATIC_OSX_STATUS,183,106,300,8
+
+    // ===== Test Configuration Group =====
+    GROUPBOX        "Test Configuration",IDC_GROUP_CONFIG,5,130,420,80
+    LTEXT           "Wavelength:", -1,15,147,44,8
+    CONTROL         "1310 nm",IDC_CHECK_1310,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,65,146,45,10
+    CONTROL         "1550 nm",IDC_CHECK_1550,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,146,45,10
+    LTEXT           "Channels:", -1,180,147,36,8
+    EDITTEXT        IDC_EDIT_CH_FROM,220,145,25,13,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "~", -1,248,147,8,8,SS_CENTER
+    EDITTEXT        IDC_EDIT_CH_TO,258,145,25,13,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Module#:", -1,295,147,35,8
+    EDITTEXT        IDC_EDIT_MODULE_INDEX,335,145,25,13,ES_AUTOHSCROLL | ES_NUMBER
+
+    CONTROL         "Override Reference",IDC_CHECK_OVERRIDE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,170,80,10
+    LTEXT           "IL (dB):", -1,100,171,28,8
+    EDITTEXT        IDC_EDIT_IL_VALUE,132,169,40,13,ES_AUTOHSCROLL
+    LTEXT           "Length (m):", -1,180,171,40,8
+    EDITTEXT        IDC_EDIT_LENGTH_VALUE,225,169,40,13,ES_AUTOHSCROLL
+
+    // ===== Operation Group =====
+    GROUPBOX        "Operations",IDC_GROUP_OPERATION,430,130,205,80
+    PUSHBUTTON      "Zeroing (Reference)",IDC_BTN_ZEROING,440,148,90,22
+    PUSHBUTTON      "Measure",IDC_BTN_MEASURE,535,148,90,22
+    PUSHBUTTON      "Continuous Test",IDC_BTN_CONTINUOUS,440,178,90,22
+    PUSHBUTTON      "STOP",IDC_BTN_STOP,535,178,90,22
+
+    // ===== Results Group =====
+    GROUPBOX        "Measurement Results",IDC_GROUP_RESULTS,5,213,630,180
+    CONTROL         "",IDC_LIST_RESULTS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | WS_BORDER | WS_TABSTOP,10,226,620,162
+
+    // ===== Log Group =====
+    GROUPBOX        "Log",IDC_GROUP_LOG,5,396,630,160
+    EDITTEXT        IDC_EDIT_LOG,10,409,620,125,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL
+    PUSHBUTTON      "Clear Log",IDC_BTN_CLEAR_LOG,10,539,55,16
+END
+
+#endif

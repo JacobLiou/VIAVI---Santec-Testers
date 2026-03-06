@@ -9,6 +9,24 @@
 
 #include <Windows.h>
 #include <string>
+#include <cstdio>
+
+namespace OSWLoaderDetail {
+    static FARPROC ResolveProcAddress(HMODULE hDll, const char* name)
+    {
+        FARPROC p = ::GetProcAddress(hDll, name);
+        if (p) return p;
+#ifndef _WIN64
+        char decorated[256];
+        for (int n = 0; n <= 64; n += 4) {
+            sprintf_s(decorated, "_%s@%d", name, n);
+            p = ::GetProcAddress(hDll, decorated);
+            if (p) return p;
+        }
+#endif
+        return nullptr;
+    }
+}
 
 // ---------------------------------------------------------------------------
 // C 兼容结构体（与 OSWTypes.h 中 DLL 导出结构体对齐）
@@ -133,7 +151,7 @@ public:
 
         #define LOAD_PROC(varName, exportName) \
             ++total; \
-            varName = (decltype(varName))::GetProcAddress(m_hDll, exportName); \
+            varName = (decltype(varName))OSWLoaderDetail::ResolveProcAddress(m_hDll, exportName); \
             if (varName) ++resolved;
 
         LOAD_PROC(pfnCreateDriver,             "OSW_CreateDriver");

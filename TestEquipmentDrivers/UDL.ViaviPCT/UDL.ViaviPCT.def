@@ -1,0 +1,22 @@
+LIBRARY "UDL.ViaviPCT"
+EXPORTS
+    PCT_CreateDriver
+    PCT_CreateDriverEx
+    PCT_DestroyDriver
+    PCT_Connect
+    PCT_Disconnect
+    PCT_Initialize
+    PCT_IsConnected
+    PCT_ConfigureWavelengths
+    PCT_ConfigureChannels
+    PCT_SetMeasurementMode
+    PCT_SetAveragingTime
+    PCT_SetDUTRange
+    PCT_TakeReference
+    PCT_TakeMeasurement
+    PCT_GetResults
+    PCT_GetDeviceInfo
+    PCT_CheckError
+    PCT_SendCommand
+    PCT_SetLogCallback
+    PCT_EnumerateVisaResources
