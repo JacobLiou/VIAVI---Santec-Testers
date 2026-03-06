@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 
     SetConsoleCtrlHandler(ConsoleHandler, TRUE);
 
-    int port = 5025;
+    int port = 5026;
     for (int i = 1; i < argc; ++i)
     {
         if (std::string(argv[i]) == "--port" && i + 1 < argc)
