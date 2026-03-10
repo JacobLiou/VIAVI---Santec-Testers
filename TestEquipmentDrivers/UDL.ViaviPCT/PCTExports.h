@@ -74,6 +74,9 @@ PCT_C_API BOOL WINAPI PCT_TakeReference(HANDLE hDriver, BOOL bOverride,
 // 执行 DUT 测量
 PCT_C_API BOOL WINAPI PCT_TakeMeasurement(HANDLE hDriver);
 
+// 中止正在进行的测量
+PCT_C_API void WINAPI PCT_AbortMeasurement(HANDLE hDriver);
+
 // 获取测量结果
 PCT_C_API int WINAPI PCT_GetResults(HANDLE hDriver,
                                      ViaviPCT::CMeasurementResult* results,

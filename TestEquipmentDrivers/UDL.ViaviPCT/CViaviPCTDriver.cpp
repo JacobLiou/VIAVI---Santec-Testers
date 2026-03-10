@@ -101,6 +101,7 @@ CViaviPCTDriver::CViaviPCTDriver(const std::string& address,
     , m_connectionMode(1)
     , m_bidirectional(false)
     , m_referenced(false)
+    , m_abortRequested(false)
 {
     m_config.ipAddress = address;
     m_config.port = port;
@@ -686,6 +687,19 @@ bool CViaviPCTDriver::WaitForMeasurement(int timeoutMs)
 
     while (elapsed < timeoutMs)
     {
+        if (m_abortRequested.load())
+        {
+            m_logger.Info("收到中止请求，发送中止序列...");
+            try {
+                Write(SCPI::MEAS_ABOR);
+                Sleep(100);
+                Write(std::string(SCPI::SENS_FUNC) + " 1");
+            } catch (...) {}
+            m_abortRequested = false;
+            m_logger.Info("测量已中止 (耗时 %d ms)。", elapsed);
+            return false;
+        }
+
         MeasurementState state = GetMeasurementState();
         if (state == MEAS_IDLE)
         {
@@ -701,13 +715,17 @@ bool CViaviPCTDriver::WaitForMeasurement(int timeoutMs)
         Sleep(interval);
         elapsed += interval;
 
-        // 指数退避，最大 2 秒
         if (interval < 2000)
             interval = (std::min)(interval * 2, 2000);
     }
 
     m_logger.Error("测量超时 (%d ms)。", timeoutMs);
     return false;
+}
+
+void CViaviPCTDriver::AbortMeasurement()
+{
+    m_abortRequested = true;
 }
 
 // ---------------------------------------------------------------------------
@@ -718,6 +736,7 @@ bool CViaviPCTDriver::TakeReference(const ReferenceConfig& config)
 {
     m_logger.Info("开始参考测量...");
     m_referenced = false;
+    m_abortRequested = false;
 
     try
     {
@@ -760,6 +779,7 @@ bool CViaviPCTDriver::TakeReference(const ReferenceConfig& config)
 bool CViaviPCTDriver::TakeMeasurement()
 {
     m_logger.Info("开始 DUT 测量...");
+    m_abortRequested = false;
 
     if (!m_referenced)
         m_logger.Warning("未进行参考测量 - 结果可能不准确。");

@@ -82,6 +82,7 @@ typedef BOOL (WINAPI *PFN_PCT_SetDUTRange)(HANDLE hDriver, int rangeMeters);
 typedef BOOL (WINAPI *PFN_PCT_TakeReference)(HANDLE hDriver, BOOL bOverride,
                                               double ilValue, double lengthValue);
 typedef BOOL (WINAPI *PFN_PCT_TakeMeasurement)(HANDLE hDriver);
+typedef void (WINAPI *PFN_PCT_AbortMeasurement)(HANDLE hDriver);
 typedef int  (WINAPI *PFN_PCT_GetResults)(HANDLE hDriver, PCTMeasurementResult* results, int maxCount);
 
 // 设备信息 / 错误
@@ -123,6 +124,7 @@ public:
         , pfnSetDUTRange(NULL)
         , pfnTakeReference(NULL)
         , pfnTakeMeasurement(NULL)
+        , pfnAbortMeasurement(NULL)
         , pfnGetResults(NULL)
         , pfnGetDeviceInfo(NULL)
         , pfnCheckError(NULL)
@@ -182,6 +184,9 @@ public:
 
         #undef LOAD_PROC
 
+        pfnAbortMeasurement = (PFN_PCT_AbortMeasurement)
+            PCTLoaderDetail::ResolveProcAddress(m_hDll, "PCT_AbortMeasurement");
+
         return (resolved == total);
     }
 
@@ -205,6 +210,7 @@ public:
             pfnSetDUTRange = NULL;
             pfnTakeReference = NULL;
             pfnTakeMeasurement = NULL;
+            pfnAbortMeasurement = NULL;
             pfnGetResults = NULL;
             pfnGetDeviceInfo = NULL;
             pfnCheckError = NULL;
@@ -329,6 +335,12 @@ public:
         return pfnTakeMeasurement(m_hDriver);
     }
 
+    void AbortMeasurement()
+    {
+        if (m_hDriver && pfnAbortMeasurement)
+            pfnAbortMeasurement(m_hDriver);
+    }
+
     int GetResults(PCTMeasurementResult* results, int maxCount)
     {
         if (!m_hDriver || !pfnGetResults) return 0;
@@ -388,6 +400,7 @@ private:
     PFN_PCT_SetDUTRange              pfnSetDUTRange;
     PFN_PCT_TakeReference            pfnTakeReference;
     PFN_PCT_TakeMeasurement          pfnTakeMeasurement;
+    PFN_PCT_AbortMeasurement         pfnAbortMeasurement;
     PFN_PCT_GetResults               pfnGetResults;
     PFN_PCT_GetDeviceInfo            pfnGetDeviceInfo;
     PFN_PCT_CheckError               pfnCheckError;

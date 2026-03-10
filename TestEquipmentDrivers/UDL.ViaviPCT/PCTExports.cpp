@@ -180,6 +180,13 @@ PCT_C_API BOOL WINAPI PCT_TakeMeasurement(HANDLE hDriver)
     catch (...) { return FALSE; }
 }
 
+PCT_C_API void WINAPI PCT_AbortMeasurement(HANDLE hDriver)
+{
+    if (!hDriver) return;
+    try { ToDriver(hDriver)->AbortMeasurement(); }
+    catch (...) {}
+}
+
 PCT_C_API int WINAPI PCT_GetResults(HANDLE hDriver,
                                      CMeasurementResult* results,
                                      int maxCount)

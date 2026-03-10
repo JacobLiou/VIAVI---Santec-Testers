@@ -871,7 +871,8 @@ void CPCTMaxAppDlg::OnBnClickedContinuous()
 void CPCTMaxAppDlg::OnBnClickedStop()
 {
     m_bStopRequested = true;
-    AppendLog(_T("Stop requested..."));
+    m_pctLoader.AbortMeasurement();
+    AppendLog(_T("Stop requested - aborting measurement."));
 }
 
 void CPCTMaxAppDlg::OnBnClickedOverride()

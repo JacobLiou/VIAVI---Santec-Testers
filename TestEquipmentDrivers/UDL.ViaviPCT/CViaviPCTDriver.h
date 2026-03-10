@@ -5,6 +5,7 @@
 #include "Logger.h"
 #include <string>
 #include <vector>
+#include <atomic>
 
 namespace ViaviPCT {
 
@@ -69,6 +70,7 @@ public:
     virtual std::vector<MeasurementResult> GetResults() override;
     virtual MeasurementState GetMeasurementState() override;
     virtual bool WaitForMeasurement(int timeoutMs = 60000) override;
+    virtual void AbortMeasurement() override;
 
     // 高级工作流
     virtual std::vector<MeasurementResult> RunFullTest(
@@ -134,6 +136,8 @@ private:
 
     // TakeMeasurement() 的缓存结果
     std::vector<MeasurementResult> m_lastResults;
+
+    std::atomic<bool> m_abortRequested;
 };
 
 } // namespace ViaviPCT

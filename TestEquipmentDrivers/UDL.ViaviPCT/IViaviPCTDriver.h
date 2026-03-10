@@ -55,6 +55,7 @@ public:
     virtual std::vector<MeasurementResult> GetResults() = 0;
     virtual MeasurementState GetMeasurementState() = 0;
     virtual bool WaitForMeasurement(int timeoutMs = 60000) = 0;
+    virtual void AbortMeasurement() = 0;
 
     // ---- 高级工作流 ----
     virtual std::vector<MeasurementResult> RunFullTest(

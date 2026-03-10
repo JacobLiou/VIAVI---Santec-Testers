@@ -14,6 +14,7 @@ EXPORTS
     PCT_SetDUTRange
     PCT_TakeReference
     PCT_TakeMeasurement
+    PCT_AbortMeasurement
     PCT_GetResults
     PCT_GetDeviceInfo
     PCT_CheckError

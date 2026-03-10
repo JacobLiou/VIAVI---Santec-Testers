@@ -929,61 +929,31 @@ void CViaviAppDlg::OnBnClickedMeasure()
 
             std::vector<PCTMeasurementResult> allResults;
 
-            if (!useOsw)
+            if (useOsw)
             {
-                std::vector<int> ch = channels;
-                pPct->ConfigureChannels(ch.data(), (int)ch.size());
-
-                BOOL ok = pPct->TakeMeasurement();
-                if (ok)
-                {
-                    PCTMeasurementResult buf[256];
-                    int count = pPct->GetResults(buf, 256);
-                    allResults.assign(buf, buf + count);
-                }
+                int firstCh = channels.front();
+                if (useOsw1) { pOsw1->SwitchChannel(1, firstCh); }
+                if (useOsw2) { pOsw2->SwitchChannel(1, firstCh); }
                 CString msg;
-                msg.Format(_T("Measurement %s. Got %d result(s)."),
-                           ok ? _T("completed") : _T("FAILED"), (int)allResults.size());
+                msg.Format(_T("  OSW switched to channel %d for measurement.\r\n"), firstCh);
                 log += msg;
-                r->success = (ok != FALSE);
             }
-            else
+
+            std::vector<int> ch = channels;
+            pPct->ConfigureChannels(ch.data(), (int)ch.size());
+
+            BOOL ok = pPct->TakeMeasurement();
+            if (ok)
             {
-                bool allOk = true;
-                for (size_t i = 0; i < channels.size(); ++i)
-                {
-                    if (pStop->load()) { log += _T("\r\nStopped by user."); break; }
-
-                    int ch = channels[i];
-                    CString chLog;
-                    chLog.Format(_T("  CH%d: Switching OSW -> channel %d ..."), ch, ch);
-                    log += chLog;
-
-                    if (useOsw1) { pOsw1->SwitchChannel(1, ch); }
-                    if (useOsw2) { pOsw2->SwitchChannel(1, ch); }
-
-                    std::vector<int> singleCh = { ch };
-                    pPct->ConfigureChannels(singleCh.data(), 1);
-
-                    BOOL ok = pPct->TakeMeasurement();
-                    if (ok)
-                    {
-                        PCTMeasurementResult buf[256];
-                        int count = pPct->GetResults(buf, 256);
-                        for (int j = 0; j < count; ++j)
-                            allResults.push_back(buf[j]);
-                        CString msg;
-                        msg.Format(_T(" Measured, %d result(s)\r\n"), count);
-                        log += msg;
-                    }
-                    else
-                    {
-                        log += _T(" Measurement FAILED\r\n");
-                        allOk = false;
-                    }
-                }
-                r->success = allOk;
+                PCTMeasurementResult buf[256];
+                int count = pPct->GetResults(buf, 256);
+                allResults.assign(buf, buf + count);
             }
+            CString msg;
+            msg.Format(_T("Measurement %s. Got %d result(s)."),
+                       ok ? _T("completed") : _T("FAILED"), (int)allResults.size());
+            log += msg;
+            r->success = (ok != FALSE);
 
             r->results = allResults;
             r->hasResults = true;
@@ -1006,7 +976,8 @@ void CViaviAppDlg::OnBnClickedMeasure()
 void CViaviAppDlg::OnBnClickedStop()
 {
     m_bStopRequested = true;
-    AppendLog(_T("Stop requested... waiting for current operation to finish."));
+    m_pctLoader.AbortMeasurement();
+    AppendLog(_T("Stop requested - aborting measurement."));
 }
 
 // ---------------------------------------------------------------------------
