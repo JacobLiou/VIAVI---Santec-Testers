@@ -133,8 +133,8 @@ void CViaviAppDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_CHECK_1550, m_check1550);
     DDX_Control(pDX, IDC_EDIT_CH_FROM, m_editChFrom);
     DDX_Control(pDX, IDC_EDIT_CH_TO, m_editChTo);
-    DDX_Control(pDX, IDC_EDIT_OSW_DEVICE_NUM, m_editOswDeviceNum);
-    DDX_Control(pDX, IDC_EDIT_OSW2_DEVICE_NUM, m_editOsw2DeviceNum);
+    DDX_Control(pDX, IDC_RADIO_OSW1, m_radioOsw1);
+    DDX_Control(pDX, IDC_RADIO_OSW2, m_radioOsw2);
     DDX_Control(pDX, IDC_CHECK_OVERRIDE, m_checkOverride);
     DDX_Control(pDX, IDC_EDIT_IL_VALUE, m_editILValue);
     DDX_Control(pDX, IDC_EDIT_LENGTH_VALUE, m_editLengthValue);
@@ -154,23 +154,29 @@ BOOL CViaviAppDlg::OnInitDialog()
 
     // PCT defaults
     m_editPctDll.SetWindowText(_T("UDL.ViaviPCT.dll"));
+    m_comboPctAddr.AddString(_T("172.16.154.87"));
+    m_comboPctAddr.SetCurSel(0);
     m_editPctPort.SetWindowText(_T("8301"));
 
     // OSW1 defaults
     m_editOswDll.SetWindowText(_T("UDL.ViaviOSW.dll"));
-    m_editOswPort.SetWindowText(_T("8203"));
+    m_comboOswAddr.AddString(_T("172.16.154.87"));
+    m_comboOswAddr.SetCurSel(0);
+    m_editOswPort.SetWindowText(_T("8202"));
 
     // OSW2 defaults
     m_editOsw2Dll.SetWindowText(_T("UDL.ViaviOSW.dll"));
-    m_editOsw2Port.SetWindowText(_T("8202"));
+    m_comboOsw2Addr.AddString(_T("172.16.154.87"));
+    m_comboOsw2Addr.SetCurSel(0);
+    m_editOsw2Port.SetWindowText(_T("8204"));
 
     // Test config defaults
     m_check1310.SetCheck(BST_CHECKED);
     m_check1550.SetCheck(BST_CHECKED);
     m_editChFrom.SetWindowText(_T("1"));
     m_editChTo.SetWindowText(_T("24"));
-    m_editOswDeviceNum.SetWindowText(_T("1"));
-    m_editOsw2DeviceNum.SetWindowText(_T("1"));
+    m_radioOsw1.SetCheck(BST_CHECKED);
+    m_radioOsw2.SetCheck(BST_UNCHECKED);
 
     m_checkOverride.SetCheck(BST_CHECKED);
     m_editILValue.SetWindowText(_T("0.1"));
@@ -587,7 +593,7 @@ void CViaviAppDlg::OnBnClickedConnectOsw()
     CString portStr;
     m_editOswPort.GetWindowText(portStr);
     int port = _ttoi(portStr);
-    if (port <= 0) port = 8203;
+    if (port <= 0) port = 8202;
 
     CViaviOSWDllLoader* pOsw = &m_oswLoader;
     bool* pConn = &m_bOswConnected;
@@ -713,7 +719,7 @@ void CViaviAppDlg::OnBnClickedConnectOsw2()
     CString portStr;
     m_editOsw2Port.GetWindowText(portStr);
     int port = _ttoi(portStr);
-    if (port <= 0) port = 8202;
+    if (port <= 0) port = 8204;
 
     CViaviOSWDllLoader* pOsw = &m_osw2Loader;
     bool* pConn = &m_bOsw2Connected;
@@ -821,10 +827,9 @@ void CViaviAppDlg::OnBnClickedZeroing()
 
     std::vector<double> wavelengths = GetSelectedWavelengths();
     std::vector<int> channels = GetSelectedChannels();
-    int osw1DeviceNum = GetOswDeviceNum();
-    int osw2DeviceNum = GetOsw2DeviceNum();
-    bool useOsw1 = m_bOswConnected;
-    bool useOsw2 = m_bOsw2Connected;
+    bool selectOsw1 = IsOsw1Selected();
+    bool useOsw1 = m_bOswConnected && selectOsw1;
+    bool useOsw2 = m_bOsw2Connected && !selectOsw1;
     bool useOsw = (useOsw1 || useOsw2) && (channels.size() > 1);
 
     BOOL bOverride = (m_checkOverride.GetCheck() == BST_CHECKED);
@@ -844,7 +849,7 @@ void CViaviAppDlg::OnBnClickedZeroing()
 
     RunAsync(_T("Zeroing..."),
         [pPct, pOsw1, pOsw2, wavelengths, channels,
-         osw1DeviceNum, osw2DeviceNum, useOsw1, useOsw2, useOsw,
+         useOsw1, useOsw2, useOsw,
          bOverride, ilValue, lengthValue, pStop]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
@@ -855,45 +860,25 @@ void CViaviAppDlg::OnBnClickedZeroing()
             std::vector<double> wl = wavelengths;
             pPct->ConfigureWavelengths(wl.data(), (int)wl.size());
 
-            if (!useOsw)
+            if (useOsw)
             {
-                std::vector<int> ch = channels;
-                pPct->ConfigureChannels(ch.data(), (int)ch.size());
-                BOOL ok = pPct->TakeReference(bOverride, ilValue, lengthValue);
-                log.Format(_T("Reference %s (single channel, no OSW switching)."),
-                           ok ? _T("completed") : _T("FAILED"));
-                r->success = (ok != FALSE);
+                int firstCh = channels.front();
+                if (useOsw1) { pOsw1->SwitchChannel(1, firstCh); }
+                if (useOsw2) { pOsw2->SwitchChannel(1, firstCh); }
+                CString msg;
+                msg.Format(_T("  OSW switched to channel %d for reference.\r\n"), firstCh);
+                log += msg;
             }
+
+            std::vector<int> ch = channels;
+            pPct->ConfigureChannels(ch.data(), (int)ch.size());
+
+            BOOL ok = pPct->TakeReference(bOverride, ilValue, lengthValue);
+            if (ok)
+                log += _T("  Reference OK\r\n");
             else
-            {
-                bool allOk = true;
-                for (size_t i = 0; i < channels.size(); ++i)
-                {
-                    if (pStop->load()) { log += _T("\r\nStopped by user."); break; }
-
-                    int ch = channels[i];
-
-                    CString chLog;
-                    chLog.Format(_T("  CH%d: Switching OSW -> channel %d ..."), ch, ch);
-                    log += chLog;
-
-                    if (useOsw1) { pOsw1->SwitchChannel(osw1DeviceNum, ch); }
-                    if (useOsw2) { pOsw2->SwitchChannel(osw2DeviceNum, ch); }
-
-                    std::vector<int> singleCh = { ch };
-                    pPct->ConfigureChannels(singleCh.data(), 1);
-
-                    BOOL ok = pPct->TakeReference(bOverride, ilValue, lengthValue);
-                    if (ok)
-                        log += _T(" Reference OK\r\n");
-                    else
-                    {
-                        log += _T(" Reference FAILED\r\n");
-                        allOk = false;
-                    }
-                }
-                r->success = allOk;
-            }
+                log += _T("  Reference FAILED\r\n");
+            r->success = (ok != FALSE);
 
             r->logMessage = _T("=== Zeroing Complete ===\r\n") + log;
             r->statusText = r->success ? _T("Zeroing Done - Ready") : _T("Zeroing Failed");
@@ -917,10 +902,9 @@ void CViaviAppDlg::OnBnClickedMeasure()
 
     std::vector<double> wavelengths = GetSelectedWavelengths();
     std::vector<int> channels = GetSelectedChannels();
-    int osw1DeviceNum = GetOswDeviceNum();
-    int osw2DeviceNum = GetOsw2DeviceNum();
-    bool useOsw1 = m_bOswConnected;
-    bool useOsw2 = m_bOsw2Connected;
+    bool selectOsw1 = IsOsw1Selected();
+    bool useOsw1 = m_bOswConnected && selectOsw1;
+    bool useOsw2 = m_bOsw2Connected && !selectOsw1;
     bool useOsw = (useOsw1 || useOsw2) && (channels.size() > 1);
 
     AppendLog(_T("=== Measurement Started ==="));
@@ -933,7 +917,7 @@ void CViaviAppDlg::OnBnClickedMeasure()
 
     RunAsync(_T("Measuring..."),
         [pPct, pOsw1, pOsw2, wavelengths, channels,
-         osw1DeviceNum, osw2DeviceNum, useOsw1, useOsw2, useOsw, pStop]() -> WorkerResult*
+         useOsw1, useOsw2, useOsw, pStop]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
         CString log;
@@ -975,10 +959,8 @@ void CViaviAppDlg::OnBnClickedMeasure()
                     chLog.Format(_T("  CH%d: Switching OSW -> channel %d ..."), ch, ch);
                     log += chLog;
 
-                    if (useOsw1) { pOsw1->SwitchChannel(osw1DeviceNum, ch); }
-                    if (useOsw2) { pOsw2->SwitchChannel(osw2DeviceNum, ch); }
-                    if (useOsw1) { pOsw1->WaitForIdle(5000); }
-                    if (useOsw2) { pOsw2->WaitForIdle(5000); }
+                    if (useOsw1) { pOsw1->SwitchChannel(1, ch); }
+                    if (useOsw2) { pOsw2->SwitchChannel(1, ch); }
 
                     std::vector<int> singleCh = { ch };
                     pPct->ConfigureChannels(singleCh.data(), 1);
@@ -1137,8 +1119,8 @@ void CViaviAppDlg::EnableControls()
     GetDlgItem(IDC_CHECK_1550)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_EDIT_CH_FROM)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_EDIT_CH_TO)->EnableWindow(!m_bBusy);
-    GetDlgItem(IDC_EDIT_OSW_DEVICE_NUM)->EnableWindow(!m_bBusy);
-    GetDlgItem(IDC_EDIT_OSW2_DEVICE_NUM)->EnableWindow(!m_bBusy);
+    GetDlgItem(IDC_RADIO_OSW1)->EnableWindow(!m_bBusy);
+    GetDlgItem(IDC_RADIO_OSW2)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_CHECK_OVERRIDE)->EnableWindow(!m_bBusy);
 
     BOOL overrideOn = (m_checkOverride.GetCheck() == BST_CHECKED);
@@ -1283,18 +1265,7 @@ std::vector<int> CViaviAppDlg::GetSelectedChannels()
     return ch;
 }
 
-int CViaviAppDlg::GetOswDeviceNum()
+bool CViaviAppDlg::IsOsw1Selected()
 {
-    CString str;
-    m_editOswDeviceNum.GetWindowText(str);
-    int num = _ttoi(str);
-    return (num >= 1) ? num : 1;
-}
-
-int CViaviAppDlg::GetOsw2DeviceNum()
-{
-    CString str;
-    m_editOsw2DeviceNum.GetWindowText(str);
-    int num = _ttoi(str);
-    return (num >= 1) ? num : 1;
+    return (m_radioOsw1.GetCheck() == BST_CHECKED);
 }

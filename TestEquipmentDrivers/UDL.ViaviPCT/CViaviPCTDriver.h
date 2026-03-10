@@ -25,7 +25,7 @@ class PCT_API CViaviPCTDriver : public IViaviPCTDriver
 {
 public:
     static const int DEFAULT_PORT           = 8301;
-    static const int MEAS_TIMEOUT_MS        = 60000;
+    static const int MEAS_TIMEOUT_MS        = 180000;
     static const int DEFAULT_TIMEOUT_MS     = 5000;
     static const int POLL_INTERVAL_MS       = 500;
 

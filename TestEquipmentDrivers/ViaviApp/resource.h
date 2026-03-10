@@ -46,12 +46,12 @@
 #define IDC_CHECK_1550                  1041
 #define IDC_EDIT_CH_FROM                1042
 #define IDC_EDIT_CH_TO                  1043
-#define IDC_EDIT_OSW_DEVICE_NUM         1044
+#define IDC_RADIO_OSW1                  1044
 #define IDC_GROUP_CONFIG                1045
 #define IDC_CHECK_OVERRIDE              1046
 #define IDC_EDIT_IL_VALUE               1047
 #define IDC_EDIT_LENGTH_VALUE           1048
-#define IDC_EDIT_OSW2_DEVICE_NUM        1090
+#define IDC_RADIO_OSW2                  1090
 
 // 操作
 #define IDC_BTN_ZEROING                 1050

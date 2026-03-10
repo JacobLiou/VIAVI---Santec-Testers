@@ -72,8 +72,7 @@ private:
 
     std::vector<double> GetSelectedWavelengths();
     std::vector<int> GetSelectedChannels();
-    int GetOswDeviceNum();
-    int GetOsw2DeviceNum();
+    bool IsOsw1Selected();
 
     struct WorkerResult
     {
@@ -107,8 +106,8 @@ private:
     CButton     m_check1550;
     CEdit       m_editChFrom;
     CEdit       m_editChTo;
-    CEdit       m_editOswDeviceNum;
-    CEdit       m_editOsw2DeviceNum;
+    CButton     m_radioOsw1;
+    CButton     m_radioOsw2;
     CButton     m_checkOverride;
     CEdit       m_editILValue;
     CEdit       m_editLengthValue;
