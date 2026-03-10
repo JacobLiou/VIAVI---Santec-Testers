@@ -802,7 +802,7 @@ bool CViaviPCTDriver::TakeMeasurement()
             return false;
         }
 
-        // 获取每个通道的结果
+        // 获取每个通道的结果（多波长用 ';' 分隔）
         for (size_t ci = 0; ci < m_channels.size(); ++ci)
         {
             int ch = m_channels[ci];
@@ -813,11 +813,20 @@ bool CViaviPCTDriver::TakeMeasurement()
                 cmd << SCPI::MEAS_ALL << " " << ch;
                 std::string resp = Query(cmd.str());
 
-                MeasurementResult result = ParseMeasurementAll(resp, ch);
-                m_lastResults.push_back(result);
+                std::istringstream groups(resp);
+                std::string group;
+                while (std::getline(groups, group, ';'))
+                {
+                    std::string trimmedGroup = Trim(group);
+                    if (trimmedGroup.empty()) continue;
 
-                m_logger.Info("  Ch%d: IL=%.4f dB, ORL=%.2f dB, 长度=%.2f m",
-                    ch, result.insertionLoss, result.returnLoss, result.dutLength);
+                    MeasurementResult result = ParseMeasurementAll(trimmedGroup, ch);
+                    m_lastResults.push_back(result);
+
+                    m_logger.Info("  Ch%d @%.0fnm: IL=%.2f dB, ORL=%.2f dB, Len=%.2f m",
+                        ch, result.wavelength, result.insertionLoss,
+                        result.returnLoss, result.dutLength);
+                }
             }
             catch (const std::exception& e)
             {

@@ -1164,7 +1164,7 @@ void CViaviAppDlg::PopulateResultsList(const std::vector<PCTMeasurementResult>& 
         CString chStr, wlStr, ilStr, orlStr, z1Str, z2Str, lenStr, pwrStr;
         chStr.Format(_T("%d"), res.channel);
         wlStr.Format(_T("%.0f"), res.wavelength);
-        ilStr.Format(_T("%.4f"), res.insertionLoss);
+        ilStr.Format(_T("%.2f"), res.insertionLoss);
         orlStr.Format(_T("%.2f"), res.returnLoss);
         z1Str.Format(_T("%.2f"), res.returnLossZone1);
         z2Str.Format(_T("%.2f"), res.returnLossZone2);
