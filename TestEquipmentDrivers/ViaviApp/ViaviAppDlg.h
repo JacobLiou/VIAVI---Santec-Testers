@@ -35,11 +35,17 @@ protected:
     afx_msg void OnBnClickedConnectPct();
     afx_msg void OnBnClickedDisconnectPct();
 
-    // OSW
+    // OSW1
     afx_msg void OnBnClickedLoadOsw();
     afx_msg void OnBnClickedEnumerateOsw();
     afx_msg void OnBnClickedConnectOsw();
     afx_msg void OnBnClickedDisconnectOsw();
+
+    // OSW2
+    afx_msg void OnBnClickedLoadOsw2();
+    afx_msg void OnBnClickedEnumerateOsw2();
+    afx_msg void OnBnClickedConnectOsw2();
+    afx_msg void OnBnClickedDisconnectOsw2();
 
     // 操作
     afx_msg void OnBnClickedZeroing();
@@ -56,16 +62,19 @@ private:
     void AppendLog(const CString& text);
     void UpdatePctStatus(const CString& status);
     void UpdateOswStatus(const CString& status);
+    void UpdateOsw2Status(const CString& status);
     void EnableControls();
     void SetBusy(bool busy, const CString& statusText = _T(""));
     bool IsPctVisaMode();
     bool IsOswVisaMode();
+    bool IsOsw2VisaMode();
 
     void PopulateResultsList(const std::vector<PCTMeasurementResult>& results);
 
     std::vector<double> GetSelectedWavelengths();
     std::vector<int> GetSelectedChannels();
     int GetOswDeviceNum();
+    int GetOsw2DeviceNum();
 
     struct WorkerResult
     {
@@ -85,11 +94,17 @@ private:
     CComboBox   m_comboPctAddr;
     CEdit       m_editPctPort;
 
-    // OSW UI Controls
+    // OSW1 UI Controls
     CEdit       m_editOswDll;
     CComboBox   m_comboOswConnMode;
     CComboBox   m_comboOswAddr;
     CEdit       m_editOswPort;
+
+    // OSW2 UI Controls
+    CEdit       m_editOsw2Dll;
+    CComboBox   m_comboOsw2ConnMode;
+    CComboBox   m_comboOsw2Addr;
+    CEdit       m_editOsw2Port;
 
     // Test Config
     CButton     m_check1310;
@@ -97,6 +112,7 @@ private:
     CEdit       m_editChFrom;
     CEdit       m_editChTo;
     CEdit       m_editOswDeviceNum;
+    CEdit       m_editOsw2DeviceNum;
     CButton     m_checkOverride;
     CEdit       m_editILValue;
     CEdit       m_editLengthValue;
@@ -108,9 +124,11 @@ private:
     // Dynamic loaders
     CViaviPCTDllLoader m_pctLoader;
     CViaviOSWDllLoader m_oswLoader;
+    CViaviOSWDllLoader m_osw2Loader;
 
     bool m_bBusy;
     std::atomic<bool> m_bStopRequested;
     bool m_bPctConnected;
     bool m_bOswConnected;
+    bool m_bOsw2Connected;
 };

@@ -17,7 +17,7 @@
 #define IDC_STATIC_PCT_STATUS           1009
 #define IDC_GROUP_PCT                   1010
 
-// OSW 连接
+// OSW1 连接
 #define IDC_EDIT_OSW_DLL                1020
 #define IDC_BTN_LOAD_OSW                1021
 #define IDC_COMBO_OSW_CONN_MODE         1022
@@ -29,6 +29,18 @@
 #define IDC_STATIC_OSW_STATUS           1028
 #define IDC_GROUP_OSW                   1029
 
+// OSW2 连接
+#define IDC_EDIT_OSW2_DLL               1080
+#define IDC_BTN_LOAD_OSW2               1081
+#define IDC_COMBO_OSW2_CONN_MODE        1082
+#define IDC_COMBO_OSW2_ADDR             1083
+#define IDC_EDIT_OSW2_PORT              1084
+#define IDC_BTN_ENUMERATE_OSW2          1085
+#define IDC_BTN_CONNECT_OSW2            1086
+#define IDC_BTN_DISCONNECT_OSW2         1087
+#define IDC_STATIC_OSW2_STATUS          1088
+#define IDC_GROUP_OSW2                  1089
+
 // 测试配置
 #define IDC_CHECK_1310                  1040
 #define IDC_CHECK_1550                  1041
@@ -39,6 +51,7 @@
 #define IDC_CHECK_OVERRIDE              1046
 #define IDC_EDIT_IL_VALUE               1047
 #define IDC_EDIT_LENGTH_VALUE           1048
+#define IDC_EDIT_OSW2_DEVICE_NUM        1090
 
 // 操作
 #define IDC_BTN_ZEROING                 1050
@@ -60,7 +73,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        130
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1080
+#define _APS_NEXT_CONTROL_VALUE         1095
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

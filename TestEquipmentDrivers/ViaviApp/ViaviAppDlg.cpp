@@ -43,7 +43,20 @@ static void WINAPI OSWLogCallback(int level, const char* source, const char* mes
         static const char* levelNames[] = { "DEBUG", "INFO", "WARN", "ERROR" };
         const char* lvl = (level >= 0 && level <= 3) ? levelNames[level] : "???";
         CString* pMsg = new CString();
-        pMsg->Format(_T("[OSW][%s][%s] %s"), (LPCTSTR)Utf8ToWide(lvl),
+        pMsg->Format(_T("[OSW1][%s][%s] %s"), (LPCTSTR)Utf8ToWide(lvl),
+                     (LPCTSTR)Utf8ToWide(source), (LPCTSTR)Utf8ToWide(message));
+        g_pDlg->PostMessage(WM_LOG_MESSAGE, 0, (LPARAM)pMsg);
+    }
+}
+
+static void WINAPI OSW2LogCallback(int level, const char* source, const char* message)
+{
+    if (g_pDlg && ::IsWindow(g_pDlg->GetSafeHwnd()))
+    {
+        static const char* levelNames[] = { "DEBUG", "INFO", "WARN", "ERROR" };
+        const char* lvl = (level >= 0 && level <= 3) ? levelNames[level] : "???";
+        CString* pMsg = new CString();
+        pMsg->Format(_T("[OSW2][%s][%s] %s"), (LPCTSTR)Utf8ToWide(lvl),
                      (LPCTSTR)Utf8ToWide(source), (LPCTSTR)Utf8ToWide(message));
         g_pDlg->PostMessage(WM_LOG_MESSAGE, 0, (LPARAM)pMsg);
     }
@@ -60,11 +73,16 @@ BEGIN_MESSAGE_MAP(CViaviAppDlg, CDialogEx)
     ON_BN_CLICKED(IDC_BTN_ENUMERATE_PCT, &CViaviAppDlg::OnBnClickedEnumeratePct)
     ON_BN_CLICKED(IDC_BTN_CONNECT_PCT, &CViaviAppDlg::OnBnClickedConnectPct)
     ON_BN_CLICKED(IDC_BTN_DISCONNECT_PCT, &CViaviAppDlg::OnBnClickedDisconnectPct)
-    // OSW
+    // OSW1
     ON_BN_CLICKED(IDC_BTN_LOAD_OSW, &CViaviAppDlg::OnBnClickedLoadOsw)
     ON_BN_CLICKED(IDC_BTN_ENUMERATE_OSW, &CViaviAppDlg::OnBnClickedEnumerateOsw)
     ON_BN_CLICKED(IDC_BTN_CONNECT_OSW, &CViaviAppDlg::OnBnClickedConnectOsw)
     ON_BN_CLICKED(IDC_BTN_DISCONNECT_OSW, &CViaviAppDlg::OnBnClickedDisconnectOsw)
+    // OSW2
+    ON_BN_CLICKED(IDC_BTN_LOAD_OSW2, &CViaviAppDlg::OnBnClickedLoadOsw2)
+    ON_BN_CLICKED(IDC_BTN_ENUMERATE_OSW2, &CViaviAppDlg::OnBnClickedEnumerateOsw2)
+    ON_BN_CLICKED(IDC_BTN_CONNECT_OSW2, &CViaviAppDlg::OnBnClickedConnectOsw2)
+    ON_BN_CLICKED(IDC_BTN_DISCONNECT_OSW2, &CViaviAppDlg::OnBnClickedDisconnectOsw2)
     // Operations
     ON_BN_CLICKED(IDC_BTN_ZEROING, &CViaviAppDlg::OnBnClickedZeroing)
     ON_BN_CLICKED(IDC_BTN_MEASURE, &CViaviAppDlg::OnBnClickedMeasure)
@@ -87,6 +105,7 @@ CViaviAppDlg::CViaviAppDlg(CWnd* pParent)
     , m_bStopRequested(false)
     , m_bPctConnected(false)
     , m_bOswConnected(false)
+    , m_bOsw2Connected(false)
 {
 }
 
@@ -103,17 +122,23 @@ void CViaviAppDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_COMBO_PCT_CONN_MODE, m_comboPctConnMode);
     DDX_Control(pDX, IDC_COMBO_PCT_ADDR, m_comboPctAddr);
     DDX_Control(pDX, IDC_EDIT_PCT_PORT, m_editPctPort);
-    // OSW
+    // OSW1
     DDX_Control(pDX, IDC_EDIT_OSW_DLL, m_editOswDll);
     DDX_Control(pDX, IDC_COMBO_OSW_CONN_MODE, m_comboOswConnMode);
     DDX_Control(pDX, IDC_COMBO_OSW_ADDR, m_comboOswAddr);
     DDX_Control(pDX, IDC_EDIT_OSW_PORT, m_editOswPort);
+    // OSW2
+    DDX_Control(pDX, IDC_EDIT_OSW2_DLL, m_editOsw2Dll);
+    DDX_Control(pDX, IDC_COMBO_OSW2_CONN_MODE, m_comboOsw2ConnMode);
+    DDX_Control(pDX, IDC_COMBO_OSW2_ADDR, m_comboOsw2Addr);
+    DDX_Control(pDX, IDC_EDIT_OSW2_PORT, m_editOsw2Port);
     // Test Config
     DDX_Control(pDX, IDC_CHECK_1310, m_check1310);
     DDX_Control(pDX, IDC_CHECK_1550, m_check1550);
     DDX_Control(pDX, IDC_EDIT_CH_FROM, m_editChFrom);
     DDX_Control(pDX, IDC_EDIT_CH_TO, m_editChTo);
     DDX_Control(pDX, IDC_EDIT_OSW_DEVICE_NUM, m_editOswDeviceNum);
+    DDX_Control(pDX, IDC_EDIT_OSW2_DEVICE_NUM, m_editOsw2DeviceNum);
     DDX_Control(pDX, IDC_CHECK_OVERRIDE, m_checkOverride);
     DDX_Control(pDX, IDC_EDIT_IL_VALUE, m_editILValue);
     DDX_Control(pDX, IDC_EDIT_LENGTH_VALUE, m_editLengthValue);
@@ -138,12 +163,19 @@ BOOL CViaviAppDlg::OnInitDialog()
     m_comboPctConnMode.SetCurSel(1);
     m_editPctPort.SetWindowText(_T("8301"));
 
-    // OSW defaults
+    // OSW1 defaults
     m_editOswDll.SetWindowText(_T("UDL.ViaviOSW.dll"));
     m_comboOswConnMode.AddString(_T("USB (VISA)"));
     m_comboOswConnMode.AddString(_T("TCP (Ethernet)"));
     m_comboOswConnMode.SetCurSel(1);
     m_editOswPort.SetWindowText(_T("8203"));
+
+    // OSW2 defaults
+    m_editOsw2Dll.SetWindowText(_T("UDL.ViaviOSW.dll"));
+    m_comboOsw2ConnMode.AddString(_T("USB (VISA)"));
+    m_comboOsw2ConnMode.AddString(_T("TCP (Ethernet)"));
+    m_comboOsw2ConnMode.SetCurSel(1);
+    m_editOsw2Port.SetWindowText(_T("8202"));
 
     // Test config defaults
     m_check1310.SetCheck(BST_CHECKED);
@@ -151,6 +183,7 @@ BOOL CViaviAppDlg::OnInitDialog()
     m_editChFrom.SetWindowText(_T("1"));
     m_editChTo.SetWindowText(_T("4"));
     m_editOswDeviceNum.SetWindowText(_T("1"));
+    m_editOsw2DeviceNum.SetWindowText(_T("1"));
 
     m_checkOverride.SetCheck(BST_CHECKED);
     m_editILValue.SetWindowText(_T("0.1"));
@@ -238,7 +271,7 @@ void CViaviAppDlg::OnBnClickedLoadPct()
 }
 
 // ---------------------------------------------------------------------------
-// OSW DLL 加载
+// OSW1 DLL 加载
 // ---------------------------------------------------------------------------
 
 void CViaviAppDlg::OnBnClickedLoadOsw()
@@ -252,24 +285,62 @@ void CViaviAppDlg::OnBnClickedLoadOsw()
         }
         m_oswLoader.UnloadDll();
         m_bOswConnected = false;
-        AppendLog(_T("[OSW] DLL unloaded."));
+        AppendLog(_T("[OSW1] DLL unloaded."));
         EnableControls();
         return;
     }
 
     CString path;
     m_editOswDll.GetWindowText(path);
-    if (path.IsEmpty()) { AppendLog(_T("Please enter OSW DLL path.")); return; }
+    if (path.IsEmpty()) { AppendLog(_T("Please enter OSW1 DLL path.")); return; }
 
     CStringA pathA(path);
     if (m_oswLoader.LoadDll(pathA.GetString()))
     {
         m_oswLoader.SetLogCallback(OSWLogCallback);
-        AppendLog(_T("[OSW] DLL loaded successfully."));
+        AppendLog(_T("[OSW1] DLL loaded successfully."));
     }
     else
     {
-        CString msg; msg.Format(_T("[OSW] Failed to load: %s"), (LPCTSTR)path);
+        CString msg; msg.Format(_T("[OSW1] Failed to load: %s"), (LPCTSTR)path);
+        AppendLog(msg);
+    }
+    EnableControls();
+}
+
+// ---------------------------------------------------------------------------
+// OSW2 DLL 加载
+// ---------------------------------------------------------------------------
+
+void CViaviAppDlg::OnBnClickedLoadOsw2()
+{
+    if (m_osw2Loader.IsDllLoaded())
+    {
+        if (m_osw2Loader.GetDriverHandle())
+        {
+            m_osw2Loader.Disconnect();
+            m_osw2Loader.DestroyDriver();
+        }
+        m_osw2Loader.UnloadDll();
+        m_bOsw2Connected = false;
+        AppendLog(_T("[OSW2] DLL unloaded."));
+        EnableControls();
+        return;
+    }
+
+    CString path;
+    m_editOsw2Dll.GetWindowText(path);
+    if (path.IsEmpty()) { AppendLog(_T("Please enter OSW2 DLL path.")); return; }
+
+    CStringA pathA(path);
+    if (m_osw2Loader.LoadDll(pathA.GetString()))
+    {
+        m_osw2Loader.SetLogCallback(OSW2LogCallback);
+        AppendLog(_T("[OSW2] DLL loaded successfully."));
+    }
+    else
+    {
+        CString msg; msg.Format(_T("[OSW2] Failed to load: %s"), (LPCTSTR)path);
         AppendLog(msg);
     }
     EnableControls();
@@ -321,7 +392,7 @@ void CViaviAppDlg::OnBnClickedEnumerateOsw()
 {
     if (!IsOswVisaMode())
     {
-        AppendLog(_T("[OSW] VISA enumeration is only available in USB (VISA) mode."));
+        AppendLog(_T("[OSW1] VISA enumeration is only available in USB (VISA) mode."));
         return;
     }
 
@@ -344,14 +415,52 @@ void CViaviAppDlg::OnBnClickedEnumerateOsw()
                 m_comboOswAddr.AddString(token);
             token = all.Tokenize(_T(";"), pos);
         }
-        CString msg; msg.Format(_T("[OSW] Found %d VISA resource(s)."), found);
+        CString msg; msg.Format(_T("[OSW1] Found %d VISA resource(s)."), found);
         AppendLog(msg);
         if (m_comboOswAddr.GetCount() > 0)
             m_comboOswAddr.SetCurSel(0);
     }
     else
     {
-        AppendLog(_T("[OSW] No VISA resources found."));
+        AppendLog(_T("[OSW1] No VISA resources found."));
+    }
+}
+
+void CViaviAppDlg::OnBnClickedEnumerateOsw2()
+{
+    if (!IsOsw2VisaMode())
+    {
+        AppendLog(_T("[OSW2] VISA enumeration is only available in USB (VISA) mode."));
+        return;
+    }
+
+    m_comboOsw2Addr.ResetContent();
+
+    char buf[4096] = { 0 };
+    int found = 0;
+    if (m_osw2Loader.IsDllLoaded() && m_osw2Loader.HasVisaSupport())
+        found = m_osw2Loader.EnumerateVisaResources(buf, sizeof(buf));
+
+    if (found > 0)
+    {
+        CString all(buf);
+        int pos = 0;
+        CString token = all.Tokenize(_T(";"), pos);
+        while (!token.IsEmpty())
+        {
+            token.Trim();
+            if (!token.IsEmpty())
+                m_comboOsw2Addr.AddString(token);
+            token = all.Tokenize(_T(";"), pos);
+        }
+        CString msg; msg.Format(_T("[OSW2] Found %d VISA resource(s)."), found);
+        AppendLog(msg);
+        if (m_comboOsw2Addr.GetCount() > 0)
+            m_comboOsw2Addr.SetCurSel(0);
+    }
+    else
+    {
+        AppendLog(_T("[OSW2] No VISA resources found."));
     }
 }
 
@@ -464,7 +573,7 @@ void CViaviAppDlg::OnBnClickedDisconnectPct()
 }
 
 // ---------------------------------------------------------------------------
-// OSW 连接 / 断开
+// OSW1 连接 / 断开
 // ---------------------------------------------------------------------------
 
 void CViaviAppDlg::OnBnClickedConnectOsw()
@@ -473,7 +582,7 @@ void CViaviAppDlg::OnBnClickedConnectOsw()
     m_comboOswAddr.GetWindowText(oswAddr);
     if (oswAddr.IsEmpty())
     {
-        AppendLog(_T("[OSW] Please specify address."));
+        AppendLog(_T("[OSW1] Please specify address."));
         return;
     }
 
@@ -500,22 +609,22 @@ void CViaviAppDlg::OnBnClickedConnectOsw()
     if (useVisa)
     {
         created = pOsw->CreateDriverEx(addrStr.c_str(), 0, 2);
-        AppendLog(_T("[OSW] Creating driver (USB VISA)..."));
+        AppendLog(_T("[OSW1] Creating driver (USB VISA)..."));
     }
     else
     {
         created = pOsw->CreateDriver(addrStr.c_str(), port);
-        CString msg; msg.Format(_T("[OSW] Creating driver (TCP %s:%d)..."), (LPCTSTR)oswAddr, port);
+        CString msg; msg.Format(_T("[OSW1] Creating driver (TCP %s:%d)..."), (LPCTSTR)oswAddr, port);
         AppendLog(msg);
     }
 
     if (!created)
     {
-        AppendLog(_T("[OSW] Failed to create driver."));
+        AppendLog(_T("[OSW1] Failed to create driver."));
         return;
     }
 
-    RunAsync(_T("Connecting OSW..."), [pOsw, pConn]() -> WorkerResult*
+    RunAsync(_T("Connecting OSW1..."), [pOsw, pConn]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
         CString log;
@@ -524,13 +633,13 @@ void CViaviAppDlg::OnBnClickedConnectOsw()
         if (ok)
         {
             *pConn = true;
-            log += _T("[OSW] Connected.\r\n");
+            log += _T("[OSW1] Connected.\r\n");
 
             OSWDeviceInfo info = {};
             if (pOsw->GetDeviceInfo(&info))
             {
                 CString infoMsg;
-                infoMsg.Format(_T("[OSW] SN: %s  FW: %s  Desc: %s"),
+                infoMsg.Format(_T("[OSW1] SN: %s  FW: %s  Desc: %s"),
                                (LPCTSTR)Utf8ToWide(info.serialNumber),
                                (LPCTSTR)Utf8ToWide(info.firmwareVersion),
                                (LPCTSTR)Utf8ToWide(info.description));
@@ -539,7 +648,7 @@ void CViaviAppDlg::OnBnClickedConnectOsw()
 
             int devCount = pOsw->GetDeviceCount();
             CString devMsg;
-            devMsg.Format(_T("\r\n[OSW] Device count: %d"), devCount);
+            devMsg.Format(_T("\r\n[OSW1] Device count: %d"), devCount);
             log += devMsg;
 
             for (int d = 1; d <= devCount; ++d)
@@ -548,7 +657,7 @@ void CViaviAppDlg::OnBnClickedConnectOsw()
                 if (pOsw->GetSwitchInfo(d, &swInfo))
                 {
                     CString swMsg;
-                    swMsg.Format(_T("\r\n[OSW] Device %d: %d channels, current=%d"),
+                    swMsg.Format(_T("\r\n[OSW1] Device %d: %d channels, current=%d"),
                                  d, swInfo.channelCount, swInfo.currentChannel);
                     log += swMsg;
                 }
@@ -556,12 +665,12 @@ void CViaviAppDlg::OnBnClickedConnectOsw()
         }
         else
         {
-            log += _T("[OSW] Connection FAILED.");
+            log += _T("[OSW1] Connection FAILED.");
         }
 
         r->success = *pConn;
         r->logMessage = log;
-        r->statusText = *pConn ? _T("OSW Connected") : _T("OSW Connection Failed");
+        r->statusText = *pConn ? _T("OSW1 Connected") : _T("OSW1 Connection Failed");
         return r;
     });
 }
@@ -571,7 +680,7 @@ void CViaviAppDlg::OnBnClickedDisconnectOsw()
     CViaviOSWDllLoader* pOsw = &m_oswLoader;
     bool* pConn = &m_bOswConnected;
 
-    RunAsync(_T("Disconnecting OSW..."), [pOsw, pConn]() -> WorkerResult*
+    RunAsync(_T("Disconnecting OSW1..."), [pOsw, pConn]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
         if (pOsw->GetDriverHandle())
@@ -581,8 +690,132 @@ void CViaviAppDlg::OnBnClickedDisconnectOsw()
         }
         *pConn = false;
         r->success = true;
-        r->logMessage = _T("[OSW] Disconnected.");
-        r->statusText = _T("OSW Disconnected");
+        r->logMessage = _T("[OSW1] Disconnected.");
+        r->statusText = _T("OSW1 Disconnected");
+        return r;
+    });
+}
+
+// ---------------------------------------------------------------------------
+// OSW2 连接 / 断开
+// ---------------------------------------------------------------------------
+
+void CViaviAppDlg::OnBnClickedConnectOsw2()
+{
+    CString oswAddr;
+    m_comboOsw2Addr.GetWindowText(oswAddr);
+    if (oswAddr.IsEmpty())
+    {
+        AppendLog(_T("[OSW2] Please specify address."));
+        return;
+    }
+
+    if (m_osw2Loader.GetDriverHandle())
+    {
+        m_osw2Loader.Disconnect();
+        m_osw2Loader.DestroyDriver();
+    }
+    m_bOsw2Connected = false;
+
+    CStringA addrA(oswAddr);
+    std::string addrStr(addrA.GetString());
+    bool useVisa = IsOsw2VisaMode();
+
+    CString portStr;
+    m_editOsw2Port.GetWindowText(portStr);
+    int port = _ttoi(portStr);
+    if (port <= 0) port = 8202;
+
+    CViaviOSWDllLoader* pOsw = &m_osw2Loader;
+    bool* pConn = &m_bOsw2Connected;
+
+    bool created = false;
+    if (useVisa)
+    {
+        created = pOsw->CreateDriverEx(addrStr.c_str(), 0, 2);
+        AppendLog(_T("[OSW2] Creating driver (USB VISA)..."));
+    }
+    else
+    {
+        created = pOsw->CreateDriver(addrStr.c_str(), port);
+        CString msg; msg.Format(_T("[OSW2] Creating driver (TCP %s:%d)..."), (LPCTSTR)oswAddr, port);
+        AppendLog(msg);
+    }
+
+    if (!created)
+    {
+        AppendLog(_T("[OSW2] Failed to create driver."));
+        return;
+    }
+
+    RunAsync(_T("Connecting OSW2..."), [pOsw, pConn]() -> WorkerResult*
+    {
+        WorkerResult* r = new WorkerResult();
+        CString log;
+
+        BOOL ok = pOsw->Connect();
+        if (ok)
+        {
+            *pConn = true;
+            log += _T("[OSW2] Connected.\r\n");
+
+            OSWDeviceInfo info = {};
+            if (pOsw->GetDeviceInfo(&info))
+            {
+                CString infoMsg;
+                infoMsg.Format(_T("[OSW2] SN: %s  FW: %s  Desc: %s"),
+                               (LPCTSTR)Utf8ToWide(info.serialNumber),
+                               (LPCTSTR)Utf8ToWide(info.firmwareVersion),
+                               (LPCTSTR)Utf8ToWide(info.description));
+                log += infoMsg;
+            }
+
+            int devCount = pOsw->GetDeviceCount();
+            CString devMsg;
+            devMsg.Format(_T("\r\n[OSW2] Device count: %d"), devCount);
+            log += devMsg;
+
+            for (int d = 1; d <= devCount; ++d)
+            {
+                OSWSwitchInfo swInfo = {};
+                if (pOsw->GetSwitchInfo(d, &swInfo))
+                {
+                    CString swMsg;
+                    swMsg.Format(_T("\r\n[OSW2] Device %d: %d channels, current=%d"),
+                                 d, swInfo.channelCount, swInfo.currentChannel);
+                    log += swMsg;
+                }
+            }
+        }
+        else
+        {
+            log += _T("[OSW2] Connection FAILED.");
+        }
+
+        r->success = *pConn;
+        r->logMessage = log;
+        r->statusText = *pConn ? _T("OSW2 Connected") : _T("OSW2 Connection Failed");
+        return r;
+    });
+}
+
+void CViaviAppDlg::OnBnClickedDisconnectOsw2()
+{
+    CViaviOSWDllLoader* pOsw = &m_osw2Loader;
+    bool* pConn = &m_bOsw2Connected;
+
+    RunAsync(_T("Disconnecting OSW2..."), [pOsw, pConn]() -> WorkerResult*
+    {
+        WorkerResult* r = new WorkerResult();
+        if (pOsw->GetDriverHandle())
+        {
+            pOsw->Disconnect();
+            pOsw->DestroyDriver();
+        }
+        *pConn = false;
+        r->success = true;
+        r->logMessage = _T("[OSW2] Disconnected.");
+        r->statusText = _T("OSW2 Disconnected");
         return r;
     });
 }
@@ -597,8 +830,11 @@ void CViaviAppDlg::OnBnClickedZeroing()
 
     std::vector<double> wavelengths = GetSelectedWavelengths();
     std::vector<int> channels = GetSelectedChannels();
-    int oswDeviceNum = GetOswDeviceNum();
-    bool useOsw = m_bOswConnected && (channels.size() > 1);
+    int osw1DeviceNum = GetOswDeviceNum();
+    int osw2DeviceNum = GetOsw2DeviceNum();
+    bool useOsw1 = m_bOswConnected;
+    bool useOsw2 = m_bOsw2Connected;
+    bool useOsw = (useOsw1 || useOsw2) && (channels.size() > 1);
 
     BOOL bOverride = (m_checkOverride.GetCheck() == BST_CHECKED);
     CString ilStr, lenStr;
@@ -610,12 +846,14 @@ void CViaviAppDlg::OnBnClickedZeroing()
     AppendLog(_T("=== Zeroing (Reference) Started ==="));
 
     CViaviPCTDllLoader* pPct = &m_pctLoader;
-    CViaviOSWDllLoader* pOsw = &m_oswLoader;
+    CViaviOSWDllLoader* pOsw1 = &m_oswLoader;
+    CViaviOSWDllLoader* pOsw2 = &m_osw2Loader;
     std::atomic<bool>* pStop = &m_bStopRequested;
     m_bStopRequested = false;
 
     RunAsync(_T("Zeroing..."),
-        [pPct, pOsw, wavelengths, channels, oswDeviceNum, useOsw,
+        [pPct, pOsw1, pOsw2, wavelengths, channels,
+         osw1DeviceNum, osw2DeviceNum, useOsw1, useOsw2, useOsw,
          bOverride, ilValue, lengthValue, pStop]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
@@ -645,12 +883,13 @@ void CViaviAppDlg::OnBnClickedZeroing()
                     int ch = channels[i];
 
                     CString chLog;
-                    chLog.Format(_T("  CH%d: OSW switching device %d -> channel %d ..."),
-                                 ch, oswDeviceNum, ch);
+                    chLog.Format(_T("  CH%d: Switching OSW -> channel %d ..."), ch, ch);
                     log += chLog;
 
-                    pOsw->SwitchChannel(oswDeviceNum, ch);
-                    pOsw->WaitForIdle(5000);
+                    if (useOsw1) { pOsw1->SwitchChannel(osw1DeviceNum, ch); }
+                    if (useOsw2) { pOsw2->SwitchChannel(osw2DeviceNum, ch); }
+                    if (useOsw1) { pOsw1->WaitForIdle(5000); }
+                    if (useOsw2) { pOsw2->WaitForIdle(5000); }
 
                     std::vector<int> singleCh = { ch };
                     pPct->ConfigureChannels(singleCh.data(), 1);
@@ -689,18 +928,23 @@ void CViaviAppDlg::OnBnClickedMeasure()
 
     std::vector<double> wavelengths = GetSelectedWavelengths();
     std::vector<int> channels = GetSelectedChannels();
-    int oswDeviceNum = GetOswDeviceNum();
-    bool useOsw = m_bOswConnected && (channels.size() > 1);
+    int osw1DeviceNum = GetOswDeviceNum();
+    int osw2DeviceNum = GetOsw2DeviceNum();
+    bool useOsw1 = m_bOswConnected;
+    bool useOsw2 = m_bOsw2Connected;
+    bool useOsw = (useOsw1 || useOsw2) && (channels.size() > 1);
 
     AppendLog(_T("=== Measurement Started ==="));
 
     CViaviPCTDllLoader* pPct = &m_pctLoader;
-    CViaviOSWDllLoader* pOsw = &m_oswLoader;
+    CViaviOSWDllLoader* pOsw1 = &m_oswLoader;
+    CViaviOSWDllLoader* pOsw2 = &m_osw2Loader;
     std::atomic<bool>* pStop = &m_bStopRequested;
     m_bStopRequested = false;
 
     RunAsync(_T("Measuring..."),
-        [pPct, pOsw, wavelengths, channels, oswDeviceNum, useOsw, pStop]() -> WorkerResult*
+        [pPct, pOsw1, pOsw2, wavelengths, channels,
+         osw1DeviceNum, osw2DeviceNum, useOsw1, useOsw2, useOsw, pStop]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
         CString log;
@@ -739,11 +983,13 @@ void CViaviAppDlg::OnBnClickedMeasure()
 
                     int ch = channels[i];
                     CString chLog;
-                    chLog.Format(_T("  CH%d: OSW switching ..."), ch);
+                    chLog.Format(_T("  CH%d: Switching OSW -> channel %d ..."), ch, ch);
                     log += chLog;
 
-                    pOsw->SwitchChannel(oswDeviceNum, ch);
-                    pOsw->WaitForIdle(5000);
+                    if (useOsw1) { pOsw1->SwitchChannel(osw1DeviceNum, ch); }
+                    if (useOsw2) { pOsw2->SwitchChannel(osw2DeviceNum, ch); }
+                    if (useOsw1) { pOsw1->WaitForIdle(5000); }
+                    if (useOsw2) { pOsw2->WaitForIdle(5000); }
 
                     std::vector<int> singleCh = { ch };
                     pPct->ConfigureChannels(singleCh.data(), 1);
@@ -796,8 +1042,11 @@ void CViaviAppDlg::OnBnClickedContinuous()
 
     std::vector<double> wavelengths = GetSelectedWavelengths();
     std::vector<int> channels = GetSelectedChannels();
-    int oswDeviceNum = GetOswDeviceNum();
-    bool useOsw = m_bOswConnected && (channels.size() > 1);
+    int osw1DeviceNum = GetOswDeviceNum();
+    int osw2DeviceNum = GetOsw2DeviceNum();
+    bool useOsw1 = m_bOswConnected;
+    bool useOsw2 = m_bOsw2Connected;
+    bool useOsw = (useOsw1 || useOsw2) && (channels.size() > 1);
 
     BOOL bOverride = (m_checkOverride.GetCheck() == BST_CHECKED);
     CString ilStr, lenStr;
@@ -810,11 +1059,13 @@ void CViaviAppDlg::OnBnClickedContinuous()
     m_bStopRequested = false;
 
     CViaviPCTDllLoader* pPct = &m_pctLoader;
-    CViaviOSWDllLoader* pOsw = &m_oswLoader;
+    CViaviOSWDllLoader* pOsw1 = &m_oswLoader;
+    CViaviOSWDllLoader* pOsw2 = &m_osw2Loader;
     std::atomic<bool>* pStop = &m_bStopRequested;
 
     RunAsync(_T("Continuous Test..."),
-        [pPct, pOsw, wavelengths, channels, oswDeviceNum, useOsw,
+        [pPct, pOsw1, pOsw2, wavelengths, channels,
+         osw1DeviceNum, osw2DeviceNum, useOsw1, useOsw2, useOsw,
          bOverride, ilValue, lengthValue, pStop]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
@@ -834,7 +1085,7 @@ void CViaviAppDlg::OnBnClickedContinuous()
                 iterLog.Format(_T("--- Iteration %d ---\r\n"), iteration);
                 log += iterLog;
 
-                // Phase 1: 清零
+                // Phase 1: Zeroing
                 if (!useOsw)
                 {
                     std::vector<int> ch = channels;
@@ -846,8 +1097,10 @@ void CViaviAppDlg::OnBnClickedContinuous()
                     for (size_t i = 0; i < channels.size() && !pStop->load(); ++i)
                     {
                         int ch = channels[i];
-                        pOsw->SwitchChannel(oswDeviceNum, ch);
-                        pOsw->WaitForIdle(5000);
+                        if (useOsw1) { pOsw1->SwitchChannel(osw1DeviceNum, ch); }
+                        if (useOsw2) { pOsw2->SwitchChannel(osw2DeviceNum, ch); }
+                        if (useOsw1) { pOsw1->WaitForIdle(5000); }
+                        if (useOsw2) { pOsw2->WaitForIdle(5000); }
                         std::vector<int> singleCh = { ch };
                         pPct->ConfigureChannels(singleCh.data(), 1);
                         pPct->TakeReference(bOverride, ilValue, lengthValue);
@@ -857,7 +1110,7 @@ void CViaviAppDlg::OnBnClickedContinuous()
                 if (pStop->load()) break;
                 log += _T("  Zeroing done.\r\n");
 
-                // Phase 2: 测量
+                // Phase 2: Measurement
                 allResults.clear();
                 if (!useOsw)
                 {
@@ -875,8 +1128,10 @@ void CViaviAppDlg::OnBnClickedContinuous()
                     for (size_t i = 0; i < channels.size() && !pStop->load(); ++i)
                     {
                         int ch = channels[i];
-                        pOsw->SwitchChannel(oswDeviceNum, ch);
-                        pOsw->WaitForIdle(5000);
+                        if (useOsw1) { pOsw1->SwitchChannel(osw1DeviceNum, ch); }
+                        if (useOsw2) { pOsw2->SwitchChannel(osw2DeviceNum, ch); }
+                        if (useOsw1) { pOsw1->WaitForIdle(5000); }
+                        if (useOsw2) { pOsw2->WaitForIdle(5000); }
                         std::vector<int> singleCh = { ch };
                         pPct->ConfigureChannels(singleCh.data(), 1);
                         if (pPct->TakeMeasurement())
@@ -994,10 +1249,11 @@ void CViaviAppDlg::SetBusy(bool busy, const CString& statusText)
 void CViaviAppDlg::EnableControls()
 {
     bool pctLoaded = m_pctLoader.IsDllLoaded();
-    bool oswLoaded = m_oswLoader.IsDllLoaded();
+    bool osw1Loaded = m_oswLoader.IsDllLoaded();
+    bool osw2Loaded = m_osw2Loader.IsDllLoaded();
     bool pctVisa = IsPctVisaMode();
-    bool oswVisa = IsOswVisaMode();
-    bool bothConnected = m_bPctConnected && m_bOswConnected;
+    bool osw1Visa = IsOswVisaMode();
+    bool osw2Visa = IsOsw2VisaMode();
     bool pctOnly = m_bPctConnected;
 
     // PCT connection group
@@ -1012,17 +1268,29 @@ void CViaviAppDlg::EnableControls()
     GetDlgItem(IDC_BTN_CONNECT_PCT)->EnableWindow(!m_bBusy && pctLoaded && !m_bPctConnected);
     GetDlgItem(IDC_BTN_DISCONNECT_PCT)->EnableWindow(!m_bBusy && m_bPctConnected);
 
-    // OSW connection group
-    GetDlgItem(IDC_EDIT_OSW_DLL)->EnableWindow(!m_bBusy && !oswLoaded);
-    SetDlgItemText(IDC_BTN_LOAD_OSW, oswLoaded ? _T("Unload") : _T("Load"));
+    // OSW1 connection group
+    GetDlgItem(IDC_EDIT_OSW_DLL)->EnableWindow(!m_bBusy && !osw1Loaded);
+    SetDlgItemText(IDC_BTN_LOAD_OSW, osw1Loaded ? _T("Unload") : _T("Load"));
     GetDlgItem(IDC_BTN_LOAD_OSW)->EnableWindow(!m_bBusy);
 
     GetDlgItem(IDC_COMBO_OSW_CONN_MODE)->EnableWindow(!m_bBusy && !m_bOswConnected);
-    GetDlgItem(IDC_BTN_ENUMERATE_OSW)->EnableWindow(!m_bBusy && oswVisa && oswLoaded);
-    GetDlgItem(IDC_COMBO_OSW_ADDR)->EnableWindow(!m_bBusy && oswLoaded && !m_bOswConnected);
-    GetDlgItem(IDC_EDIT_OSW_PORT)->EnableWindow(!m_bBusy && !oswVisa && !m_bOswConnected);
-    GetDlgItem(IDC_BTN_CONNECT_OSW)->EnableWindow(!m_bBusy && oswLoaded && !m_bOswConnected);
+    GetDlgItem(IDC_BTN_ENUMERATE_OSW)->EnableWindow(!m_bBusy && osw1Visa && osw1Loaded);
+    GetDlgItem(IDC_COMBO_OSW_ADDR)->EnableWindow(!m_bBusy && osw1Loaded && !m_bOswConnected);
+    GetDlgItem(IDC_EDIT_OSW_PORT)->EnableWindow(!m_bBusy && !osw1Visa && !m_bOswConnected);
+    GetDlgItem(IDC_BTN_CONNECT_OSW)->EnableWindow(!m_bBusy && osw1Loaded && !m_bOswConnected);
     GetDlgItem(IDC_BTN_DISCONNECT_OSW)->EnableWindow(!m_bBusy && m_bOswConnected);
+
+    // OSW2 connection group
+    GetDlgItem(IDC_EDIT_OSW2_DLL)->EnableWindow(!m_bBusy && !osw2Loaded);
+    SetDlgItemText(IDC_BTN_LOAD_OSW2, osw2Loaded ? _T("Unload") : _T("Load"));
+    GetDlgItem(IDC_BTN_LOAD_OSW2)->EnableWindow(!m_bBusy);
+
+    GetDlgItem(IDC_COMBO_OSW2_CONN_MODE)->EnableWindow(!m_bBusy && !m_bOsw2Connected);
+    GetDlgItem(IDC_BTN_ENUMERATE_OSW2)->EnableWindow(!m_bBusy && osw2Visa && osw2Loaded);
+    GetDlgItem(IDC_COMBO_OSW2_ADDR)->EnableWindow(!m_bBusy && osw2Loaded && !m_bOsw2Connected);
+    GetDlgItem(IDC_EDIT_OSW2_PORT)->EnableWindow(!m_bBusy && !osw2Visa && !m_bOsw2Connected);
+    GetDlgItem(IDC_BTN_CONNECT_OSW2)->EnableWindow(!m_bBusy && osw2Loaded && !m_bOsw2Connected);
+    GetDlgItem(IDC_BTN_DISCONNECT_OSW2)->EnableWindow(!m_bBusy && m_bOsw2Connected);
 
     // Test configuration
     GetDlgItem(IDC_CHECK_1310)->EnableWindow(!m_bBusy);
@@ -1030,6 +1298,7 @@ void CViaviAppDlg::EnableControls()
     GetDlgItem(IDC_EDIT_CH_FROM)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_EDIT_CH_TO)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_EDIT_OSW_DEVICE_NUM)->EnableWindow(!m_bBusy);
+    GetDlgItem(IDC_EDIT_OSW2_DEVICE_NUM)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_CHECK_OVERRIDE)->EnableWindow(!m_bBusy);
 
     BOOL overrideOn = (m_checkOverride.GetCheck() == BST_CHECKED);
@@ -1045,6 +1314,7 @@ void CViaviAppDlg::EnableControls()
     // Update status labels
     UpdatePctStatus(m_bPctConnected ? _T("Connected") : _T("Not Connected"));
     UpdateOswStatus(m_bOswConnected ? _T("Connected") : _T("Not Connected"));
+    UpdateOsw2Status(m_bOsw2Connected ? _T("Connected") : _T("Not Connected"));
 }
 
 // ---------------------------------------------------------------------------
@@ -1076,6 +1346,11 @@ void CViaviAppDlg::UpdatePctStatus(const CString& status)
 void CViaviAppDlg::UpdateOswStatus(const CString& status)
 {
     SetDlgItemText(IDC_STATIC_OSW_STATUS, status);
+}
+
+void CViaviAppDlg::UpdateOsw2Status(const CString& status)
+{
+    SetDlgItemText(IDC_STATIC_OSW2_STATUS, status);
 }
 
 void CViaviAppDlg::OnBnClickedClearLog()
@@ -1129,6 +1404,11 @@ bool CViaviAppDlg::IsOswVisaMode()
     return (m_comboOswConnMode.GetCurSel() == 0);
 }
 
+bool CViaviAppDlg::IsOsw2VisaMode()
+{
+    return (m_comboOsw2ConnMode.GetCurSel() == 0);
+}
+
 // ---------------------------------------------------------------------------
 // 辅助函数
 // ---------------------------------------------------------------------------
@@ -1168,6 +1448,14 @@ int CViaviAppDlg::GetOswDeviceNum()
 {
     CString str;
     m_editOswDeviceNum.GetWindowText(str);
+    int num = _ttoi(str);
+    return (num >= 1) ? num : 1;
+}
+
+int CViaviAppDlg::GetOsw2DeviceNum()
+{
+    CString str;
+    m_editOsw2DeviceNum.GetWindowText(str);
     int num = _ttoi(str);
     return (num >= 1) ? num : 1;
 }
