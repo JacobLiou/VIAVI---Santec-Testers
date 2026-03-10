@@ -119,17 +119,14 @@ void CViaviAppDlg::DoDataExchange(CDataExchange* pDX)
     CDialogEx::DoDataExchange(pDX);
     // PCT
     DDX_Control(pDX, IDC_EDIT_PCT_DLL, m_editPctDll);
-    DDX_Control(pDX, IDC_COMBO_PCT_CONN_MODE, m_comboPctConnMode);
     DDX_Control(pDX, IDC_COMBO_PCT_ADDR, m_comboPctAddr);
     DDX_Control(pDX, IDC_EDIT_PCT_PORT, m_editPctPort);
     // OSW1
     DDX_Control(pDX, IDC_EDIT_OSW_DLL, m_editOswDll);
-    DDX_Control(pDX, IDC_COMBO_OSW_CONN_MODE, m_comboOswConnMode);
     DDX_Control(pDX, IDC_COMBO_OSW_ADDR, m_comboOswAddr);
     DDX_Control(pDX, IDC_EDIT_OSW_PORT, m_editOswPort);
     // OSW2
     DDX_Control(pDX, IDC_EDIT_OSW2_DLL, m_editOsw2Dll);
-    DDX_Control(pDX, IDC_COMBO_OSW2_CONN_MODE, m_comboOsw2ConnMode);
     DDX_Control(pDX, IDC_COMBO_OSW2_ADDR, m_comboOsw2Addr);
     DDX_Control(pDX, IDC_EDIT_OSW2_PORT, m_editOsw2Port);
     // Test Config
@@ -158,23 +155,14 @@ BOOL CViaviAppDlg::OnInitDialog()
 
     // PCT defaults
     m_editPctDll.SetWindowText(_T("UDL.ViaviPCT.dll"));
-    m_comboPctConnMode.AddString(_T("USB (VISA)"));
-    m_comboPctConnMode.AddString(_T("TCP (Ethernet)"));
-    m_comboPctConnMode.SetCurSel(1);
     m_editPctPort.SetWindowText(_T("8301"));
 
     // OSW1 defaults
     m_editOswDll.SetWindowText(_T("UDL.ViaviOSW.dll"));
-    m_comboOswConnMode.AddString(_T("USB (VISA)"));
-    m_comboOswConnMode.AddString(_T("TCP (Ethernet)"));
-    m_comboOswConnMode.SetCurSel(1);
     m_editOswPort.SetWindowText(_T("8203"));
 
     // OSW2 defaults
     m_editOsw2Dll.SetWindowText(_T("UDL.ViaviOSW.dll"));
-    m_comboOsw2ConnMode.AddString(_T("USB (VISA)"));
-    m_comboOsw2ConnMode.AddString(_T("TCP (Ethernet)"));
-    m_comboOsw2ConnMode.SetCurSel(1);
     m_editOsw2Port.SetWindowText(_T("8202"));
 
     // Test config defaults
@@ -1251,20 +1239,14 @@ void CViaviAppDlg::EnableControls()
     bool pctLoaded = m_pctLoader.IsDllLoaded();
     bool osw1Loaded = m_oswLoader.IsDllLoaded();
     bool osw2Loaded = m_osw2Loader.IsDllLoaded();
-    bool pctVisa = IsPctVisaMode();
-    bool osw1Visa = IsOswVisaMode();
-    bool osw2Visa = IsOsw2VisaMode();
     bool pctOnly = m_bPctConnected;
 
     // PCT connection group
     GetDlgItem(IDC_EDIT_PCT_DLL)->EnableWindow(!m_bBusy && !pctLoaded);
     SetDlgItemText(IDC_BTN_LOAD_PCT, pctLoaded ? _T("Unload") : _T("Load"));
     GetDlgItem(IDC_BTN_LOAD_PCT)->EnableWindow(!m_bBusy);
-
-    GetDlgItem(IDC_COMBO_PCT_CONN_MODE)->EnableWindow(!m_bBusy && !m_bPctConnected);
-    GetDlgItem(IDC_BTN_ENUMERATE_PCT)->EnableWindow(!m_bBusy && pctVisa && pctLoaded);
     GetDlgItem(IDC_COMBO_PCT_ADDR)->EnableWindow(!m_bBusy && pctLoaded && !m_bPctConnected);
-    GetDlgItem(IDC_EDIT_PCT_PORT)->EnableWindow(!m_bBusy && !pctVisa && !m_bPctConnected);
+    GetDlgItem(IDC_EDIT_PCT_PORT)->EnableWindow(!m_bBusy && !m_bPctConnected);
     GetDlgItem(IDC_BTN_CONNECT_PCT)->EnableWindow(!m_bBusy && pctLoaded && !m_bPctConnected);
     GetDlgItem(IDC_BTN_DISCONNECT_PCT)->EnableWindow(!m_bBusy && m_bPctConnected);
 
@@ -1272,11 +1254,8 @@ void CViaviAppDlg::EnableControls()
     GetDlgItem(IDC_EDIT_OSW_DLL)->EnableWindow(!m_bBusy && !osw1Loaded);
     SetDlgItemText(IDC_BTN_LOAD_OSW, osw1Loaded ? _T("Unload") : _T("Load"));
     GetDlgItem(IDC_BTN_LOAD_OSW)->EnableWindow(!m_bBusy);
-
-    GetDlgItem(IDC_COMBO_OSW_CONN_MODE)->EnableWindow(!m_bBusy && !m_bOswConnected);
-    GetDlgItem(IDC_BTN_ENUMERATE_OSW)->EnableWindow(!m_bBusy && osw1Visa && osw1Loaded);
     GetDlgItem(IDC_COMBO_OSW_ADDR)->EnableWindow(!m_bBusy && osw1Loaded && !m_bOswConnected);
-    GetDlgItem(IDC_EDIT_OSW_PORT)->EnableWindow(!m_bBusy && !osw1Visa && !m_bOswConnected);
+    GetDlgItem(IDC_EDIT_OSW_PORT)->EnableWindow(!m_bBusy && !m_bOswConnected);
     GetDlgItem(IDC_BTN_CONNECT_OSW)->EnableWindow(!m_bBusy && osw1Loaded && !m_bOswConnected);
     GetDlgItem(IDC_BTN_DISCONNECT_OSW)->EnableWindow(!m_bBusy && m_bOswConnected);
 
@@ -1284,11 +1263,8 @@ void CViaviAppDlg::EnableControls()
     GetDlgItem(IDC_EDIT_OSW2_DLL)->EnableWindow(!m_bBusy && !osw2Loaded);
     SetDlgItemText(IDC_BTN_LOAD_OSW2, osw2Loaded ? _T("Unload") : _T("Load"));
     GetDlgItem(IDC_BTN_LOAD_OSW2)->EnableWindow(!m_bBusy);
-
-    GetDlgItem(IDC_COMBO_OSW2_CONN_MODE)->EnableWindow(!m_bBusy && !m_bOsw2Connected);
-    GetDlgItem(IDC_BTN_ENUMERATE_OSW2)->EnableWindow(!m_bBusy && osw2Visa && osw2Loaded);
     GetDlgItem(IDC_COMBO_OSW2_ADDR)->EnableWindow(!m_bBusy && osw2Loaded && !m_bOsw2Connected);
-    GetDlgItem(IDC_EDIT_OSW2_PORT)->EnableWindow(!m_bBusy && !osw2Visa && !m_bOsw2Connected);
+    GetDlgItem(IDC_EDIT_OSW2_PORT)->EnableWindow(!m_bBusy && !m_bOsw2Connected);
     GetDlgItem(IDC_BTN_CONNECT_OSW2)->EnableWindow(!m_bBusy && osw2Loaded && !m_bOsw2Connected);
     GetDlgItem(IDC_BTN_DISCONNECT_OSW2)->EnableWindow(!m_bBusy && m_bOsw2Connected);
 
@@ -1396,17 +1372,17 @@ void CViaviAppDlg::PopulateResultsList(const std::vector<PCTMeasurementResult>& 
 
 bool CViaviAppDlg::IsPctVisaMode()
 {
-    return (m_comboPctConnMode.GetCurSel() == 0);
+    return false;
 }
 
 bool CViaviAppDlg::IsOswVisaMode()
 {
-    return (m_comboOswConnMode.GetCurSel() == 0);
+    return false;
 }
 
 bool CViaviAppDlg::IsOsw2VisaMode()
 {
-    return (m_comboOsw2ConnMode.GetCurSel() == 0);
+    return false;
 }
 
 // ---------------------------------------------------------------------------

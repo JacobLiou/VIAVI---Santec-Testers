@@ -90,19 +90,16 @@ private:
 
     // PCT UI Controls
     CEdit       m_editPctDll;
-    CComboBox   m_comboPctConnMode;
     CComboBox   m_comboPctAddr;
     CEdit       m_editPctPort;
 
     // OSW1 UI Controls
     CEdit       m_editOswDll;
-    CComboBox   m_comboOswConnMode;
     CComboBox   m_comboOswAddr;
     CEdit       m_editOswPort;
 
     // OSW2 UI Controls
     CEdit       m_editOsw2Dll;
-    CComboBox   m_comboOsw2ConnMode;
     CComboBox   m_comboOsw2Addr;
     CEdit       m_editOsw2Port;
 
