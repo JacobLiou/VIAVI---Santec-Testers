@@ -88,6 +88,7 @@ OSW_C_API BOOL WINAPI OSW_SendCommand(HANDLE hDriver, const char* command,
 
 typedef void (WINAPI *OSWLogCallback)(int level, const char* source, const char* message);
 OSW_C_API void WINAPI OSW_SetLogCallback(OSWLogCallback callback);
+OSW_C_API void WINAPI OSW_SetLogCallbackEx(HANDLE hDriver, OSWLogCallback callback);
 
 // ---------------------------------------------------------------------------
 // VISA 枚举

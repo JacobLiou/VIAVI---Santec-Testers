@@ -254,6 +254,25 @@ OSW_C_API void WINAPI OSW_SetLogCallback(OSWLogCallback callback)
     }
 }
 
+OSW_C_API void WINAPI OSW_SetLogCallbackEx(HANDLE hDriver, OSWLogCallback callback)
+{
+    CViaviOSWDriver* driver = static_cast<CViaviOSWDriver*>(hDriver);
+    if (!driver) return;
+
+    if (callback)
+    {
+        driver->SetLogCallback(
+            [callback](LogLevel level, const std::string& source, const std::string& message)
+            {
+                callback(static_cast<int>(level), source.c_str(), message.c_str());
+            });
+    }
+    else
+    {
+        driver->SetLogCallback(nullptr);
+    }
+}
+
 // ---------------------------------------------------------------------------
 // VISA 枚举
 // ---------------------------------------------------------------------------

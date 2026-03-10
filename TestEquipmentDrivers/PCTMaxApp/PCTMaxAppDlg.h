@@ -11,13 +11,13 @@
 #define WM_LOG_MESSAGE  (WM_USER + 100)
 #define WM_WORKER_DONE  (WM_USER + 101)
 
-class CViaviAppDlg : public CDialogEx
+class CPCTMaxAppDlg : public CDialogEx
 {
 public:
-    CViaviAppDlg(CWnd* pParent = NULL);
-    virtual ~CViaviAppDlg();
+    CPCTMaxAppDlg(CWnd* pParent = NULL);
+    virtual ~CPCTMaxAppDlg();
 
-    enum { IDD = IDD_VIAVIAPP_DIALOG };
+    enum { IDD = IDD_PCTMAXAPP_DIALOG };
 
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);
@@ -28,52 +28,31 @@ protected:
     DECLARE_MESSAGE_MAP()
 
     afx_msg void OnClose();
-
-    // PCT
-    afx_msg void OnBnClickedLoadPct();
-    afx_msg void OnBnClickedEnumeratePct();
-    afx_msg void OnBnClickedConnectPct();
-    afx_msg void OnBnClickedDisconnectPct();
-
-    // OSW1
-    afx_msg void OnBnClickedLoadOsw();
-    afx_msg void OnBnClickedEnumerateOsw();
-    afx_msg void OnBnClickedConnectOsw();
-    afx_msg void OnBnClickedDisconnectOsw();
-
-    // OSW2
-    afx_msg void OnBnClickedLoadOsw2();
-    afx_msg void OnBnClickedEnumerateOsw2();
-    afx_msg void OnBnClickedConnectOsw2();
-    afx_msg void OnBnClickedDisconnectOsw2();
-
-    // 操作
+    afx_msg void OnBnClickedConnect();
+    afx_msg void OnBnClickedDisconnect();
     afx_msg void OnBnClickedZeroing();
     afx_msg void OnBnClickedMeasure();
+    afx_msg void OnBnClickedContinuous();
     afx_msg void OnBnClickedStop();
     afx_msg void OnBnClickedClearLog();
     afx_msg void OnBnClickedOverride();
-
+    afx_msg void OnBnClickedScreenshot();
+    afx_msg void OnBnClickedSaveCsv();
     afx_msg LRESULT OnLogMessage(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnWorkerDone(WPARAM wParam, LPARAM lParam);
 
 private:
     void AppendLog(const CString& text);
-    void UpdatePctStatus(const CString& status);
-    void UpdateOswStatus(const CString& status);
-    void UpdateOsw2Status(const CString& status);
+    void UpdateStatus(const CString& status);
     void EnableControls();
     void SetBusy(bool busy, const CString& statusText = _T(""));
-    bool IsPctVisaMode();
-    bool IsOswVisaMode();
-    bool IsOsw2VisaMode();
 
     void PopulateResultsList(const std::vector<PCTMeasurementResult>& results);
-
     std::vector<double> GetSelectedWavelengths();
     std::vector<int> GetSelectedChannels();
     int GetOswDeviceNum();
     int GetOsw2DeviceNum();
+    bool IsDualOswMode();
 
     struct WorkerResult
     {
@@ -87,28 +66,26 @@ private:
 
     void RunAsync(const CString& operationName, std::function<WorkerResult*()> task);
 
-    // PCT UI Controls
+    bool SaveWindowAsPng(HWND hWnd, const CString& filePath);
+    static int GetEncoderClsid(const WCHAR* format, CLSID* pClsid);
+
+    // Connection UI
     CEdit       m_editPctDll;
-    CComboBox   m_comboPctAddr;
-    CEdit       m_editPctPort;
-
-    // OSW1 UI Controls
     CEdit       m_editOswDll;
-    CComboBox   m_comboOswAddr;
+    CEdit       m_editIP;
+    CEdit       m_editPctPort;
     CEdit       m_editOswPort;
-
-    // OSW2 UI Controls
-    CEdit       m_editOsw2Dll;
-    CComboBox   m_comboOsw2Addr;
     CEdit       m_editOsw2Port;
 
-    // Test Config
-    CButton     m_check1310;
-    CButton     m_check1550;
+    // Setup UI
     CEdit       m_editChFrom;
     CEdit       m_editChTo;
+    CButton     m_check1310;
+    CButton     m_check1550;
     CEdit       m_editOswDeviceNum;
     CEdit       m_editOsw2DeviceNum;
+    CButton     m_radioOsw1Only;
+    CButton     m_radioOswBoth;
     CButton     m_checkOverride;
     CEdit       m_editILValue;
     CEdit       m_editLengthValue;
@@ -117,7 +94,7 @@ private:
     CListCtrl   m_listResults;
     CEdit       m_editLog;
 
-    // Dynamic loaders
+    // Loaders
     CViaviPCTDllLoader m_pctLoader;
     CViaviOSWDllLoader m_oswLoader;
     CViaviOSWDllLoader m_osw2Loader;

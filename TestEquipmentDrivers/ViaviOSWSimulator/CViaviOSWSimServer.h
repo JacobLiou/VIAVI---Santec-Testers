@@ -35,6 +35,8 @@ public:
     void SetVerbose(bool enabled)       { m_verbose = enabled; }
     bool GetVerbose() const             { return m_verbose; }
     int  GetCommandCount() const        { return m_commandCount; }
+    void SetChannelCount(int count);
+    int  GetChannelCount() const;
 
 private:
     static DWORD WINAPI ServerThreadProc(LPVOID param);
@@ -58,7 +60,7 @@ private:
     {
         int channelCount;
         int currentChannel;
-        DeviceState() : channelCount(8), currentChannel(1) {}
+        DeviceState() : channelCount(24), currentChannel(1) {}
     };
     int             m_deviceCount;
     std::map<int, DeviceState> m_devices;

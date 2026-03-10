@@ -19,7 +19,7 @@ CViaviOSWSimServer::CViaviOSWSimServer()
     srand(static_cast<unsigned>(time(NULL)));
 
     DeviceState dev;
-    dev.channelCount = 8;
+    dev.channelCount = 24;
     dev.currentChannel = 1;
     m_devices[1] = dev;
 }
@@ -27,6 +27,20 @@ CViaviOSWSimServer::CViaviOSWSimServer()
 CViaviOSWSimServer::~CViaviOSWSimServer()
 {
     Stop();
+}
+
+void CViaviOSWSimServer::SetChannelCount(int count)
+{
+    if (count < 1) count = 1;
+    for (auto& kv : m_devices)
+        kv.second.channelCount = count;
+}
+
+int CViaviOSWSimServer::GetChannelCount() const
+{
+    if (!m_devices.empty())
+        return m_devices.begin()->second.channelCount;
+    return 24;
 }
 
 // ---------------------------------------------------------------------------
@@ -301,7 +315,7 @@ std::string CViaviOSWSimServer::ProcessCommand(const std::string& cmd)
         if (!m_devices.empty())
             oss << "," << m_devices.begin()->second.channelCount;
         else
-            oss << ",8";
+            oss << ",24";
         return oss.str();
     }
 
@@ -355,7 +369,7 @@ std::string CViaviOSWSimServer::ProcessCommand(const std::string& cmd)
             if (it == m_devices.end())
             {
                 DeviceState newDev;
-                newDev.channelCount = 8;
+                newDev.channelCount = 24;
                 newDev.currentChannel = channel;
                 m_devices[devNum] = newDev;
             }

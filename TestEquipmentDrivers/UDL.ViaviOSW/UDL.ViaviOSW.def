@@ -18,4 +18,5 @@ EXPORTS
     OSW_WaitForIdle
     OSW_SendCommand
     OSW_SetLogCallback
+    OSW_SetLogCallbackEx
     OSW_EnumerateVisaResources

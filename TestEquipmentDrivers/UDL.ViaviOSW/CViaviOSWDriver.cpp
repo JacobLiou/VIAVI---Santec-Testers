@@ -91,6 +91,11 @@ void CViaviOSWDriver::SetCommAdapter(IViaviOSWCommAdapter* adapter, bool takeOwn
     m_ownsAdapter = takeOwnership;
 }
 
+void CViaviOSWDriver::SetLogCallback(LogCallback callback)
+{
+    m_instanceCallback = callback;
+}
+
 void CViaviOSWDriver::SetGlobalLogCallback(LogCallback callback)
 {
     std::lock_guard<std::mutex> lock(s_logMutex);
@@ -120,7 +125,9 @@ void CViaviOSWDriver::Log(LogLevel level, const char* fmt, ...)
     std::string message(buffer);
     std::string source("ViaviOSW");
 
-    LogCallback cb;
+    // Prefer per-instance callback; fall back to global
+    LogCallback cb = m_instanceCallback;
+    if (!cb)
     {
         std::lock_guard<std::mutex> lock(s_logMutex);
         cb = s_globalCallback;
@@ -472,19 +479,48 @@ SwitchInfo CViaviOSWDriver::GetSwitchInfo(int deviceNum)
 
 SwitchInfo CViaviOSWDriver::ParseSwitchConfig(const std::string& response)
 {
-    // :CONF? 返回格式: deviceNum,type,channelCount,...
+    // Real device :CONF? format (space-separated):
+    //   "1 OSW 1 24 NO 0 NO SM 9.000 FC/APC"
+    //    ^       ^ ^^ 
+    //    count   | channelCount
+    //            deviceNum
+    //
+    // Simulator format (comma-separated):
+    //   "1,mOSW-C1,24"
+    //    ^  ^       ^
+    //    |  type    channelCount
+    //    deviceNum
+
     SwitchInfo info;
-    std::vector<std::string> parts;
-    std::istringstream iss(response);
-    std::string token;
-    while (std::getline(iss, token, ','))
-        parts.push_back(Trim(token));
 
-    if (parts.size() >= 1) info.deviceNum = atoi(parts[0].c_str());
-    if (parts.size() >= 2) info.description = parts[1];
-    if (parts.size() >= 3) info.channelCount = atoi(parts[2].c_str());
+    bool hasComma = (response.find(',') != std::string::npos);
 
-    // 根据描述推断开关类型
+    if (hasComma)
+    {
+        std::vector<std::string> parts;
+        std::istringstream iss(response);
+        std::string token;
+        while (std::getline(iss, token, ','))
+            parts.push_back(Trim(token));
+
+        if (parts.size() >= 1) info.deviceNum = atoi(parts[0].c_str());
+        if (parts.size() >= 2) info.description = parts[1];
+        if (parts.size() >= 3) info.channelCount = atoi(parts[2].c_str());
+    }
+    else
+    {
+        std::vector<std::string> parts;
+        std::istringstream iss(response);
+        std::string token;
+        while (iss >> token)
+            parts.push_back(token);
+
+        // parts: [0]=count [1]=OSW [2]=deviceNum [3]=channelCount ...
+        if (parts.size() >= 2) info.description = parts[1];
+        if (parts.size() >= 3) info.deviceNum = atoi(parts[2].c_str());
+        if (parts.size() >= 4) info.channelCount = atoi(parts[3].c_str());
+    }
+
     std::string desc = info.description;
     for (size_t i = 0; i < desc.size(); ++i)
         desc[i] = static_cast<char>(toupper(static_cast<unsigned char>(desc[i])));

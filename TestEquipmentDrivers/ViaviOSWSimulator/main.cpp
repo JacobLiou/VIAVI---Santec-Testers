@@ -25,6 +25,7 @@ static void PrintBanner()
 
 static void PrintStatus()
 {
+    printf("  通道数:    %d\n", g_server.GetChannelCount());
     printf("  错误注入:  %s\n", g_server.GetErrorMode() ? "开启（注入错误）" : "关闭");
     printf("  开关延迟:  %d ms\n", g_server.GetSwitchDelayMs());
     printf("  详细日志:  %s\n", g_server.GetVerbose() ? "开启" : "关闭");
@@ -56,15 +57,26 @@ int main(int argc, char* argv[])
     SetConsoleCtrlHandler(ConsoleHandler, TRUE);
 
     int port = 8203;
+    int channels = 0;
 
     for (int i = 1; i < argc; ++i)
     {
         if (std::string(argv[i]) == "--port" && i + 1 < argc)
             port = atoi(argv[++i]);
+        else if (std::string(argv[i]) == "--channels" && i + 1 < argc)
+            channels = atoi(argv[++i]);
     }
 
     PrintBanner();
-    printf("  端口: %d\n\n", port);
+    printf("  端口: %d\n", port);
+    if (channels > 0)
+        printf("  通道数: %d\n", channels);
+    else
+        printf("  通道数: %d (默认)\n", g_server.GetChannelCount());
+    printf("\n");
+
+    if (channels > 0)
+        g_server.SetChannelCount(channels);
 
     if (!g_server.Start(port))
     {

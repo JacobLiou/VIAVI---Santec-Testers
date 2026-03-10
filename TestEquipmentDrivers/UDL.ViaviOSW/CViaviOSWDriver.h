@@ -75,7 +75,8 @@ public:
     // 适配器注入
     void SetCommAdapter(IViaviOSWCommAdapter* adapter, bool takeOwnership = true);
 
-    // 日志
+    // 日志 (per-instance preferred over global)
+    void SetLogCallback(LogCallback callback);
     static void SetGlobalLogCallback(LogCallback callback);
     static void SetGlobalLogLevel(LogLevel level);
 
@@ -113,9 +114,10 @@ private:
     int               m_deviceCount;
 
     // 日志
-    static LogCallback s_globalCallback;
-    static LogLevel    s_globalLevel;
-    static std::mutex  s_logMutex;
+    LogCallback           m_instanceCallback;
+    static LogCallback    s_globalCallback;
+    static LogLevel       s_globalLevel;
+    static std::mutex     s_logMutex;
 };
 
 } // namespace ViaviOSW

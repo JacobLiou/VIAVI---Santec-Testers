@@ -83,7 +83,6 @@ BEGIN
     GROUPBOX        "Operations",IDC_GROUP_OPERATION,430,144,205,80
     PUSHBUTTON      "Zeroing (Reference)",IDC_BTN_ZEROING,440,162,90,22
     PUSHBUTTON      "Measure",IDC_BTN_MEASURE,535,162,90,22
-    PUSHBUTTON      "Continuous Test",IDC_BTN_CONTINUOUS,440,192,90,22
     PUSHBUTTON      "STOP",IDC_BTN_STOP,535,192,90,22
 
     // ===== Results Group =====

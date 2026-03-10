@@ -91,6 +91,7 @@ typedef BOOL (WINAPI *PFN_OSW_SendCommand)(HANDLE hDriver, const char* command,
 // 日志
 typedef void (WINAPI *PFN_OSWLogCallback)(int level, const char* source, const char* message);
 typedef void (WINAPI *PFN_OSW_SetLogCallback)(PFN_OSWLogCallback callback);
+typedef void (WINAPI *PFN_OSW_SetLogCallbackEx)(HANDLE hDriver, PFN_OSWLogCallback callback);
 
 // VISA 枚举
 typedef int (WINAPI *PFN_OSW_EnumerateVisaResources)(char* buffer, int bufferSize);
@@ -123,6 +124,7 @@ public:
         , pfnWaitForIdle(NULL)
         , pfnSendCommand(NULL)
         , pfnSetLogCallback(NULL)
+        , pfnSetLogCallbackEx(NULL)
         , pfnEnumerateVisaResources(NULL)
     {
     }
@@ -172,6 +174,7 @@ public:
         LOAD_PROC(pfnWaitForIdle,              "OSW_WaitForIdle");
         LOAD_PROC(pfnSendCommand,              "OSW_SendCommand");
         LOAD_PROC(pfnSetLogCallback,           "OSW_SetLogCallback");
+        LOAD_PROC(pfnSetLogCallbackEx,         "OSW_SetLogCallbackEx");
         LOAD_PROC(pfnEnumerateVisaResources,   "OSW_EnumerateVisaResources");
 
         #undef LOAD_PROC
@@ -203,6 +206,7 @@ public:
             pfnWaitForIdle = NULL;
             pfnSendCommand = NULL;
             pfnSetLogCallback = NULL;
+            pfnSetLogCallbackEx = NULL;
             pfnEnumerateVisaResources = NULL;
         }
     }
@@ -358,7 +362,10 @@ public:
 
     void SetLogCallback(PFN_OSWLogCallback callback)
     {
-        if (pfnSetLogCallback) pfnSetLogCallback(callback);
+        if (m_hDriver && pfnSetLogCallbackEx)
+            pfnSetLogCallbackEx(m_hDriver, callback);
+        else if (pfnSetLogCallback)
+            pfnSetLogCallback(callback);
     }
 
 private:
@@ -383,5 +390,6 @@ private:
     PFN_OSW_WaitForIdle              pfnWaitForIdle;
     PFN_OSW_SendCommand              pfnSendCommand;
     PFN_OSW_SetLogCallback           pfnSetLogCallback;
+    PFN_OSW_SetLogCallbackEx         pfnSetLogCallbackEx;
     PFN_OSW_EnumerateVisaResources   pfnEnumerateVisaResources;
 };

@@ -1,0 +1,87 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+#include "afxres.h"
+#undef APSTUDIO_READONLY_SYMBOLS
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+
+IDD_PCTMAXAPP_DIALOG DIALOGEX 0, 0, 620, 520
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX
+CAPTION "PCTMax Control"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    // ===== Connection Bar (top) =====
+    GROUPBOX        "Connection",IDC_GROUP_CONNECTION,5,3,610,48
+    LTEXT           "PCT DLL:", -1,12,17,30,8
+    EDITTEXT        IDC_EDIT_PCT_DLL,45,15,95,13,ES_AUTOHSCROLL
+    LTEXT           "OSW DLL:", -1,145,17,33,8
+    EDITTEXT        IDC_EDIT_OSW_DLL,180,15,95,13,ES_AUTOHSCROLL
+    LTEXT           "IP:", -1,285,17,10,8
+    EDITTEXT        IDC_EDIT_IP,297,15,80,13,ES_AUTOHSCROLL
+    LTEXT           "PCT Port:", -1,385,17,33,8
+    EDITTEXT        IDC_EDIT_PCT_PORT,420,15,30,13,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "OSW1:", -1,458,17,22,8
+    EDITTEXT        IDC_EDIT_OSW_PORT,480,15,28,13,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "OSW2:", -1,514,17,22,8
+    EDITTEXT        IDC_EDIT_OSW2_PORT,536,15,28,13,ES_AUTOHSCROLL | ES_NUMBER
+    PUSHBUTTON      "Connect All",IDC_BTN_CONNECT,570,14,42,14
+    PUSHBUTTON      "Disconnect",IDC_BTN_DISCONNECT,12,34,55,14
+    LTEXT           "Status: Not Connected",IDC_STATIC_STATUS,72,37,540,8
+
+    // ===== Left Panel: Measurement Setup =====
+    GROUPBOX        "Measurement Setup",IDC_GROUP_SETUP,5,54,140,180
+
+    LTEXT           "Switch Paths:", -1,12,68,50,8
+    CONTROL         "SW1 only",IDC_RADIO_OSW1_ONLY,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,80,50,10
+    CONTROL         "SW1+SW2",IDC_RADIO_OSW_BOTH,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,65,80,50,10
+
+    LTEXT           "Ch", -1,12,96,10,8
+    EDITTEXT        IDC_EDIT_CH_FROM,24,94,18,13,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "~", -1,44,96,8,8,SS_CENTER
+    EDITTEXT        IDC_EDIT_CH_TO,52,94,18,13,ES_AUTOHSCROLL | ES_NUMBER
+
+    LTEXT           "Source Wavelengths:", -1,12,114,70,8
+    CONTROL         "1310 nm",IDC_CHECK_1310,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,126,45,10
+    CONTROL         "1550 nm",IDC_CHECK_1550,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,62,126,45,10
+
+    LTEXT           "OSW1 Dev#:", -1,12,144,42,8
+    EDITTEXT        IDC_EDIT_OSW_DEVICE_NUM,56,142,18,13,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "OSW2 Dev#:", -1,78,144,42,8
+    EDITTEXT        IDC_EDIT_OSW2_DEVICE_NUM,122,142,18,13,ES_AUTOHSCROLL | ES_NUMBER
+
+    LTEXT           "Reference:", -1,12,164,38,8
+    CONTROL         "Override Ref",IDC_CHECK_OVERRIDE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,176,55,10
+    LTEXT           "IL (dB):", -1,12,192,28,8
+    EDITTEXT        IDC_EDIT_IL_VALUE,42,190,35,13,ES_AUTOHSCROLL
+    LTEXT           "Length (m):", -1,12,210,40,8
+    EDITTEXT        IDC_EDIT_LENGTH_VALUE,55,208,35,13,ES_AUTOHSCROLL
+
+    // ===== Left Panel: Actions =====
+    GROUPBOX        "Actions",IDC_GROUP_ACTIONS,5,238,140,90
+    PUSHBUTTON      "Zeroing (Reference)",IDC_BTN_ZEROING,12,252,126,18
+    PUSHBUTTON      "Measure",IDC_BTN_MEASURE,12,272,126,18
+    PUSHBUTTON      "Continuous Test",IDC_BTN_CONTINUOUS,12,292,60,18
+    PUSHBUTTON      "STOP",IDC_BTN_STOP,78,292,60,18
+
+    // ===== Right Panel: Results =====
+    GROUPBOX        "Results",IDC_GROUP_RESULTS,150,54,465,250
+    CONTROL         "",IDC_LIST_RESULTS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | WS_BORDER | WS_TABSTOP,155,67,455,232
+
+    // ===== Right Panel: Log =====
+    GROUPBOX        "Log",IDC_GROUP_LOG,150,306,465,190
+    EDITTEXT        IDC_EDIT_LOG,155,319,455,155,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL
+
+    // ===== Bottom Buttons =====
+    PUSHBUTTON      "Clear Log",IDC_BTN_CLEAR_LOG,155,478,55,16
+    PUSHBUTTON      "Save CSV",IDC_BTN_SAVE_CSV,220,478,55,16
+    PUSHBUTTON      "Screenshot",IDC_BTN_SCREENSHOT,285,478,65,16
+
+    // ===== Left Panel: DLL Status area (below actions) =====
+    LTEXT           "Load DLLs, enter IP, then Connect.",  -1,12,335,130,18
+END
+
+#endif

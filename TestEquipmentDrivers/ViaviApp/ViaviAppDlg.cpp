@@ -86,7 +86,6 @@ BEGIN_MESSAGE_MAP(CViaviAppDlg, CDialogEx)
     // Operations
     ON_BN_CLICKED(IDC_BTN_ZEROING, &CViaviAppDlg::OnBnClickedZeroing)
     ON_BN_CLICKED(IDC_BTN_MEASURE, &CViaviAppDlg::OnBnClickedMeasure)
-    ON_BN_CLICKED(IDC_BTN_CONTINUOUS, &CViaviAppDlg::OnBnClickedContinuous)
     ON_BN_CLICKED(IDC_BTN_STOP, &CViaviAppDlg::OnBnClickedStop)
     ON_BN_CLICKED(IDC_BTN_CLEAR_LOG, &CViaviAppDlg::OnBnClickedClearLog)
     ON_BN_CLICKED(IDC_CHECK_OVERRIDE, &CViaviAppDlg::OnBnClickedOverride)
@@ -169,7 +168,7 @@ BOOL CViaviAppDlg::OnInitDialog()
     m_check1310.SetCheck(BST_CHECKED);
     m_check1550.SetCheck(BST_CHECKED);
     m_editChFrom.SetWindowText(_T("1"));
-    m_editChTo.SetWindowText(_T("4"));
+    m_editChTo.SetWindowText(_T("24"));
     m_editOswDeviceNum.SetWindowText(_T("1"));
     m_editOsw2DeviceNum.SetWindowText(_T("1"));
 
@@ -612,6 +611,8 @@ void CViaviAppDlg::OnBnClickedConnectOsw()
         return;
     }
 
+    pOsw->SetLogCallback(OSWLogCallback);
+
     RunAsync(_T("Connecting OSW1..."), [pOsw, pConn]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
@@ -735,6 +736,8 @@ void CViaviAppDlg::OnBnClickedConnectOsw2()
         AppendLog(_T("[OSW2] Failed to create driver."));
         return;
     }
+
+    pOsw->SetLogCallback(OSW2LogCallback);
 
     RunAsync(_T("Connecting OSW2..."), [pOsw, pConn]() -> WorkerResult*
     {
@@ -876,8 +879,6 @@ void CViaviAppDlg::OnBnClickedZeroing()
 
                     if (useOsw1) { pOsw1->SwitchChannel(osw1DeviceNum, ch); }
                     if (useOsw2) { pOsw2->SwitchChannel(osw2DeviceNum, ch); }
-                    if (useOsw1) { pOsw1->WaitForIdle(5000); }
-                    if (useOsw2) { pOsw2->WaitForIdle(5000); }
 
                     std::vector<int> singleCh = { ch };
                     pPct->ConfigureChannels(singleCh.data(), 1);
@@ -1020,143 +1021,6 @@ void CViaviAppDlg::OnBnClickedMeasure()
     });
 }
 
-// ---------------------------------------------------------------------------
-// 连续测试（清零 + 测量循环）
-// ---------------------------------------------------------------------------
-
-void CViaviAppDlg::OnBnClickedContinuous()
-{
-    if (!m_pctLoader.GetDriverHandle() || !m_bPctConnected) return;
-
-    std::vector<double> wavelengths = GetSelectedWavelengths();
-    std::vector<int> channels = GetSelectedChannels();
-    int osw1DeviceNum = GetOswDeviceNum();
-    int osw2DeviceNum = GetOsw2DeviceNum();
-    bool useOsw1 = m_bOswConnected;
-    bool useOsw2 = m_bOsw2Connected;
-    bool useOsw = (useOsw1 || useOsw2) && (channels.size() > 1);
-
-    BOOL bOverride = (m_checkOverride.GetCheck() == BST_CHECKED);
-    CString ilStr, lenStr;
-    m_editILValue.GetWindowText(ilStr);
-    m_editLengthValue.GetWindowText(lenStr);
-    double ilValue = _ttof(ilStr);
-    double lengthValue = _ttof(lenStr);
-
-    AppendLog(_T("=== Continuous Test Started (press STOP to end) ==="));
-    m_bStopRequested = false;
-
-    CViaviPCTDllLoader* pPct = &m_pctLoader;
-    CViaviOSWDllLoader* pOsw1 = &m_oswLoader;
-    CViaviOSWDllLoader* pOsw2 = &m_osw2Loader;
-    std::atomic<bool>* pStop = &m_bStopRequested;
-
-    RunAsync(_T("Continuous Test..."),
-        [pPct, pOsw1, pOsw2, wavelengths, channels,
-         osw1DeviceNum, osw2DeviceNum, useOsw1, useOsw2, useOsw,
-         bOverride, ilValue, lengthValue, pStop]() -> WorkerResult*
-    {
-        WorkerResult* r = new WorkerResult();
-        CString log;
-        int iteration = 0;
-        std::vector<PCTMeasurementResult> allResults;
-
-        try
-        {
-            std::vector<double> wl = wavelengths;
-            pPct->ConfigureWavelengths(wl.data(), (int)wl.size());
-
-            while (!pStop->load())
-            {
-                ++iteration;
-                CString iterLog;
-                iterLog.Format(_T("--- Iteration %d ---\r\n"), iteration);
-                log += iterLog;
-
-                // Phase 1: Zeroing
-                if (!useOsw)
-                {
-                    std::vector<int> ch = channels;
-                    pPct->ConfigureChannels(ch.data(), (int)ch.size());
-                    pPct->TakeReference(bOverride, ilValue, lengthValue);
-                }
-                else
-                {
-                    for (size_t i = 0; i < channels.size() && !pStop->load(); ++i)
-                    {
-                        int ch = channels[i];
-                        if (useOsw1) { pOsw1->SwitchChannel(osw1DeviceNum, ch); }
-                        if (useOsw2) { pOsw2->SwitchChannel(osw2DeviceNum, ch); }
-                        if (useOsw1) { pOsw1->WaitForIdle(5000); }
-                        if (useOsw2) { pOsw2->WaitForIdle(5000); }
-                        std::vector<int> singleCh = { ch };
-                        pPct->ConfigureChannels(singleCh.data(), 1);
-                        pPct->TakeReference(bOverride, ilValue, lengthValue);
-                    }
-                }
-
-                if (pStop->load()) break;
-                log += _T("  Zeroing done.\r\n");
-
-                // Phase 2: Measurement
-                allResults.clear();
-                if (!useOsw)
-                {
-                    std::vector<int> ch = channels;
-                    pPct->ConfigureChannels(ch.data(), (int)ch.size());
-                    if (pPct->TakeMeasurement())
-                    {
-                        PCTMeasurementResult buf[256];
-                        int count = pPct->GetResults(buf, 256);
-                        allResults.assign(buf, buf + count);
-                    }
-                }
-                else
-                {
-                    for (size_t i = 0; i < channels.size() && !pStop->load(); ++i)
-                    {
-                        int ch = channels[i];
-                        if (useOsw1) { pOsw1->SwitchChannel(osw1DeviceNum, ch); }
-                        if (useOsw2) { pOsw2->SwitchChannel(osw2DeviceNum, ch); }
-                        if (useOsw1) { pOsw1->WaitForIdle(5000); }
-                        if (useOsw2) { pOsw2->WaitForIdle(5000); }
-                        std::vector<int> singleCh = { ch };
-                        pPct->ConfigureChannels(singleCh.data(), 1);
-                        if (pPct->TakeMeasurement())
-                        {
-                            PCTMeasurementResult buf[256];
-                            int count = pPct->GetResults(buf, 256);
-                            for (int j = 0; j < count; ++j)
-                                allResults.push_back(buf[j]);
-                        }
-                    }
-                }
-
-                CString measLog;
-                measLog.Format(_T("  Measurement done: %d result(s).\r\n"),
-                               (int)allResults.size());
-                log += measLog;
-            }
-
-            r->results = allResults;
-            r->hasResults = true;
-            r->success = true;
-
-            CString summary;
-            summary.Format(_T("=== Continuous Test Stopped after %d iteration(s) ==="),
-                           iteration);
-            r->logMessage = summary + _T("\r\n") + log;
-            r->statusText = _T("Continuous Test Done");
-        }
-        catch (...)
-        {
-            r->logMessage = _T("Continuous test error.");
-            r->statusText = _T("Continuous Test Error");
-        }
-        return r;
-    });
-}
-
 void CViaviAppDlg::OnBnClickedStop()
 {
     m_bStopRequested = true;
@@ -1284,7 +1148,6 @@ void CViaviAppDlg::EnableControls()
     // Operations: require at least PCT connected
     GetDlgItem(IDC_BTN_ZEROING)->EnableWindow(!m_bBusy && pctOnly);
     GetDlgItem(IDC_BTN_MEASURE)->EnableWindow(!m_bBusy && pctOnly);
-    GetDlgItem(IDC_BTN_CONTINUOUS)->EnableWindow(!m_bBusy && pctOnly);
     GetDlgItem(IDC_BTN_STOP)->EnableWindow(m_bBusy);
 
     // Update status labels
