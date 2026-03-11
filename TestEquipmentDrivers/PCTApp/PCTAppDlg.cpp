@@ -77,10 +77,11 @@ void CPCTAppDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_COMBO_ADDR, m_comboAddr);
     DDX_Control(pDX, IDC_EDIT_PORT, m_editPort);
     DDX_Control(pDX, IDC_CHECK_1310, m_check1310);
+    DDX_Control(pDX, IDC_CHECK_1450, m_check1450);
     DDX_Control(pDX, IDC_CHECK_1550, m_check1550);
-    DDX_Control(pDX, IDC_EDIT_OPM, m_editOpmIndex);
-    DDX_Control(pDX, IDC_COMBO_CONN_MODE, m_comboConnMode);
-    DDX_Control(pDX, IDC_EDIT_LAUNCH, m_editLaunchPort);
+    DDX_Control(pDX, IDC_CHECK_1625, m_check1625);
+    DDX_Control(pDX, IDC_RADIO_J1, m_radioJ1);
+    DDX_Control(pDX, IDC_RADIO_J2, m_radioJ2);
     DDX_Control(pDX, IDC_EDIT_CH_FROM, m_editChFrom);
     DDX_Control(pDX, IDC_EDIT_CH_TO, m_editChTo);
     DDX_Control(pDX, IDC_EDIT_AVG_TIME, m_editAvgTime);
@@ -103,15 +104,13 @@ BOOL CPCTAppDlg::OnInitDialog()
     m_editPort.SetWindowText(_T("8301"));
 
     m_check1310.SetCheck(BST_CHECKED);
+    m_check1450.SetCheck(BST_UNCHECKED);
     m_check1550.SetCheck(BST_CHECKED);
-    m_editOpmIndex.SetWindowText(_T("1"));
-    m_comboConnMode.AddString(_T("1 - Single MTJ"));
-    m_comboConnMode.AddString(_T("2 - Dual MTJ"));
-    m_comboConnMode.SetCurSel(0);
-    m_editLaunchPort.SetWindowText(_T("1"));
+    m_check1625.SetCheck(BST_UNCHECKED);
+    m_radioJ1.SetCheck(BST_CHECKED);
     m_editChFrom.SetWindowText(_T("1"));
-    m_editChTo.SetWindowText(_T("12"));
-    m_editAvgTime.SetWindowText(_T("5"));
+    m_editChTo.SetWindowText(_T("24"));
+    m_editAvgTime.SetWindowText(_T("2"));
 
     m_listResults.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
     m_listResults.InsertColumn(0, _T("CH"), LVCFMT_CENTER, 40);
@@ -302,12 +301,16 @@ void CPCTAppDlg::OnBnClickedDisconnect()
 std::string CPCTAppDlg::BuildSourceList()
 {
     std::string wl;
-    if (m_check1310.GetCheck() == BST_CHECKED) wl += "1310";
-    if (m_check1550.GetCheck() == BST_CHECKED)
-    {
-        if (!wl.empty()) wl += ",";
-        wl += "1550";
-    }
+    auto append = [&](const char* nm, CButton& chk) {
+        if (chk.GetCheck() == BST_CHECKED) {
+            if (!wl.empty()) wl += ",";
+            wl += nm;
+        }
+    };
+    append("1310", m_check1310);
+    append("1450", m_check1450);
+    append("1550", m_check1550);
+    append("1625", m_check1625);
     if (wl.empty()) wl = "1310,1550";
     return wl;
 }
@@ -325,6 +328,112 @@ std::string CPCTAppDlg::BuildPathListChannels()
     char buf[64];
     sprintf_s(buf, "%d-%d", from, to);
     return std::string(buf);
+}
+
+// ---------------------------------------------------------------------------
+// Helper: parse a comma-separated response with wavelength markers into
+// a vector of doubles per wavelength. Returns map[wlIndex] = value.
+// Response format: "WL1,val1,...,WL2,val2,..." or just "val1,val2,..."
+// ---------------------------------------------------------------------------
+
+static std::vector<double> ParsePerWLResponse(const std::string& response)
+{
+    std::vector<double> vals;
+    std::istringstream iss(response);
+    std::string token;
+    while (std::getline(iss, token, ','))
+    {
+        if (token.empty() || token.find_first_not_of(" \t") == std::string::npos)
+            vals.push_back(NAN);
+        else
+        {
+            try { vals.push_back(std::stod(token)); }
+            catch (...) { vals.push_back(NAN); }
+        }
+    }
+    return vals;
+}
+
+// ---------------------------------------------------------------------------
+// Helper: fetch complete results for a channel range.
+// Queries :MEAS:ALL?, :MEAS:POW?, :MEAS:LENG? and merges them.
+// ---------------------------------------------------------------------------
+
+static std::vector<CPCTAppDlg::MeasResult> FetchChannelResults(
+    CPCT4AllDllLoader* pLoader, int chFrom, int chTo,
+    std::atomic<bool>* pStop, CString& log)
+{
+    std::vector<CPCTAppDlg::MeasResult> allResults;
+
+    for (int ch = chFrom; ch <= chTo; ++ch)
+    {
+        if (pStop->load()) break;
+
+        char queryCmd[64];
+        sprintf_s(queryCmd, ":MEAS:ALL? %d", ch);
+        char response[4096] = {};
+        BOOL ok = pLoader->SendCommand(queryCmd, response, sizeof(response));
+
+        if (ok && response[0] != '\0')
+        {
+            std::vector<CPCTAppDlg::MeasResult> chResults =
+                CPCTAppDlg::ParseMeasureAllResponse(std::string(response), ch);
+            allResults.insert(allResults.end(), chResults.begin(), chResults.end());
+
+            CString resMsg;
+            resMsg.Format(_T("  CH %d: %d result(s)\r\n"), ch, (int)chResults.size());
+            log += resMsg;
+        }
+        else
+        {
+            CString failMsg;
+            failMsg.Format(_T("  CH %d: no data\r\n"), ch);
+            log += failMsg;
+        }
+    }
+
+    // Query Power and Length for all channels and merge
+    char powResp[8192] = {};
+    char lenResp[8192] = {};
+    pLoader->SendCommand(":MEAS:POW?", powResp, sizeof(powResp));
+    pLoader->SendCommand(":MEAS:LENG?", lenResp, sizeof(lenResp));
+
+    if (powResp[0] != '\0')
+    {
+        std::vector<double> powVals = ParsePerWLResponse(std::string(powResp));
+        // Power response may have WL markers or be flat values per channel/WL
+        // Try to match: strip WL markers, collect only data values
+        std::vector<double> powData;
+        for (size_t i = 0; i < powVals.size(); ++i)
+        {
+            if (!std::isnan(powVals[i]) && powVals[i] >= 1000.0)
+                continue;  // skip wavelength markers
+            powData.push_back(powVals[i]);
+        }
+        // If no WL markers found, use all values as-is
+        if (powData.empty()) powData = powVals;
+
+        for (size_t i = 0; i < allResults.size() && i < powData.size(); ++i)
+            allResults[i].power = powData[i];
+    }
+
+    if (lenResp[0] != '\0')
+    {
+        std::vector<double> lenVals = ParsePerWLResponse(std::string(lenResp));
+        std::vector<double> lenData;
+        for (size_t i = 0; i < lenVals.size(); ++i)
+        {
+            if (!std::isnan(lenVals[i]) && lenVals[i] >= 1000.0)
+                continue;
+            lenData.push_back(lenVals[i]);
+        }
+        if (lenData.empty()) lenData = lenVals;
+
+        for (size_t i = 0; i < allResults.size() && i < lenData.size(); ++i)
+            allResults[i].dutLength = lenData[i];
+    }
+
+    return allResults;
 }
 
 // ---------------------------------------------------------------------------
@@ -349,18 +458,18 @@ void CPCTAppDlg::OnBnClickedZeroing()
     std::string sourceList = BuildSourceList();
     std::string pathChannels = BuildPathListChannels();
 
-    CString opmStr, launchStr, avgStr;
-    m_editOpmIndex.GetWindowText(opmStr);
-    m_editLaunchPort.GetWindowText(launchStr);
+    CString avgStr, fromStr, toStr;
     m_editAvgTime.GetWindowText(avgStr);
-    int opmIndex = _ttoi(opmStr);
-    int launchPort = _ttoi(launchStr);
+    m_editChFrom.GetWindowText(fromStr);
+    m_editChTo.GetWindowText(toStr);
+    int launchPort = (m_radioJ2.GetCheck() == BST_CHECKED) ? 2 : 1;
     int avgTime = _ttoi(avgStr);
-    int connMode = m_comboConnMode.GetCurSel() + 1;
+    int chFrom = _ttoi(fromStr);
+    int chTo = _ttoi(toStr);
 
-    if (opmIndex < 1) opmIndex = 1;
-    if (launchPort < 1) launchPort = 1;
     if (avgTime < 1) avgTime = 5;
+    if (chFrom < 1) chFrom = 1;
+    if (chTo < chFrom) chTo = chFrom;
 
     AppendLog(_T("=== Zeroing (Reference) Started ==="));
 
@@ -369,8 +478,8 @@ void CPCTAppDlg::OnBnClickedZeroing()
     m_bStopRequested = false;
 
     RunAsync(_T("Zeroing..."),
-        [pLoader, sourceList, pathChannels, opmIndex, launchPort,
-         avgTime, connMode, pStop]() -> WorkerResult*
+        [pLoader, sourceList, pathChannels, launchPort,
+         avgTime, chFrom, chTo, pStop]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
         CString log;
@@ -381,22 +490,18 @@ void CPCTAppDlg::OnBnClickedZeroing()
             pLoader->SetFunction(0);
             log += _T("  SENSe:FUNCtion 0 (Reference)\r\n");
 
-            char opmCmd[64];
-            sprintf_s(opmCmd, ":SENS:OPM %d", opmIndex);
-            pLoader->SendWrite(opmCmd);
-            CString opmMsg; opmMsg.Format(_T("  SENSe:OPM %d\r\n"), opmIndex);
-            log += opmMsg;
+            pLoader->SendWrite(":SENS:OPM 1");
+            log += _T("  SENSe:OPM 1\r\n");
 
             pLoader->SetSourceList(sourceList.c_str());
             CString slMsg; slMsg.Format(_T("  SOURce:LIST %s\r\n"), (LPCTSTR)Utf8ToWide(sourceList.c_str()));
             log += slMsg;
 
-            pLoader->SetConnection(connMode);
-            CString cmMsg; cmMsg.Format(_T("  PATH:CONNection %d\r\n"), connMode);
-            log += cmMsg;
+            pLoader->SetConnection(1);
+            log += _T("  PATH:CONNection 1 (Single MTJ)\r\n");
 
             pLoader->SetLaunch(launchPort);
-            CString lpMsg; lpMsg.Format(_T("  PATH:LAUNch %d\r\n"), launchPort);
+            CString lpMsg; lpMsg.Format(_T("  PATH:LAUNch %d (J%d)\r\n"), launchPort, launchPort);
             log += lpMsg;
 
             char plCmd[128];
@@ -443,7 +548,16 @@ void CPCTAppDlg::OnBnClickedZeroing()
             else if (state == 1)
             {
                 log += _T("  MEASure:STATe = 1 (IDLE) - Reference OK\r\n");
+
+                std::vector<MeasResult> allResults =
+                    FetchChannelResults(pLoader, chFrom, chTo, pStop, log);
+
                 r->success = true;
+                r->hasResults = true;
+                r->results = allResults;
+                CString summary;
+                summary.Format(_T("  Zeroing results: %d entries\r\n"), (int)allResults.size());
+                log += summary;
                 r->statusText = _T("Zeroing Done - Ready");
             }
             else
@@ -484,21 +598,15 @@ void CPCTAppDlg::OnBnClickedMeasure()
     std::string sourceList = BuildSourceList();
     std::string pathChannels = BuildPathListChannels();
 
-    CString opmStr, launchStr, avgStr, fromStr, toStr;
-    m_editOpmIndex.GetWindowText(opmStr);
-    m_editLaunchPort.GetWindowText(launchStr);
+    CString avgStr, fromStr, toStr;
     m_editAvgTime.GetWindowText(avgStr);
     m_editChFrom.GetWindowText(fromStr);
     m_editChTo.GetWindowText(toStr);
-    int opmIndex = _ttoi(opmStr);
-    int launchPort = _ttoi(launchStr);
+    int launchPort = (m_radioJ2.GetCheck() == BST_CHECKED) ? 2 : 1;
     int avgTime = _ttoi(avgStr);
-    int connMode = m_comboConnMode.GetCurSel() + 1;
     int chFrom = _ttoi(fromStr);
     int chTo = _ttoi(toStr);
 
-    if (opmIndex < 1) opmIndex = 1;
-    if (launchPort < 1) launchPort = 1;
     if (avgTime < 1) avgTime = 5;
     if (chFrom < 1) chFrom = 1;
     if (chTo < chFrom) chTo = chFrom;
@@ -510,8 +618,8 @@ void CPCTAppDlg::OnBnClickedMeasure()
     m_bStopRequested = false;
 
     RunAsync(_T("Measuring..."),
-        [pLoader, sourceList, pathChannels, opmIndex, launchPort,
-         avgTime, connMode, chFrom, chTo, pStop]() -> WorkerResult*
+        [pLoader, sourceList, pathChannels, launchPort,
+         avgTime, chFrom, chTo, pStop]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
         CString log;
@@ -522,20 +630,18 @@ void CPCTAppDlg::OnBnClickedMeasure()
             pLoader->SetFunction(1);
             log += _T("  SENSe:FUNCtion 1 (DUT)\r\n");
 
-            char opmCmd[64];
-            sprintf_s(opmCmd, ":SENS:OPM %d", opmIndex);
-            pLoader->SendWrite(opmCmd);
+            pLoader->SendWrite(":SENS:OPM 1");
 
             pLoader->SetSourceList(sourceList.c_str());
-            pLoader->SetConnection(connMode);
+            pLoader->SetConnection(1);
             pLoader->SetLaunch(launchPort);
             pLoader->SetPathList(1, pathChannels.c_str());
             pLoader->SetAveragingTime(avgTime);
 
             CString setupMsg;
-            setupMsg.Format(_T("  Setup: OPM=%d, Source=%s, Conn=%d, Launch=%d, SW1=%s, Avg=%ds\r\n"),
-                opmIndex, (LPCTSTR)Utf8ToWide(sourceList.c_str()),
-                connMode, launchPort,
+            setupMsg.Format(_T("  Setup: OPM=1, Source=%s, Conn=1(Single), Launch=J%d, SW1=%s, Avg=%ds\r\n"),
+                (LPCTSTR)Utf8ToWide(sourceList.c_str()),
+                launchPort,
                 (LPCTSTR)Utf8ToWide(pathChannels.c_str()), avgTime);
             log += setupMsg;
 
@@ -589,37 +695,9 @@ void CPCTAppDlg::OnBnClickedMeasure()
 
             log += _T("  MEASure:STATe = 1 (IDLE) - Acquisition complete.\r\n");
 
-            // -- Get Results --
-            std::vector<MeasResult> allResults;
-
-            for (int ch = chFrom; ch <= chTo; ++ch)
-            {
-                if (pStop->load()) break;
-
-                char queryCmd[64];
-                sprintf_s(queryCmd, ":MEAS:ALL? %d", ch);
-                char response[4096] = {};
-                BOOL ok = pLoader->SendCommand(queryCmd, response, sizeof(response));
-
-                if (ok && response[0] != '\0')
-                {
-                    std::vector<MeasResult> chResults =
-                        ParseMeasureAllResponse(std::string(response), ch);
-                    allResults.insert(allResults.end(), chResults.begin(), chResults.end());
-
-                    CString resMsg;
-                    resMsg.Format(_T("  CH %d: %d result(s) - raw: %s\r\n"),
-                        ch, (int)chResults.size(),
-                        (LPCTSTR)Utf8ToWide(response));
-                    log += resMsg;
-                }
-                else
-                {
-                    CString failMsg;
-                    failMsg.Format(_T("  CH %d: no data\r\n"), ch);
-                    log += failMsg;
-                }
-            }
+            // -- Get Results (ALL + Power + Length) --
+            std::vector<MeasResult> allResults =
+                FetchChannelResults(pLoader, chFrom, chTo, pStop, log);
 
             r->success = true;
             r->hasResults = true;
@@ -670,44 +748,53 @@ std::vector<CPCTAppDlg::MeasResult> CPCTAppDlg::ParseMeasureAllResponse(
     std::string token;
     while (std::getline(iss, token, ','))
     {
-        try { values.push_back(std::stod(token)); }
-        catch (...) { values.push_back(0.0); }
-    }
-
-    // Each wavelength block has 6 values: IL, ORL, Zone1, Zone2, Length, Power
-    const int FIELDS_PER_WL = 6;
-
-    if (values.size() >= (size_t)FIELDS_PER_WL)
-    {
-        size_t numWL = values.size() / FIELDS_PER_WL;
-        double wlList[] = { 1310.0, 1550.0, 1490.0, 1625.0 };
-
-        for (size_t w = 0; w < numWL && w < 4; ++w)
+        if (token.empty() || token.find_first_not_of(" \t") == std::string::npos)
+            values.push_back(NAN);
+        else
         {
-            size_t base = w * FIELDS_PER_WL;
-            MeasResult m;
-            m.channel = channel;
-            m.wavelength = (w < 4) ? wlList[w] : 0.0;
-            m.insertionLoss = values[base + 0];
-            m.returnLoss = values[base + 1];
-            m.orlZone1 = values[base + 2];
-            m.orlZone2 = values[base + 3];
-            m.dutLength = values[base + 4];
-            m.power = values[base + 5];
-            results.push_back(m);
+            try { values.push_back(std::stod(token)); }
+            catch (...) { values.push_back(NAN); }
         }
     }
-    else if (!values.empty())
+
+    // Response format: WL1,IL1,ORL1,Zone1_1,Zone2_1,WL2,IL2,ORL2,Zone1_2,Zone2_2,...
+    // Detect wavelength markers (>= 1000 nm) and split into per-WL blocks
+    std::vector<size_t> wlIndices;
+    for (size_t i = 0; i < values.size(); ++i)
+    {
+        if (!std::isnan(values[i]) && values[i] >= 1000.0)
+            wlIndices.push_back(i);
+    }
+
+    for (size_t w = 0; w < wlIndices.size(); ++w)
+    {
+        size_t start = wlIndices[w];
+        size_t end = (w + 1 < wlIndices.size()) ? wlIndices[w + 1] : values.size();
+
+        MeasResult m;
+        m.channel = channel;
+        m.wavelength    = values[start];
+        m.insertionLoss = (start + 1 < end) ? values[start + 1] : NAN;
+        m.returnLoss    = (start + 2 < end) ? values[start + 2] : NAN;
+        m.orlZone1      = (start + 3 < end) ? values[start + 3] : NAN;
+        m.orlZone2      = (start + 4 < end) ? values[start + 4] : NAN;
+        m.dutLength     = (start + 5 < end) ? values[start + 5] : NAN;
+        m.power         = (start + 6 < end) ? values[start + 6] : NAN;
+
+        results.push_back(m);
+    }
+
+    if (wlIndices.empty() && !values.empty())
     {
         MeasResult m;
         m.channel = channel;
-        m.wavelength = 0.0;
-        m.insertionLoss = values.size() > 0 ? values[0] : 0.0;
-        m.returnLoss = values.size() > 1 ? values[1] : 0.0;
-        m.orlZone1 = values.size() > 2 ? values[2] : 0.0;
-        m.orlZone2 = values.size() > 3 ? values[3] : 0.0;
-        m.dutLength = values.size() > 4 ? values[4] : 0.0;
-        m.power = values.size() > 5 ? values[5] : 0.0;
+        m.wavelength = NAN;
+        m.insertionLoss = values.size() > 0 ? values[0] : NAN;
+        m.returnLoss = values.size() > 1 ? values[1] : NAN;
+        m.orlZone1 = values.size() > 2 ? values[2] : NAN;
+        m.orlZone2 = values.size() > 3 ? values[3] : NAN;
+        m.dutLength = values.size() > 4 ? values[4] : NAN;
+        m.power = values.size() > 5 ? values[5] : NAN;
         results.push_back(m);
     }
 
@@ -787,10 +874,11 @@ void CPCTAppDlg::EnableControls()
     GetDlgItem(IDC_BTN_DISCONNECT)->EnableWindow(!m_bBusy && m_bConnected);
 
     GetDlgItem(IDC_CHECK_1310)->EnableWindow(!m_bBusy);
+    GetDlgItem(IDC_CHECK_1450)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_CHECK_1550)->EnableWindow(!m_bBusy);
-    GetDlgItem(IDC_EDIT_OPM)->EnableWindow(!m_bBusy);
-    GetDlgItem(IDC_COMBO_CONN_MODE)->EnableWindow(!m_bBusy);
-    GetDlgItem(IDC_EDIT_LAUNCH)->EnableWindow(!m_bBusy);
+    GetDlgItem(IDC_CHECK_1625)->EnableWindow(!m_bBusy);
+    GetDlgItem(IDC_RADIO_J1)->EnableWindow(!m_bBusy);
+    GetDlgItem(IDC_RADIO_J2)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_EDIT_CH_FROM)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_EDIT_CH_TO)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_EDIT_AVG_TIME)->EnableWindow(!m_bBusy);
@@ -828,6 +916,12 @@ void CPCTAppDlg::OnBnClickedClearLog()
     m_editLog.SetWindowText(_T(""));
 }
 
+static CString FmtVal(double v, const TCHAR* fmt)
+{
+    if (std::isnan(v)) return _T("-");
+    CString s; s.Format(fmt, v); return s;
+}
+
 void CPCTAppDlg::PopulateResultsList(const std::vector<MeasResult>& results)
 {
     m_listResults.DeleteAllItems();
@@ -835,23 +929,16 @@ void CPCTAppDlg::PopulateResultsList(const std::vector<MeasResult>& results)
     for (size_t i = 0; i < results.size(); ++i)
     {
         const MeasResult& res = results[i];
-        CString chStr, wlStr, ilStr, orlStr, z1Str, z2Str, lenStr, pwrStr;
+        CString chStr;
         chStr.Format(_T("%d"), res.channel);
-        wlStr.Format(_T("%.0f"), res.wavelength);
-        ilStr.Format(_T("%.3f"), res.insertionLoss);
-        orlStr.Format(_T("%.2f"), res.returnLoss);
-        z1Str.Format(_T("%.2f"), res.orlZone1);
-        z2Str.Format(_T("%.2f"), res.orlZone2);
-        lenStr.Format(_T("%.2f"), res.dutLength);
-        pwrStr.Format(_T("%.2f"), res.power);
 
         int idx = m_listResults.InsertItem(static_cast<int>(i), chStr);
-        m_listResults.SetItemText(idx, 1, wlStr);
-        m_listResults.SetItemText(idx, 2, ilStr);
-        m_listResults.SetItemText(idx, 3, orlStr);
-        m_listResults.SetItemText(idx, 4, z1Str);
-        m_listResults.SetItemText(idx, 5, z2Str);
-        m_listResults.SetItemText(idx, 6, lenStr);
-        m_listResults.SetItemText(idx, 7, pwrStr);
+        m_listResults.SetItemText(idx, 1, FmtVal(res.wavelength, _T("%.0f")));
+        m_listResults.SetItemText(idx, 2, FmtVal(res.insertionLoss, _T("%.3f")));
+        m_listResults.SetItemText(idx, 3, FmtVal(res.returnLoss, _T("%.2f")));
+        m_listResults.SetItemText(idx, 4, FmtVal(res.orlZone1, _T("%.2f")));
+        m_listResults.SetItemText(idx, 5, FmtVal(res.orlZone2, _T("%.2f")));
+        m_listResults.SetItemText(idx, 6, FmtVal(res.dutLength, _T("%.2f")));
+        m_listResults.SetItemText(idx, 7, FmtVal(res.power, _T("%.2f")));
     }
 }

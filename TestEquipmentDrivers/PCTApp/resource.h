@@ -17,10 +17,11 @@
 
 // Configuration
 #define IDC_CHECK_1310                  1020
-#define IDC_CHECK_1550                  1021
-#define IDC_EDIT_OPM                    1022
-#define IDC_COMBO_CONN_MODE             1023
-#define IDC_EDIT_LAUNCH                 1024
+#define IDC_CHECK_1450                  1021
+#define IDC_CHECK_1550                  1029
+#define IDC_CHECK_1625                  1030
+#define IDC_RADIO_J1                    1022
+#define IDC_RADIO_J2                    1023
 #define IDC_EDIT_CH_FROM                1025
 #define IDC_EDIT_CH_TO                  1026
 #define IDC_EDIT_AVG_TIME               1027

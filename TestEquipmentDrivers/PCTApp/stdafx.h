@@ -28,3 +28,4 @@
 #include <thread>
 #include <functional>
 #include <atomic>
+#include <cmath>

@@ -18,6 +18,21 @@ public:
 
     enum { IDD = IDD_PCTAPP_DIALOG };
 
+    struct MeasResult
+    {
+        int    channel;
+        double wavelength;
+        double insertionLoss;
+        double returnLoss;
+        double orlZone1;
+        double orlZone2;
+        double dutLength;
+        double power;
+    };
+
+    static std::vector<MeasResult> ParseMeasureAllResponse(
+        const std::string& response, int channel);
+
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);
     virtual BOOL OnInitDialog();
@@ -47,22 +62,7 @@ private:
     std::string BuildSourceList();
     std::string BuildPathListChannels();
 
-    struct MeasResult
-    {
-        int    channel;
-        double wavelength;
-        double insertionLoss;
-        double returnLoss;
-        double orlZone1;
-        double orlZone2;
-        double dutLength;
-        double power;
-    };
-
     void PopulateResultsList(const std::vector<MeasResult>& results);
-
-    static std::vector<MeasResult> ParseMeasureAllResponse(
-        const std::string& response, int channel);
 
     struct WorkerResult
     {
@@ -83,10 +83,11 @@ private:
 
     // Configuration controls
     CButton     m_check1310;
+    CButton     m_check1450;
     CButton     m_check1550;
-    CEdit       m_editOpmIndex;
-    CComboBox   m_comboConnMode;
-    CEdit       m_editLaunchPort;
+    CButton     m_check1625;
+    CButton     m_radioJ1;
+    CButton     m_radioJ2;
     CEdit       m_editChFrom;
     CEdit       m_editChTo;
     CEdit       m_editAvgTime;
