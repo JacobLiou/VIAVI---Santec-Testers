@@ -486,7 +486,7 @@ static std::vector<CPCTAppDlg::MeasResult> FetchChannelResults(
                 if (ok && response[0] != '\0')
                 {
                     std::vector<CPCTAppDlg::MeasResult> chResults =
-                        CPCTAppDlg::ParseMeasureAllResponse(std::string(response), rch);
+                        CPCTAppDlg::ParseMeasureAllResponse(std::string(response), rch, connMode);
                     for (auto& r : chResults) r.channel = lch * 100 + rch;
                     allResults.insert(allResults.end(), chResults.begin(), chResults.end());
 
@@ -518,7 +518,7 @@ static std::vector<CPCTAppDlg::MeasResult> FetchChannelResults(
             if (ok && response[0] != '\0')
             {
                 std::vector<CPCTAppDlg::MeasResult> chResults =
-                    CPCTAppDlg::ParseMeasureAllResponse(std::string(response), ch);
+                    CPCTAppDlg::ParseMeasureAllResponse(std::string(response), ch, connMode);
                 allResults.insert(allResults.end(), chResults.begin(), chResults.end());
 
                 CString resMsg;
@@ -975,7 +975,7 @@ void CPCTAppDlg::OnBnClickedStop()
 // ---------------------------------------------------------------------------
 
 std::vector<CPCTAppDlg::MeasResult> CPCTAppDlg::ParseMeasureAllResponse(
-    const std::string& response, int channel)
+    const std::string& response, int channel, int connMode)
 {
     std::vector<MeasResult> results;
 
@@ -993,8 +993,14 @@ std::vector<CPCTAppDlg::MeasResult> CPCTAppDlg::ParseMeasureAllResponse(
         }
     }
 
-    // Response format: WL1,IL1,ORL1,Zone1_1,Zone2_1,WL2,IL2,ORL2,Zone1_2,Zone2_2,...
-    // Detect wavelength markers (>= 1000 nm) and split into per-WL blocks
+    // std::getline drops the last empty token after a trailing comma;
+    // add it back so every WL block has a consistent field count.
+    std::string trimmed = response;
+    while (!trimmed.empty() && (trimmed.back() == '\r' || trimmed.back() == '\n' || trimmed.back() == ' '))
+        trimmed.pop_back();
+    if (!trimmed.empty() && trimmed.back() == ',')
+        values.push_back(NAN);
+
     std::vector<size_t> wlIndices;
     for (size_t i = 0; i < values.size(); ++i)
     {
@@ -1006,16 +1012,33 @@ std::vector<CPCTAppDlg::MeasResult> CPCTAppDlg::ParseMeasureAllResponse(
     {
         size_t start = wlIndices[w];
         size_t end = (w + 1 < wlIndices.size()) ? wlIndices[w + 1] : values.size();
+        size_t blockSize = end - start;
 
         MeasResult m;
         m.channel = channel;
-        m.wavelength    = values[start];
-        m.insertionLoss = (start + 1 < end) ? values[start + 1] : NAN;
-        m.returnLoss    = (start + 2 < end) ? values[start + 2] : NAN;
-        m.orlZone1      = (start + 3 < end) ? values[start + 3] : NAN;
-        m.orlZone2      = (start + 4 < end) ? values[start + 4] : NAN;
-        m.dutLength     = (start + 5 < end) ? values[start + 5] : NAN;
-        m.power         = (start + 6 < end) ? values[start + 6] : NAN;
+        m.wavelength = values[start];
+
+        if (blockSize <= 4)
+        {
+            // Compact format: WL, Power, IL, Length
+            m.power         = (start + 1 < end) ? values[start + 1] : NAN;
+            m.insertionLoss = (start + 2 < end) ? values[start + 2] : NAN;
+            m.dutLength     = (start + 3 < end) ? values[start + 3] : NAN;
+            m.returnLoss    = NAN;
+            m.orlZone1      = NAN;
+            m.orlZone2      = NAN;
+        }
+        else
+        {
+            // Standard format: WL, IL, ORL, Zone1, Zone2, Length, Power
+            m.insertionLoss = (start + 1 < end) ? values[start + 1] : NAN;
+            m.returnLoss    = (start + 2 < end) ? values[start + 2] : NAN;
+            m.orlZone1      = (start + 3 < end) ? values[start + 3] : NAN;
+            m.orlZone2      = (start + 4 < end) ? values[start + 4] : NAN;
+            m.dutLength     = (start + 5 < end) ? values[start + 5] : NAN;
+            m.power         = (start + 6 < end) ? values[start + 6] : NAN;
+        }
+
 
         results.push_back(m);
     }

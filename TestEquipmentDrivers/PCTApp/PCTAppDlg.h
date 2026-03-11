@@ -31,7 +31,7 @@ public:
     };
 
     static std::vector<MeasResult> ParseMeasureAllResponse(
-        const std::string& response, int channel);
+        const std::string& response, int channel, int connMode = 0);
 
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);
