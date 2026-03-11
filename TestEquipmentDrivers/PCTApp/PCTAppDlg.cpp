@@ -90,7 +90,8 @@ void CPCTAppDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_RADIO_DUAL_J1, m_radioDualJ1);
     DDX_Control(pDX, IDC_RADIO_DUAL_J2, m_radioDualJ2);
     DDX_Control(pDX, IDC_CHECK_BIDIR, m_checkBiDir);
-    DDX_Control(pDX, IDC_EDIT_SW1_CH, m_editSW1Ch);
+    DDX_Control(pDX, IDC_EDIT_SW1_FROM, m_editSW1From);
+    DDX_Control(pDX, IDC_EDIT_SW1_TO, m_editSW1To);
     DDX_Control(pDX, IDC_EDIT_SW2_FROM, m_editSW2From);
     DDX_Control(pDX, IDC_EDIT_SW2_TO, m_editSW2To);
     DDX_Control(pDX, IDC_LIST_RESULTS, m_listResults);
@@ -127,7 +128,8 @@ BOOL CPCTAppDlg::OnInitDialog()
 
     m_radioDualJ1.SetCheck(BST_CHECKED);
     m_checkBiDir.SetCheck(BST_UNCHECKED);
-    m_editSW1Ch.SetWindowText(_T("1"));
+    m_editSW1From.SetWindowText(_T("1"));
+    m_editSW1To.SetWindowText(_T("24"));
     m_editSW2From.SetWindowText(_T("1"));
     m_editSW2To.SetWindowText(_T("24"));
 
@@ -354,6 +356,24 @@ std::string CPCTAppDlg::BuildPathListChannels()
     return std::string(buf);
 }
 
+std::string CPCTAppDlg::BuildDualSW1Channels()
+{
+    CString fromStr, toStr;
+    m_editSW1From.GetWindowText(fromStr);
+    m_editSW1To.GetWindowText(toStr);
+    int from = _ttoi(fromStr);
+    int to = _ttoi(toStr);
+    if (from < 1) from = 1;
+    if (to < from) to = from;
+
+    char buf[64];
+    if (from == to)
+        sprintf_s(buf, "%d", from);
+    else
+        sprintf_s(buf, "%d-%d", from, to);
+    return std::string(buf);
+}
+
 std::string CPCTAppDlg::BuildDualSW2Channels()
 {
     CString fromStr, toStr;
@@ -399,7 +419,9 @@ void CPCTAppDlg::ShowTabControls(int tab)
     GetDlgItem(IDC_RADIO_DUAL_J2)->ShowWindow(showDual);
     GetDlgItem(IDC_CHECK_BIDIR)->ShowWindow(showDual);
     GetDlgItem(IDC_STATIC_SW1_LABEL)->ShowWindow(showDual);
-    GetDlgItem(IDC_EDIT_SW1_CH)->ShowWindow(showDual);
+    GetDlgItem(IDC_EDIT_SW1_FROM)->ShowWindow(showDual);
+    GetDlgItem(IDC_STATIC_SW1_TO)->ShowWindow(showDual);
+    GetDlgItem(IDC_EDIT_SW1_TO)->ShowWindow(showDual);
     GetDlgItem(IDC_STATIC_SW2_LABEL)->ShowWindow(showDual);
     GetDlgItem(IDC_EDIT_SW2_FROM)->ShowWindow(showDual);
     GetDlgItem(IDC_STATIC_SW2_TO)->ShowWindow(showDual);
@@ -443,38 +465,72 @@ static std::vector<double> ParsePerWLResponse(const std::string& response)
 
 static std::vector<CPCTAppDlg::MeasResult> FetchChannelResults(
     CPCT4AllDllLoader* pLoader, int chFrom, int chTo,
-    int connMode, int launchCh,
+    int connMode, int launchFrom, int launchTo,
     std::atomic<bool>* pStop, CString& log)
 {
     std::vector<CPCTAppDlg::MeasResult> allResults;
 
-    for (int ch = chFrom; ch <= chTo; ++ch)
+    if (connMode == 2)
     {
-        if (pStop->load()) break;
-
-        char queryCmd[64];
-        if (connMode == 2)
-            sprintf_s(queryCmd, ":MEAS:ALL? %d,%d", launchCh, ch);
-        else
-            sprintf_s(queryCmd, ":MEAS:ALL? %d", ch);
-        char response[4096] = {};
-        BOOL ok = pLoader->SendCommand(queryCmd, response, sizeof(response));
-
-        if (ok && response[0] != '\0')
+        for (int lch = launchFrom; lch <= launchTo; ++lch)
         {
-            std::vector<CPCTAppDlg::MeasResult> chResults =
-                CPCTAppDlg::ParseMeasureAllResponse(std::string(response), ch);
-            allResults.insert(allResults.end(), chResults.begin(), chResults.end());
+            for (int rch = chFrom; rch <= chTo; ++rch)
+            {
+                if (pStop->load()) break;
 
-            CString resMsg;
-            resMsg.Format(_T("  CH %d: %d result(s)\r\n"), ch, (int)chResults.size());
-            log += resMsg;
+                char queryCmd[64];
+                sprintf_s(queryCmd, ":MEAS:ALL? %d,%d", lch, rch);
+                char response[4096] = {};
+                BOOL ok = pLoader->SendCommand(queryCmd, response, sizeof(response));
+
+                if (ok && response[0] != '\0')
+                {
+                    std::vector<CPCTAppDlg::MeasResult> chResults =
+                        CPCTAppDlg::ParseMeasureAllResponse(std::string(response), rch);
+                    for (auto& r : chResults) r.channel = lch * 100 + rch;
+                    allResults.insert(allResults.end(), chResults.begin(), chResults.end());
+
+                    CString resMsg;
+                    resMsg.Format(_T("  L%d-R%d: %d result(s)\r\n"), lch, rch, (int)chResults.size());
+                    log += resMsg;
+                }
+                else
+                {
+                    CString failMsg;
+                    failMsg.Format(_T("  L%d-R%d: no data\r\n"), lch, rch);
+                    log += failMsg;
+                }
+            }
+            if (pStop->load()) break;
         }
-        else
+    }
+    else
+    {
+        for (int ch = chFrom; ch <= chTo; ++ch)
         {
-            CString failMsg;
-            failMsg.Format(_T("  CH %d: no data\r\n"), ch);
-            log += failMsg;
+            if (pStop->load()) break;
+
+            char queryCmd[64];
+            sprintf_s(queryCmd, ":MEAS:ALL? %d", ch);
+            char response[4096] = {};
+            BOOL ok = pLoader->SendCommand(queryCmd, response, sizeof(response));
+
+            if (ok && response[0] != '\0')
+            {
+                std::vector<CPCTAppDlg::MeasResult> chResults =
+                    CPCTAppDlg::ParseMeasureAllResponse(std::string(response), ch);
+                allResults.insert(allResults.end(), chResults.begin(), chResults.end());
+
+                CString resMsg;
+                resMsg.Format(_T("  CH %d: %d result(s)\r\n"), ch, (int)chResults.size());
+                log += resMsg;
+            }
+            else
+            {
+                CString failMsg;
+                failMsg.Format(_T("  CH %d: no data\r\n"), ch);
+                log += failMsg;
+            }
         }
     }
 
@@ -626,7 +682,8 @@ void CPCTAppDlg::OnBnClickedZeroing()
     int avgTime = _ttoi(avgStr);
     if (avgTime < 1) avgTime = 2;
 
-    int connMode, launchPort, chFrom, chTo, dualLaunchCh = 0, bidir = 0;
+    int connMode, launchPort, chFrom, chTo, bidir = 0;
+    int dualLaunchFrom = 0, dualLaunchTo = 0;
     std::string sw1Channels, sw2Channels;
 
     if (tab == 0)
@@ -646,28 +703,29 @@ void CPCTAppDlg::OnBnClickedZeroing()
         launchPort = (m_radioDualJ2.GetCheck() == BST_CHECKED) ? 2 : 1;
         bidir = (m_checkBiDir.GetCheck() == BST_CHECKED) ? 1 : 0;
 
-        CString launchChStr;
-        m_editSW1Ch.GetWindowText(launchChStr);
-        int launchCh = _ttoi(launchChStr);
-        if (launchCh < 1) launchCh = 1;
-        dualLaunchCh = launchCh;
-        char launchChBuf[16]; sprintf_s(launchChBuf, "%d", launchCh);
-
+        std::string launchRange = BuildDualSW1Channels();
         std::string receiveRange = BuildDualSW2Channels();
 
         if (launchPort == 1) {
-            sw1Channels = launchChBuf;
+            sw1Channels = launchRange;
             sw2Channels = receiveRange;
         } else {
             sw1Channels = receiveRange;
-            sw2Channels = launchChBuf;
+            sw2Channels = launchRange;
         }
 
-        CString fromStr, toStr;
-        m_editSW2From.GetWindowText(fromStr);
-        m_editSW2To.GetWindowText(toStr);
-        chFrom = _ttoi(fromStr);
-        chTo = _ttoi(toStr);
+        CString lf, lt, rf, rt;
+        m_editSW1From.GetWindowText(lf);
+        m_editSW1To.GetWindowText(lt);
+        dualLaunchFrom = _ttoi(lf);
+        dualLaunchTo = _ttoi(lt);
+        if (dualLaunchFrom < 1) dualLaunchFrom = 1;
+        if (dualLaunchTo < dualLaunchFrom) dualLaunchTo = dualLaunchFrom;
+
+        m_editSW2From.GetWindowText(rf);
+        m_editSW2To.GetWindowText(rt);
+        chFrom = _ttoi(rf);
+        chTo = _ttoi(rt);
     }
 
     if (chFrom < 1) chFrom = 1;
@@ -681,7 +739,7 @@ void CPCTAppDlg::OnBnClickedZeroing()
 
     RunAsync(_T("Zeroing..."),
         [pLoader, sourceList, sw1Channels, sw2Channels, connMode,
-         launchPort, avgTime, chFrom, chTo, dualLaunchCh, bidir, pStop]() -> WorkerResult*
+         launchPort, avgTime, chFrom, chTo, dualLaunchFrom, dualLaunchTo, bidir, pStop]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
         CString log;
@@ -715,7 +773,7 @@ void CPCTAppDlg::OnBnClickedZeroing()
                 log += _T("  MEASure:STATe = 1 (IDLE) - Reference OK\r\n");
 
                 std::vector<MeasResult> allResults =
-                    FetchChannelResults(pLoader, chFrom, chTo, connMode, dualLaunchCh, pStop, log);
+                    FetchChannelResults(pLoader, chFrom, chTo, connMode, dualLaunchFrom, dualLaunchTo, pStop, log);
 
                 r->success = true;
                 r->hasResults = true;
@@ -770,7 +828,8 @@ void CPCTAppDlg::OnBnClickedMeasure()
     int avgTime = _ttoi(avgStr);
     if (avgTime < 1) avgTime = 2;
 
-    int connMode, launchPort, chFrom, chTo, dualLaunchCh = 0, bidir = 0;
+    int connMode, launchPort, chFrom, chTo, bidir = 0;
+    int dualLaunchFrom = 0, dualLaunchTo = 0;
     std::string sw1Channels, sw2Channels;
 
     if (tab == 0)
@@ -790,28 +849,29 @@ void CPCTAppDlg::OnBnClickedMeasure()
         launchPort = (m_radioDualJ2.GetCheck() == BST_CHECKED) ? 2 : 1;
         bidir = (m_checkBiDir.GetCheck() == BST_CHECKED) ? 1 : 0;
 
-        CString launchChStr;
-        m_editSW1Ch.GetWindowText(launchChStr);
-        int launchCh = _ttoi(launchChStr);
-        if (launchCh < 1) launchCh = 1;
-        dualLaunchCh = launchCh;
-        char launchChBuf[16]; sprintf_s(launchChBuf, "%d", launchCh);
-
+        std::string launchRange = BuildDualSW1Channels();
         std::string receiveRange = BuildDualSW2Channels();
 
         if (launchPort == 1) {
-            sw1Channels = launchChBuf;
+            sw1Channels = launchRange;
             sw2Channels = receiveRange;
         } else {
             sw1Channels = receiveRange;
-            sw2Channels = launchChBuf;
+            sw2Channels = launchRange;
         }
 
-        CString fromStr, toStr;
-        m_editSW2From.GetWindowText(fromStr);
-        m_editSW2To.GetWindowText(toStr);
-        chFrom = _ttoi(fromStr);
-        chTo = _ttoi(toStr);
+        CString lf, lt, rf, rt;
+        m_editSW1From.GetWindowText(lf);
+        m_editSW1To.GetWindowText(lt);
+        dualLaunchFrom = _ttoi(lf);
+        dualLaunchTo = _ttoi(lt);
+        if (dualLaunchFrom < 1) dualLaunchFrom = 1;
+        if (dualLaunchTo < dualLaunchFrom) dualLaunchTo = dualLaunchFrom;
+
+        m_editSW2From.GetWindowText(rf);
+        m_editSW2To.GetWindowText(rt);
+        chFrom = _ttoi(rf);
+        chTo = _ttoi(rt);
     }
 
     if (chFrom < 1) chFrom = 1;
@@ -825,7 +885,7 @@ void CPCTAppDlg::OnBnClickedMeasure()
 
     RunAsync(_T("Measuring..."),
         [pLoader, sourceList, sw1Channels, sw2Channels, connMode,
-         launchPort, avgTime, chFrom, chTo, dualLaunchCh, bidir, pStop]() -> WorkerResult*
+         launchPort, avgTime, chFrom, chTo, dualLaunchFrom, dualLaunchTo, bidir, pStop]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
         CString log;
@@ -873,7 +933,7 @@ void CPCTAppDlg::OnBnClickedMeasure()
             log += _T("  MEASure:STATe = 1 (IDLE) - Acquisition complete.\r\n");
 
             std::vector<MeasResult> allResults =
-                FetchChannelResults(pLoader, chFrom, chTo, connMode, dualLaunchCh, pStop, log);
+                FetchChannelResults(pLoader, chFrom, chTo, connMode, dualLaunchFrom, dualLaunchTo, pStop, log);
 
             r->success = true;
             r->hasResults = true;
@@ -1064,7 +1124,8 @@ void CPCTAppDlg::EnableControls()
     GetDlgItem(IDC_RADIO_DUAL_J1)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_RADIO_DUAL_J2)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_CHECK_BIDIR)->EnableWindow(!m_bBusy);
-    GetDlgItem(IDC_EDIT_SW1_CH)->EnableWindow(!m_bBusy);
+    GetDlgItem(IDC_EDIT_SW1_FROM)->EnableWindow(!m_bBusy);
+    GetDlgItem(IDC_EDIT_SW1_TO)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_EDIT_SW2_FROM)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_EDIT_SW2_TO)->EnableWindow(!m_bBusy);
 
@@ -1115,7 +1176,10 @@ void CPCTAppDlg::PopulateResultsList(const std::vector<MeasResult>& results)
     {
         const MeasResult& res = results[i];
         CString chStr;
-        chStr.Format(_T("%d"), res.channel);
+        if (res.channel > 100)
+            chStr.Format(_T("L%d-R%d"), res.channel / 100, res.channel % 100);
+        else
+            chStr.Format(_T("%d"), res.channel);
 
         int idx = m_listResults.InsertItem(static_cast<int>(i), chStr);
         m_listResults.SetItemText(idx, 1, FmtVal(res.wavelength, _T("%.0f")));

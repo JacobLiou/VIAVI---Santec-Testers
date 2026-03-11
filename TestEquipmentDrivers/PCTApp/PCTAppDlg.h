@@ -64,6 +64,7 @@ private:
 
     std::string BuildSourceList();
     std::string BuildPathListChannels();
+    std::string BuildDualSW1Channels();
     std::string BuildDualSW2Channels();
 
     void PopulateResultsList(const std::vector<MeasResult>& results);
@@ -105,7 +106,8 @@ private:
     CButton     m_radioDualJ1;
     CButton     m_radioDualJ2;
     CButton     m_checkBiDir;
-    CEdit       m_editSW1Ch;
+    CEdit       m_editSW1From;
+    CEdit       m_editSW1To;
     CEdit       m_editSW2From;
     CEdit       m_editSW2To;
 
