@@ -9,6 +9,7 @@
     <ClInclude Include="IEquipmentDriver.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="SantecDriver.h" />
+    <ClInclude Include="SantecVisaAdapter.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
@@ -19,5 +20,6 @@
     <ClCompile Include="DriverFactory.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="SantecDriver.cpp" />
+    <ClCompile Include="SantecVisaAdapter.cpp" />
   </ItemGroup>
 </Project>
