@@ -326,7 +326,10 @@ std::string CPCTAppDlg::BuildPathListChannels()
     if (to < from) to = from;
 
     char buf[64];
-    sprintf_s(buf, "%d-%d", from, to);
+    if (from == to)
+        sprintf_s(buf, "%d", from);
+    else
+        sprintf_s(buf, "%d-%d", from, to);
     return std::string(buf);
 }
 
