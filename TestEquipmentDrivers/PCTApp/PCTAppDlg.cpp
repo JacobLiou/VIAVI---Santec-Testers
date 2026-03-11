@@ -455,6 +455,8 @@ void CPCTAppDlg::OnBnClickedZeroing()
 {
     if (!m_loader.GetDriverHandle() || !m_bConnected) return;
 
+    m_listResults.DeleteAllItems();
+
     std::string sourceList = BuildSourceList();
     std::string pathChannels = BuildPathListChannels();
 
@@ -594,6 +596,8 @@ void CPCTAppDlg::OnBnClickedZeroing()
 void CPCTAppDlg::OnBnClickedMeasure()
 {
     if (!m_loader.GetDriverHandle() || !m_bConnected) return;
+
+    m_listResults.DeleteAllItems();
 
     std::string sourceList = BuildSourceList();
     std::string pathChannels = BuildPathListChannels();
