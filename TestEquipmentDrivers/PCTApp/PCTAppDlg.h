@@ -53,14 +53,18 @@ protected:
 
     afx_msg LRESULT OnLogMessage(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnWorkerDone(WPARAM wParam, LPARAM lParam);
+    afx_msg void OnTabSelChange(NMHDR* pNMHDR, LRESULT* pResult);
 
 private:
     void AppendLog(const CString& text);
     void EnableControls();
     void SetBusy(bool busy, const CString& statusText = _T(""));
+    void ShowTabControls(int tabIndex);
+    int  GetActiveTab();
 
     std::string BuildSourceList();
     std::string BuildPathListChannels();
+    std::string BuildDualSW2Channels();
 
     void PopulateResultsList(const std::vector<MeasResult>& results);
 
@@ -81,16 +85,29 @@ private:
     CComboBox   m_comboAddr;
     CEdit       m_editPort;
 
-    // Configuration controls
+    // Configuration controls - Tab
+    CTabCtrl    m_tabConfig;
+
+    // Shared controls
     CButton     m_check1310;
     CButton     m_check1450;
     CButton     m_check1550;
     CButton     m_check1625;
+    CEdit       m_editAvgTime;
+
+    // Single MTJ controls (Tab 0)
     CButton     m_radioJ1;
     CButton     m_radioJ2;
     CEdit       m_editChFrom;
     CEdit       m_editChTo;
-    CEdit       m_editAvgTime;
+
+    // Dual MTJ controls (Tab 1)
+    CButton     m_radioDualJ1;
+    CButton     m_radioDualJ2;
+    CButton     m_checkBiDir;
+    CEdit       m_editSW1Ch;
+    CEdit       m_editSW2From;
+    CEdit       m_editSW2To;
 
     // Results / Log
     CListCtrl   m_listResults;

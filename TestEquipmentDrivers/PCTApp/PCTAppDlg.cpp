@@ -51,6 +51,7 @@ BEGIN_MESSAGE_MAP(CPCTAppDlg, CDialogEx)
     ON_BN_CLICKED(IDC_BTN_CLEAR_LOG, &CPCTAppDlg::OnBnClickedClearLog)
     ON_MESSAGE(WM_LOG_MESSAGE, &CPCTAppDlg::OnLogMessage)
     ON_MESSAGE(WM_WORKER_DONE, &CPCTAppDlg::OnWorkerDone)
+    ON_NOTIFY(TCN_SELCHANGE, IDC_TAB_CONFIG, &CPCTAppDlg::OnTabSelChange)
 END_MESSAGE_MAP()
 
 // ---------------------------------------------------------------------------
@@ -76,15 +77,22 @@ void CPCTAppDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_EDIT_DLL_PATH, m_editDllPath);
     DDX_Control(pDX, IDC_COMBO_ADDR, m_comboAddr);
     DDX_Control(pDX, IDC_EDIT_PORT, m_editPort);
+    DDX_Control(pDX, IDC_TAB_CONFIG, m_tabConfig);
     DDX_Control(pDX, IDC_CHECK_1310, m_check1310);
     DDX_Control(pDX, IDC_CHECK_1450, m_check1450);
     DDX_Control(pDX, IDC_CHECK_1550, m_check1550);
     DDX_Control(pDX, IDC_CHECK_1625, m_check1625);
+    DDX_Control(pDX, IDC_EDIT_AVG_TIME, m_editAvgTime);
     DDX_Control(pDX, IDC_RADIO_J1, m_radioJ1);
     DDX_Control(pDX, IDC_RADIO_J2, m_radioJ2);
     DDX_Control(pDX, IDC_EDIT_CH_FROM, m_editChFrom);
     DDX_Control(pDX, IDC_EDIT_CH_TO, m_editChTo);
-    DDX_Control(pDX, IDC_EDIT_AVG_TIME, m_editAvgTime);
+    DDX_Control(pDX, IDC_RADIO_DUAL_J1, m_radioDualJ1);
+    DDX_Control(pDX, IDC_RADIO_DUAL_J2, m_radioDualJ2);
+    DDX_Control(pDX, IDC_CHECK_BIDIR, m_checkBiDir);
+    DDX_Control(pDX, IDC_EDIT_SW1_CH, m_editSW1Ch);
+    DDX_Control(pDX, IDC_EDIT_SW2_FROM, m_editSW2From);
+    DDX_Control(pDX, IDC_EDIT_SW2_TO, m_editSW2To);
     DDX_Control(pDX, IDC_LIST_RESULTS, m_listResults);
     DDX_Control(pDX, IDC_EDIT_LOG, m_editLog);
 }
@@ -103,14 +111,27 @@ BOOL CPCTAppDlg::OnInitDialog()
     m_comboAddr.SetCurSel(0);
     m_editPort.SetWindowText(_T("8301"));
 
+    m_tabConfig.InsertItem(0, _T("Single MTJ"));
+    m_tabConfig.InsertItem(1, _T("Dual MTJ"));
+    m_tabConfig.SetCurSel(0);
+
     m_check1310.SetCheck(BST_CHECKED);
     m_check1450.SetCheck(BST_UNCHECKED);
     m_check1550.SetCheck(BST_CHECKED);
     m_check1625.SetCheck(BST_UNCHECKED);
+    m_editAvgTime.SetWindowText(_T("2"));
+
     m_radioJ1.SetCheck(BST_CHECKED);
     m_editChFrom.SetWindowText(_T("1"));
     m_editChTo.SetWindowText(_T("24"));
-    m_editAvgTime.SetWindowText(_T("2"));
+
+    m_radioDualJ1.SetCheck(BST_CHECKED);
+    m_checkBiDir.SetCheck(BST_UNCHECKED);
+    m_editSW1Ch.SetWindowText(_T("1"));
+    m_editSW2From.SetWindowText(_T("1"));
+    m_editSW2To.SetWindowText(_T("24"));
+
+    ShowTabControls(0);
 
     m_listResults.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
     m_listResults.InsertColumn(0, _T("CH"), LVCFMT_CENTER, 40);
@@ -333,6 +354,64 @@ std::string CPCTAppDlg::BuildPathListChannels()
     return std::string(buf);
 }
 
+std::string CPCTAppDlg::BuildDualSW2Channels()
+{
+    CString fromStr, toStr;
+    m_editSW2From.GetWindowText(fromStr);
+    m_editSW2To.GetWindowText(toStr);
+    int from = _ttoi(fromStr);
+    int to = _ttoi(toStr);
+    if (from < 1) from = 1;
+    if (to < from) to = from;
+
+    char buf[64];
+    if (from == to)
+        sprintf_s(buf, "%d", from);
+    else
+        sprintf_s(buf, "%d-%d", from, to);
+    return std::string(buf);
+}
+
+// ---------------------------------------------------------------------------
+// Tab control: show/hide controls per active tab
+// ---------------------------------------------------------------------------
+
+int CPCTAppDlg::GetActiveTab()
+{
+    return m_tabConfig.GetCurSel();
+}
+
+void CPCTAppDlg::ShowTabControls(int tab)
+{
+    int showSingle = (tab == 0) ? SW_SHOW : SW_HIDE;
+    int showDual   = (tab == 1) ? SW_SHOW : SW_HIDE;
+
+    GetDlgItem(IDC_STATIC_SW_LABEL)->ShowWindow(showSingle);
+    GetDlgItem(IDC_RADIO_J1)->ShowWindow(showSingle);
+    GetDlgItem(IDC_RADIO_J2)->ShowWindow(showSingle);
+    GetDlgItem(IDC_STATIC_SWCH_LABEL)->ShowWindow(showSingle);
+    GetDlgItem(IDC_EDIT_CH_FROM)->ShowWindow(showSingle);
+    GetDlgItem(IDC_STATIC_SWCH_TO)->ShowWindow(showSingle);
+    GetDlgItem(IDC_EDIT_CH_TO)->ShowWindow(showSingle);
+
+    GetDlgItem(IDC_STATIC_DL_LABEL)->ShowWindow(showDual);
+    GetDlgItem(IDC_RADIO_DUAL_J1)->ShowWindow(showDual);
+    GetDlgItem(IDC_RADIO_DUAL_J2)->ShowWindow(showDual);
+    GetDlgItem(IDC_CHECK_BIDIR)->ShowWindow(showDual);
+    GetDlgItem(IDC_STATIC_SW1_LABEL)->ShowWindow(showDual);
+    GetDlgItem(IDC_EDIT_SW1_CH)->ShowWindow(showDual);
+    GetDlgItem(IDC_STATIC_SW2_LABEL)->ShowWindow(showDual);
+    GetDlgItem(IDC_EDIT_SW2_FROM)->ShowWindow(showDual);
+    GetDlgItem(IDC_STATIC_SW2_TO)->ShowWindow(showDual);
+    GetDlgItem(IDC_EDIT_SW2_TO)->ShowWindow(showDual);
+}
+
+void CPCTAppDlg::OnTabSelChange(NMHDR*, LRESULT* pResult)
+{
+    ShowTabControls(m_tabConfig.GetCurSel());
+    *pResult = 0;
+}
+
 // ---------------------------------------------------------------------------
 // Helper: parse a comma-separated response with wavelength markers into
 // a vector of doubles per wavelength. Returns map[wlIndex] = value.
@@ -364,6 +443,7 @@ static std::vector<double> ParsePerWLResponse(const std::string& response)
 
 static std::vector<CPCTAppDlg::MeasResult> FetchChannelResults(
     CPCT4AllDllLoader* pLoader, int chFrom, int chTo,
+    int connMode, int launchCh,
     std::atomic<bool>* pStop, CString& log)
 {
     std::vector<CPCTAppDlg::MeasResult> allResults;
@@ -373,7 +453,10 @@ static std::vector<CPCTAppDlg::MeasResult> FetchChannelResults(
         if (pStop->load()) break;
 
         char queryCmd[64];
-        sprintf_s(queryCmd, ":MEAS:ALL? %d", ch);
+        if (connMode == 2)
+            sprintf_s(queryCmd, ":MEAS:ALL? %d,%d", launchCh, ch);
+        else
+            sprintf_s(queryCmd, ":MEAS:ALL? %d", ch);
         char response[4096] = {};
         BOOL ok = pLoader->SendCommand(queryCmd, response, sizeof(response));
 
@@ -454,25 +537,132 @@ static std::vector<CPCTAppDlg::MeasResult> FetchChannelResults(
 //   If state == 3 -> fault
 // ---------------------------------------------------------------------------
 
+static void RunMeasurementSetup(CPCT4AllDllLoader* pLoader,
+    int funcMode, const std::string& sourceList, int connMode,
+    int launchPort, const std::string& sw1Channels,
+    const std::string& sw2Channels, int avgTime, int bidir, CString& log)
+{
+    pLoader->SetFunction(funcMode);
+    CString funcMsg; funcMsg.Format(_T("  SENSe:FUNCtion %d (%s)\r\n"),
+        funcMode, funcMode == 0 ? _T("Reference") : _T("DUT"));
+    log += funcMsg;
+
+    pLoader->SendWrite(":SENS:OPM 1");
+    log += _T("  SENSe:OPM 1\r\n");
+
+    pLoader->SetSourceList(sourceList.c_str());
+    CString slMsg; slMsg.Format(_T("  SOURce:LIST %s\r\n"), (LPCTSTR)Utf8ToWide(sourceList.c_str()));
+    log += slMsg;
+
+    pLoader->SetConnection(connMode);
+    CString cmMsg; cmMsg.Format(_T("  PATH:CONNection %d (%s)\r\n"),
+        connMode, connMode == 1 ? _T("Single MTJ") : _T("Dual MTJ"));
+    log += cmMsg;
+
+    pLoader->SetLaunch(launchPort);
+    CString lpMsg; lpMsg.Format(_T("  PATH:LAUNch %d (J%d)\r\n"), launchPort, launchPort);
+    log += lpMsg;
+
+    pLoader->SetPathList(1, sw1Channels.c_str());
+    CString p1Msg; p1Msg.Format(_T("  PATH:LIST 1,%s\r\n"), (LPCTSTR)Utf8ToWide(sw1Channels.c_str()));
+    log += p1Msg;
+
+    if (connMode == 2 && !sw2Channels.empty())
+    {
+        pLoader->SetPathList(2, sw2Channels.c_str());
+        CString p2Msg; p2Msg.Format(_T("  PATH:LIST 2,%s\r\n"), (LPCTSTR)Utf8ToWide(sw2Channels.c_str()));
+        log += p2Msg;
+    }
+
+    if (connMode == 2)
+    {
+        pLoader->SetBiDir(bidir);
+        CString bdMsg; bdMsg.Format(_T("  PATH:BIDIR %d\r\n"), bidir);
+        log += bdMsg;
+    }
+
+    pLoader->SetAveragingTime(avgTime);
+    CString atMsg; atMsg.Format(_T("  SENSe:ATIMe %d\r\n"), avgTime);
+    log += atMsg;
+}
+
+static int PollMeasurement(CPCT4AllDllLoader* pLoader,
+    std::atomic<bool>* pStop, CString& log)
+{
+    pLoader->StartMeasurement();
+    log += _T("  MEASure:STARt\r\n");
+
+    int state = 2;
+    int pollCount = 0;
+    while (!pStop->load())
+    {
+        ::Sleep(500);
+        state = pLoader->GetMeasurementState();
+        ++pollCount;
+        if (state != 2) break;
+        if (pollCount > 600) break;
+    }
+    return state;
+}
+
 void CPCTAppDlg::OnBnClickedZeroing()
 {
     if (!m_loader.GetDriverHandle() || !m_bConnected) return;
 
     m_listResults.DeleteAllItems();
 
+    int tab = GetActiveTab();
     std::string sourceList = BuildSourceList();
-    std::string pathChannels = BuildPathListChannels();
 
-    CString avgStr, fromStr, toStr;
+    CString avgStr;
     m_editAvgTime.GetWindowText(avgStr);
-    m_editChFrom.GetWindowText(fromStr);
-    m_editChTo.GetWindowText(toStr);
-    int launchPort = (m_radioJ2.GetCheck() == BST_CHECKED) ? 2 : 1;
     int avgTime = _ttoi(avgStr);
-    int chFrom = _ttoi(fromStr);
-    int chTo = _ttoi(toStr);
+    if (avgTime < 1) avgTime = 2;
 
-    if (avgTime < 1) avgTime = 5;
+    int connMode, launchPort, chFrom, chTo, dualLaunchCh = 0, bidir = 0;
+    std::string sw1Channels, sw2Channels;
+
+    if (tab == 0)
+    {
+        connMode = 1;
+        launchPort = (m_radioJ2.GetCheck() == BST_CHECKED) ? 2 : 1;
+        sw1Channels = BuildPathListChannels();
+        CString fromStr, toStr;
+        m_editChFrom.GetWindowText(fromStr);
+        m_editChTo.GetWindowText(toStr);
+        chFrom = _ttoi(fromStr);
+        chTo = _ttoi(toStr);
+    }
+    else
+    {
+        connMode = 2;
+        launchPort = (m_radioDualJ2.GetCheck() == BST_CHECKED) ? 2 : 1;
+        bidir = (m_checkBiDir.GetCheck() == BST_CHECKED) ? 1 : 0;
+
+        CString launchChStr;
+        m_editSW1Ch.GetWindowText(launchChStr);
+        int launchCh = _ttoi(launchChStr);
+        if (launchCh < 1) launchCh = 1;
+        dualLaunchCh = launchCh;
+        char launchChBuf[16]; sprintf_s(launchChBuf, "%d", launchCh);
+
+        std::string receiveRange = BuildDualSW2Channels();
+
+        if (launchPort == 1) {
+            sw1Channels = launchChBuf;
+            sw2Channels = receiveRange;
+        } else {
+            sw1Channels = receiveRange;
+            sw2Channels = launchChBuf;
+        }
+
+        CString fromStr, toStr;
+        m_editSW2From.GetWindowText(fromStr);
+        m_editSW2To.GetWindowText(toStr);
+        chFrom = _ttoi(fromStr);
+        chTo = _ttoi(toStr);
+    }
+
     if (chFrom < 1) chFrom = 1;
     if (chTo < chFrom) chTo = chFrom;
 
@@ -483,55 +673,18 @@ void CPCTAppDlg::OnBnClickedZeroing()
     m_bStopRequested = false;
 
     RunAsync(_T("Zeroing..."),
-        [pLoader, sourceList, pathChannels, launchPort,
-         avgTime, chFrom, chTo, pStop]() -> WorkerResult*
+        [pLoader, sourceList, sw1Channels, sw2Channels, connMode,
+         launchPort, avgTime, chFrom, chTo, dualLaunchCh, bidir, pStop]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
         CString log;
 
         try
         {
-            // -- Measurement Setup --
-            pLoader->SetFunction(0);
-            log += _T("  SENSe:FUNCtion 0 (Reference)\r\n");
+            RunMeasurementSetup(pLoader, 0, sourceList, connMode,
+                launchPort, sw1Channels, sw2Channels, avgTime, bidir, log);
 
-            pLoader->SendWrite(":SENS:OPM 1");
-            log += _T("  SENSe:OPM 1\r\n");
-
-            pLoader->SetSourceList(sourceList.c_str());
-            CString slMsg; slMsg.Format(_T("  SOURce:LIST %s\r\n"), (LPCTSTR)Utf8ToWide(sourceList.c_str()));
-            log += slMsg;
-
-            pLoader->SetConnection(1);
-            log += _T("  PATH:CONNection 1 (Single MTJ)\r\n");
-
-            pLoader->SetLaunch(launchPort);
-            CString lpMsg; lpMsg.Format(_T("  PATH:LAUNch %d (J%d)\r\n"), launchPort, launchPort);
-            log += lpMsg;
-
-            char plCmd[128];
-            sprintf_s(plCmd, "%s", pathChannels.c_str());
-            pLoader->SetPathList(1, plCmd);
-            CString plMsg; plMsg.Format(_T("  PATH:LIST 1,%s\r\n"), (LPCTSTR)Utf8ToWide(pathChannels.c_str()));
-            log += plMsg;
-
-            pLoader->SetAveragingTime(avgTime);
-
-            // -- Acquisition --
-            pLoader->StartMeasurement();
-            log += _T("  MEASure:STARt\r\n");
-
-            int state = 2;
-            int pollCount = 0;
-            while (!pStop->load())
-            {
-                ::Sleep(500);
-                state = pLoader->GetMeasurementState();
-                ++pollCount;
-
-                if (state != 2) break;
-                if (pollCount > 600) break;  // 5 min timeout
-            }
+            int state = PollMeasurement(pLoader, pStop, log);
 
             if (pStop->load())
             {
@@ -542,7 +695,7 @@ void CPCTAppDlg::OnBnClickedZeroing()
             }
             else if (state == 3)
             {
-                log += _T("  MEASure:STATe = 3 (FAULT) - Measurement Error!\r\n");
+                log += _T("  MEASure:STATe = 3 (FAULT)\r\n");
                 char errMsg[256] = {};
                 pLoader->CheckError(errMsg, sizeof(errMsg));
                 CString errStr; errStr.Format(_T("  Error: %s\r\n"), (LPCTSTR)Utf8ToWide(errMsg));
@@ -555,7 +708,7 @@ void CPCTAppDlg::OnBnClickedZeroing()
                 log += _T("  MEASure:STATe = 1 (IDLE) - Reference OK\r\n");
 
                 std::vector<MeasResult> allResults =
-                    FetchChannelResults(pLoader, chFrom, chTo, pStop, log);
+                    FetchChannelResults(pLoader, chFrom, chTo, connMode, dualLaunchCh, pStop, log);
 
                 r->success = true;
                 r->hasResults = true;
@@ -567,7 +720,7 @@ void CPCTAppDlg::OnBnClickedZeroing()
             }
             else
             {
-                CString stMsg; stMsg.Format(_T("  MEASure:STATe = %d (timeout or unknown)\r\n"), state);
+                CString stMsg; stMsg.Format(_T("  MEASure:STATe = %d (timeout)\r\n"), state);
                 log += stMsg;
                 r->success = false;
                 r->statusText = _T("Zeroing Timeout");
@@ -602,19 +755,58 @@ void CPCTAppDlg::OnBnClickedMeasure()
 
     m_listResults.DeleteAllItems();
 
+    int tab = GetActiveTab();
     std::string sourceList = BuildSourceList();
-    std::string pathChannels = BuildPathListChannels();
 
-    CString avgStr, fromStr, toStr;
+    CString avgStr;
     m_editAvgTime.GetWindowText(avgStr);
-    m_editChFrom.GetWindowText(fromStr);
-    m_editChTo.GetWindowText(toStr);
-    int launchPort = (m_radioJ2.GetCheck() == BST_CHECKED) ? 2 : 1;
     int avgTime = _ttoi(avgStr);
-    int chFrom = _ttoi(fromStr);
-    int chTo = _ttoi(toStr);
+    if (avgTime < 1) avgTime = 2;
 
-    if (avgTime < 1) avgTime = 5;
+    int connMode, launchPort, chFrom, chTo, dualLaunchCh = 0, bidir = 0;
+    std::string sw1Channels, sw2Channels;
+
+    if (tab == 0)
+    {
+        connMode = 1;
+        launchPort = (m_radioJ2.GetCheck() == BST_CHECKED) ? 2 : 1;
+        sw1Channels = BuildPathListChannels();
+        CString fromStr, toStr;
+        m_editChFrom.GetWindowText(fromStr);
+        m_editChTo.GetWindowText(toStr);
+        chFrom = _ttoi(fromStr);
+        chTo = _ttoi(toStr);
+    }
+    else
+    {
+        connMode = 2;
+        launchPort = (m_radioDualJ2.GetCheck() == BST_CHECKED) ? 2 : 1;
+        bidir = (m_checkBiDir.GetCheck() == BST_CHECKED) ? 1 : 0;
+
+        CString launchChStr;
+        m_editSW1Ch.GetWindowText(launchChStr);
+        int launchCh = _ttoi(launchChStr);
+        if (launchCh < 1) launchCh = 1;
+        dualLaunchCh = launchCh;
+        char launchChBuf[16]; sprintf_s(launchChBuf, "%d", launchCh);
+
+        std::string receiveRange = BuildDualSW2Channels();
+
+        if (launchPort == 1) {
+            sw1Channels = launchChBuf;
+            sw2Channels = receiveRange;
+        } else {
+            sw1Channels = receiveRange;
+            sw2Channels = launchChBuf;
+        }
+
+        CString fromStr, toStr;
+        m_editSW2From.GetWindowText(fromStr);
+        m_editSW2To.GetWindowText(toStr);
+        chFrom = _ttoi(fromStr);
+        chTo = _ttoi(toStr);
+    }
+
     if (chFrom < 1) chFrom = 1;
     if (chTo < chFrom) chTo = chFrom;
 
@@ -625,47 +817,18 @@ void CPCTAppDlg::OnBnClickedMeasure()
     m_bStopRequested = false;
 
     RunAsync(_T("Measuring..."),
-        [pLoader, sourceList, pathChannels, launchPort,
-         avgTime, chFrom, chTo, pStop]() -> WorkerResult*
+        [pLoader, sourceList, sw1Channels, sw2Channels, connMode,
+         launchPort, avgTime, chFrom, chTo, dualLaunchCh, bidir, pStop]() -> WorkerResult*
     {
         WorkerResult* r = new WorkerResult();
         CString log;
 
         try
         {
-            // -- Measurement Setup --
-            pLoader->SetFunction(1);
-            log += _T("  SENSe:FUNCtion 1 (DUT)\r\n");
+            RunMeasurementSetup(pLoader, 1, sourceList, connMode,
+                launchPort, sw1Channels, sw2Channels, avgTime, bidir, log);
 
-            pLoader->SendWrite(":SENS:OPM 1");
-
-            pLoader->SetSourceList(sourceList.c_str());
-            pLoader->SetConnection(1);
-            pLoader->SetLaunch(launchPort);
-            pLoader->SetPathList(1, pathChannels.c_str());
-            pLoader->SetAveragingTime(avgTime);
-
-            CString setupMsg;
-            setupMsg.Format(_T("  Setup: OPM=1, Source=%s, Conn=1(Single), Launch=J%d, SW1=%s, Avg=%ds\r\n"),
-                (LPCTSTR)Utf8ToWide(sourceList.c_str()),
-                launchPort,
-                (LPCTSTR)Utf8ToWide(pathChannels.c_str()), avgTime);
-            log += setupMsg;
-
-            // -- Acquisition --
-            pLoader->StartMeasurement();
-            log += _T("  MEASure:STARt\r\n");
-
-            int state = 2;
-            int pollCount = 0;
-            while (!pStop->load())
-            {
-                ::Sleep(500);
-                state = pLoader->GetMeasurementState();
-                ++pollCount;
-                if (state != 2) break;
-                if (pollCount > 600) break;
-            }
+            int state = PollMeasurement(pLoader, pStop, log);
 
             if (pStop->load())
             {
@@ -702,9 +865,8 @@ void CPCTAppDlg::OnBnClickedMeasure()
 
             log += _T("  MEASure:STATe = 1 (IDLE) - Acquisition complete.\r\n");
 
-            // -- Get Results (ALL + Power + Length) --
             std::vector<MeasResult> allResults =
-                FetchChannelResults(pLoader, chFrom, chTo, pStop, log);
+                FetchChannelResults(pLoader, chFrom, chTo, connMode, dualLaunchCh, pStop, log);
 
             r->success = true;
             r->hasResults = true;
@@ -880,15 +1042,24 @@ void CPCTAppDlg::EnableControls()
     GetDlgItem(IDC_BTN_CONNECT)->EnableWindow(!m_bBusy && loaded && !m_bConnected);
     GetDlgItem(IDC_BTN_DISCONNECT)->EnableWindow(!m_bBusy && m_bConnected);
 
+    GetDlgItem(IDC_TAB_CONFIG)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_CHECK_1310)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_CHECK_1450)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_CHECK_1550)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_CHECK_1625)->EnableWindow(!m_bBusy);
+    GetDlgItem(IDC_EDIT_AVG_TIME)->EnableWindow(!m_bBusy);
+
     GetDlgItem(IDC_RADIO_J1)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_RADIO_J2)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_EDIT_CH_FROM)->EnableWindow(!m_bBusy);
     GetDlgItem(IDC_EDIT_CH_TO)->EnableWindow(!m_bBusy);
-    GetDlgItem(IDC_EDIT_AVG_TIME)->EnableWindow(!m_bBusy);
+
+    GetDlgItem(IDC_RADIO_DUAL_J1)->EnableWindow(!m_bBusy);
+    GetDlgItem(IDC_RADIO_DUAL_J2)->EnableWindow(!m_bBusy);
+    GetDlgItem(IDC_CHECK_BIDIR)->EnableWindow(!m_bBusy);
+    GetDlgItem(IDC_EDIT_SW1_CH)->EnableWindow(!m_bBusy);
+    GetDlgItem(IDC_EDIT_SW2_FROM)->EnableWindow(!m_bBusy);
+    GetDlgItem(IDC_EDIT_SW2_TO)->EnableWindow(!m_bBusy);
 
     GetDlgItem(IDC_BTN_ZEROING)->EnableWindow(!m_bBusy && m_bConnected);
     GetDlgItem(IDC_BTN_MEASURE)->EnableWindow(!m_bBusy && m_bConnected);

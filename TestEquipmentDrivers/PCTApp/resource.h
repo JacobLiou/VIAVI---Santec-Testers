@@ -15,17 +15,32 @@
 #define IDC_STATIC_STATUS               1007
 #define IDC_GROUP_CONN                  1008
 
-// Configuration
+// Configuration - Tab Control
+#define IDC_TAB_CONFIG                  1070
 #define IDC_CHECK_1310                  1020
 #define IDC_CHECK_1450                  1021
 #define IDC_CHECK_1550                  1029
 #define IDC_CHECK_1625                  1030
+#define IDC_EDIT_AVG_TIME               1027
+// Single MTJ controls
 #define IDC_RADIO_J1                    1022
 #define IDC_RADIO_J2                    1023
 #define IDC_EDIT_CH_FROM                1025
 #define IDC_EDIT_CH_TO                  1026
-#define IDC_EDIT_AVG_TIME               1027
-#define IDC_GROUP_CONFIG                1028
+// Dual MTJ controls
+#define IDC_RADIO_DUAL_J1              1071
+#define IDC_RADIO_DUAL_J2              1072
+#define IDC_EDIT_SW1_CH                1073
+#define IDC_EDIT_SW2_FROM              1074
+#define IDC_EDIT_SW2_TO                1075
+#define IDC_CHECK_BIDIR                1090
+#define IDC_STATIC_SW_LABEL            1076
+#define IDC_STATIC_SWCH_LABEL          1077
+#define IDC_STATIC_SWCH_TO             1078
+#define IDC_STATIC_DL_LABEL            1079
+#define IDC_STATIC_SW1_LABEL           1080
+#define IDC_STATIC_SW2_LABEL           1081
+#define IDC_STATIC_SW2_TO              1082
 
 // Operations
 #define IDC_BTN_ZEROING                 1040
@@ -46,7 +61,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        130
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1070
+#define _APS_NEXT_CONTROL_VALUE         1091
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
