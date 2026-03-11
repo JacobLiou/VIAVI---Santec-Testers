@@ -587,10 +587,17 @@ static void RunMeasurementSetup(CPCT4AllDllLoader* pLoader,
 }
 
 static int PollMeasurement(CPCT4AllDllLoader* pLoader,
-    std::atomic<bool>* pStop, CString& log)
+    std::atomic<bool>* pStop, int connMode, int bidir, CString& log)
 {
     pLoader->StartMeasurement();
     log += _T("  MEASure:STARt\r\n");
+
+    if (connMode == 2 && bidir)
+    {
+        pLoader->SetBiDir(bidir);
+        CString reMsg; reMsg.Format(_T("  PATH:BIDIR %d (re-applied after MEAS:STAR)\r\n"), bidir);
+        log += reMsg;
+    }
 
     int state = 2;
     int pollCount = 0;
@@ -684,7 +691,7 @@ void CPCTAppDlg::OnBnClickedZeroing()
             RunMeasurementSetup(pLoader, 0, sourceList, connMode,
                 launchPort, sw1Channels, sw2Channels, avgTime, bidir, log);
 
-            int state = PollMeasurement(pLoader, pStop, log);
+            int state = PollMeasurement(pLoader, pStop, connMode, bidir, log);
 
             if (pStop->load())
             {
@@ -828,7 +835,7 @@ void CPCTAppDlg::OnBnClickedMeasure()
             RunMeasurementSetup(pLoader, 1, sourceList, connMode,
                 launchPort, sw1Channels, sw2Channels, avgTime, bidir, log);
 
-            int state = PollMeasurement(pLoader, pStop, log);
+            int state = PollMeasurement(pLoader, pStop, connMode, bidir, log);
 
             if (pStop->load())
             {
