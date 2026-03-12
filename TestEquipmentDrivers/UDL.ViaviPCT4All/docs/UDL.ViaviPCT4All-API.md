@@ -1,146 +1,243 @@
-# UDL.ViaviPCT4All API Reference
-
-Viavi MAP PCT 全功能驱动 DLL，严格对照 **MAP-PCT Programming Guide 22112369-346 R002**。
+# UDL.ViaviPCT4All API 文档
 
 ## 概述
 
-- 通信协议: SCPI, 命令以 `\n` 结尾
-- 通信方式: TCP (端口 8301) 或 VISA
-- DLL 前缀: `PCT4_`
-- 命名空间: `ViaviPCT4All`
+`UDL.ViaviPCT4All.dll` 提供 Viavi MAP PCT/mORL 的 C 风格导出接口（前缀 `PCT4_`），支持：
 
-## DLL 导出函数
+- TCP 通信（默认端口 `8301`）
+- VISA 通信（通过 `PCT4_CreateDriverEx` 指定）
+- 原始 SCPI 透传（未封装命令可直接发送）
 
-### 驱动生命周期
+调用约定为 `WINAPI (__stdcall)`，句柄类型为 `HANDLE`。
 
-| 函数 | 说明 |
-|------|------|
-| `PCT4_CreateDriver(type, ip, port, slot)` | 创建 TCP 驱动实例 |
-| `PCT4_CreateDriverEx(type, address, port, slot, commType)` | 创建驱动（指定通信类型） |
-| `PCT4_DestroyDriver(hDriver)` | 销毁驱动 |
+---
 
-### 连接
+## 导出函数总览
 
-| 函数 | 说明 |
-|------|------|
-| `PCT4_Connect(hDriver)` | 建立连接 |
-| `PCT4_Disconnect(hDriver)` | 断开连接 |
-| `PCT4_Initialize(hDriver)` | 初始化 (发送 *REM, 读取 :CONF?) |
-| `PCT4_IsConnected(hDriver)` | 检查连接状态 |
+当前导出函数（与 `PCT4AllExports.h` / `.def` 对齐）：
 
-### 测量控制
+### 1) 驱动生命周期
 
-| 函数 | 对应 SCPI |
-|------|-----------|
-| `PCT4_StartMeasurement` | `:MEASure:STARt` |
-| `PCT4_StopMeasurement` | `:MEASure:STOP` |
-| `PCT4_GetMeasurementState` | `:MEASure:STATe?` |
-| `PCT4_WaitForIdle` | 轮询 `:MEASure:STATe?` 直到 IDLE |
-| `PCT4_MeasureReset` | `:MEASure:RESet` |
-
-### 配置
-
-| 函数 | 对应 SCPI |
-|------|-----------|
-| `PCT4_SetFunction(mode)` | `:SENSe:FUNCtion <mode>` |
-| `PCT4_SetWavelength(nm)` | `:SOURce:WAVelength <nm>` |
-| `PCT4_SetSourceList(wl)` | `:SOURce:LIST <wl>` |
-| `PCT4_SetAveragingTime(s)` | `:SENSe:ATIMe <s>` |
-| `PCT4_SetRange(range)` | `:SENSe:RANGe <range>` |
-| `PCT4_SetILOnly(state)` | `:SENSe:ILONly <state>` |
-| `PCT4_SetConnection(mode)` | `:PATH:CONNection <mode>` |
-| `PCT4_SetBiDir(state)` | `:PATH:BIDIR <state>` |
-
-### 光路控制 (含光开关)
-
-| 函数 | 对应 SCPI |
-|------|-----------|
-| `PCT4_SetChannel(group, ch)` | `:PATH:CHANnel <group>,<ch>` |
-| `PCT4_GetChannel(group)` | `:PATH:CHANnel? <group>` |
-| `PCT4_SetPathList(sw, ch)` | `:PATH:LIST <sw>,<channels>` |
-| `PCT4_SetLaunch(port)` | `:PATH:LAUNch <port>` |
-
-### 原始 SCPI
-
-| 函数 | 说明 |
-|------|------|
-| `PCT4_SendCommand(cmd, resp, size)` | 发送查询获取响应 |
-| `PCT4_SendWrite(cmd)` | 发送写命令 |
-
-## C++ 接口 (IViaviPCT4AllDriver)
-
-完整接口覆盖文档全部章节:
-
-### Appendix A: Common SCPI
-`ClearStatus`, `SetESE/GetESE`, `GetESR`, `GetIdentification`, `OperationComplete/QueryOperationComplete`, `RecallState`, `ResetDevice`, `SaveState`, `SetSRE/GetSRE`, `GetSTB`, `SelfTest`, `Wait`
-
-### Chapter 2: Common Cassette Commands
-`IsBusy`, `GetConfig/GetConfigParsed`, `GetDeviceInformation`, `GetDeviceFault`, `GetSlotFault`, `GetCassetteInfo`, `SetLock/GetLock`, `ResetCassette`, `GetDeviceStatus`, `ResetDeviceStatus`, `GetSystemError`, `RunCassetteTest`
-
-### Chapter 3: System Commands
-`SuperExit/SuperLaunch/GetSuperStatus`, `SetSystemDate/GetSystemDate`, `GetSystemErrorSys`, `GetChassisFault/GetFaultSummary`, `SetGPIBAddress/GetGPIBAddress`, `GetSystemInfoRaw/GetSystemInfo`, `SetInterlock/GetInterlock/GetInterlockState`, `GetInventory`, `GetIPList`, `GetLayout/GetLayoutPort`, `SetLegacyMode/GetLegacyMode`, `GetLicenses`, `ReleaseLock`, `SystemShutdown`, `GetSystemStatusReg`, `GetTemperature`, `GetSystemTime`
-
-### Chapter 4: Factory Commands
-`GetCalibrationStatus/GetCalibrationDate`, `FactoryCommit`, `SetFactoryBiDir/GetFactoryBiDir`, `SetFactoryCore/GetFactoryCore`, `SetFactoryLowPower/GetFactoryLowPower`, `SetFactoryOPM/GetFactoryOPM`, `SetFactorySwitch/GetFactorySwitch`, `SetFactorySwitchSize`, `GetFactoryFPDistance/FPLoss/FPRatio`, `GetFactoryLoop`, `GetFactoryOPMP`, `GetFactoryRange`, `StartFactoryMeasure`, `GetFactorySWDistance/SWLoss`, `SetFactorySetupSwitch/GetFactorySetupSwitch`, `FactoryReset`
-
-### Chapter 5: PCT - Measurement
-`GetMeasureAll`, `GetDistance`, `StartFastIL/GetFastIL`, `SetHelixFactor/GetHelixFactor`, `GetIL`, `SetILLA/GetILLA`, `GetLength`, `GetORL/GetORLPreset`, `SetORLSetupPreset/SetORLSetupCustom/GetORLSetup/GetORLZone`, `GetPower`, `SetRef2Step/GetRef2Step`, `SetRefAlt/GetRefAlt`, `MeasureReset`, `StartSEIL/GetSEIL`, `StartMeasurement`, `GetMeasurementState`, `StopMeasurement`
-
-### Chapter 5: PCT - PATH
-`SetBiDir/GetBiDir`, `SetChannel/GetChannel/GetAvailableChannels`, `SetConnection/GetConnection`, `SetDUTLength/GetDUTLength/SetDUTLengthAuto/GetDUTLengthAuto`, `SetEOFMin/GetEOFMin`, `SetJumperIL/GetJumperIL/SetJumperILAuto/GetJumperILAuto`, `SetJumperLength/GetJumperLength/SetJumperLengthAuto/GetJumperLengthAuto`, `ResetJumper/ResetJumperMeasure`, `SetLaunch/GetLaunch/GetLaunchAvailable`, `SetPathList/GetPathList`, `SetReceive/GetReceive`
-
-### Chapter 5: PCT - Port Map
-`SetPortMapEnable/GetPortMapEnable`, `PortMapMeasureAll`, `SetPortMapLive/GetPortMapLive`, `PortMapValidate/GetPortMapValidation`, `GetPortMapLink`, `SetPortMapSelect/GetPortMapSelect`, `GetPortMapPathSize`, `GetPortMapFirst`, `PortMapInitList/PortMapInitRange`, `GetPortMapLast`, `SetPortMapLink`, `GetPortMapList`, `SetPortMapLock/GetPortMapLock`, `GetPortMapMode`, `PortMapReset`, `GetPortMapSetupSize`
-
-### Chapter 5: PCT - Sense
-`SetAveragingTime/GetAveragingTime/GetAvailableAveragingTimes`, `SetFunction/GetFunction`, `SetILOnly/GetILOnly`, `SetOPM/GetOPM`, `SetRange/GetRange`, `SetTempSensitivity/GetTempSensitivity`
-
-### Chapter 5: PCT - Source
-`SetContinuous/GetContinuous`, `SetSourceList/GetSourceList`, `SetWarmup/GetWarmup`, `SetWavelength/GetWavelength/GetAvailableWavelengths`
-
-### Chapter 5: PCT - OPM
-`FetchLoss`, `FetchORL`, `FetchPower`, `StartDarkMeasure/GetDarkStatus`, `RestoreDarkFactory`, `SetPowerMode/GetPowerMode`
-
-### Warning
-`GetWarning`
-
-### Workflow
-`WaitForIdle(timeoutMs)`, `WaitForMeasurement(timeoutMs)`
-
-### Raw SCPI
-`SendRawQuery(cmd)`, `SendRawWrite(cmd)`
-
-## 典型工作流
-
+```c
+HANDLE WINAPI PCT4_CreateDriver(const char* type, const char* ip, int port, int slot);
+HANDLE WINAPI PCT4_CreateDriverEx(const char* type, const char* address, int port, int slot, int commType);
+void   WINAPI PCT4_DestroyDriver(HANDLE hDriver);
 ```
-// 1. 创建并连接
-HANDLE h = PCT4_CreateDriver("viavi", "10.14.140.32", 8301, 1);
-PCT4_Connect(h);
-PCT4_Initialize(h);
 
-// 2. 配置
+- `type` 支持：`"viavi"`, `"pct"`, `"morl"`, `"pct4all"`, `"map"`（不区分大小写）
+- `port <= 0` 时使用默认端口 `8301`
+- `slot` 参数当前版本未参与驱动创建逻辑（保留参数）
+- 失败返回 `NULL`
+
+### 2) 连接管理
+
+```c
+BOOL WINAPI PCT4_Connect(HANDLE hDriver);
+void WINAPI PCT4_Disconnect(HANDLE hDriver);
+BOOL WINAPI PCT4_Initialize(HANDLE hDriver);
+BOOL WINAPI PCT4_IsConnected(HANDLE hDriver);
+```
+
+- `PCT4_Initialize` 主要执行远程模式切换和配置读取（内部会发送 `*REM`、`:CONFig?`）
+
+### 3) 设备信息与错误
+
+```c
+BOOL WINAPI PCT4_GetIdentification(HANDLE hDriver, ViaviPCT4All::CIdentificationInfo* info);
+BOOL WINAPI PCT4_GetCassetteInfo(HANDLE hDriver, ViaviPCT4All::CCassetteInfo* info);
+int  WINAPI PCT4_CheckError(HANDLE hDriver, char* message, int messageSize);
+```
+
+- `PCT4_CheckError` 返回错误码，`0` 通常表示无错误
+- 无效句柄/异常场景返回 `-1`
+
+### 4) 原始 SCPI
+
+```c
+BOOL WINAPI PCT4_SendCommand(HANDLE hDriver, const char* command, char* response, int responseSize);
+BOOL WINAPI PCT4_SendWrite(HANDLE hDriver, const char* command);
+```
+
+- `PCT4_SendCommand`：发送查询并写入 `response`
+- `PCT4_SendWrite`：发送写命令（无响应）
+
+### 5) 测量控制
+
+```c
+BOOL WINAPI PCT4_StartMeasurement(HANDLE hDriver);
+BOOL WINAPI PCT4_StopMeasurement(HANDLE hDriver);
+int  WINAPI PCT4_GetMeasurementState(HANDLE hDriver);
+BOOL WINAPI PCT4_WaitForIdle(HANDLE hDriver, int timeoutMs);
+BOOL WINAPI PCT4_MeasureReset(HANDLE hDriver);
+```
+
+- `PCT4_StartMeasurement` 非阻塞
+- `PCT4_WaitForIdle` 内部轮询状态，遇到 `FAULT` 或超时返回 `FALSE`
+
+### 6) 配置
+
+```c
+BOOL WINAPI PCT4_SetFunction(HANDLE hDriver, int mode);
+int  WINAPI PCT4_GetFunction(HANDLE hDriver);
+BOOL WINAPI PCT4_SetWavelength(HANDLE hDriver, int wavelength);
+BOOL WINAPI PCT4_SetSourceList(HANDLE hDriver, const char* wavelengths);
+BOOL WINAPI PCT4_SetAveragingTime(HANDLE hDriver, int seconds);
+BOOL WINAPI PCT4_SetRange(HANDLE hDriver, int range);
+BOOL WINAPI PCT4_SetILOnly(HANDLE hDriver, int state);
+BOOL WINAPI PCT4_SetConnection(HANDLE hDriver, int mode);
+BOOL WINAPI PCT4_SetBiDir(HANDLE hDriver, int state);
+```
+
+### 7) 光路/Path 控制
+
+```c
+BOOL WINAPI PCT4_SetChannel(HANDLE hDriver, int group, int channel);
+int  WINAPI PCT4_GetChannel(HANDLE hDriver, int group);
+BOOL WINAPI PCT4_SetPathList(HANDLE hDriver, int sw, const char* channels);
+BOOL WINAPI PCT4_SetLaunch(HANDLE hDriver, int port);
+```
+
+### 8) 日志与 VISA 枚举
+
+```c
+typedef void (WINAPI *PCT4LogCallback)(int level, const char* source, const char* message);
+void WINAPI PCT4_SetLogCallback(PCT4LogCallback callback);
+int  WINAPI PCT4_EnumerateVisaResources(char* buffer, int bufferSize);
+```
+
+- `PCT4_EnumerateVisaResources` 返回资源数量，`buffer` 使用 `;` 分隔资源字符串
+- 若 VISA 未加载或未找到资源，返回 `0`
+
+---
+
+## C 兼容结构体
+
+以下结构体定义位于 `PCT4AllTypes.h`：
+
+```c
+struct CIdentificationInfo
+{
+    char manufacturer[64];
+    char platform[64];
+    char serialNumber[64];
+    char firmwareVersion[64];
+};
+
+struct CCassetteInfo
+{
+    char serialNumber[64];
+    char partNumber[64];
+    char firmwareVersion[64];
+    char hardwareVersion[64];
+    char assemblyDate[32];
+    char description[128];
+};
+```
+
+说明：
+
+- `CMeasurementResult`、`CConnectionConfig` 也在头文件中定义，但当前并未作为 C 导出函数参数/返回值使用。
+
+---
+
+## 常用枚举值（来自 `PCT4AllTypes.h`）
+
+### 通信类型（`commType`）
+
+| 值 | 含义 |
+|---|---|
+| 0 | `COMM_TCP` |
+| 1 | `COMM_GPIB` |
+| 2 | `COMM_VISA` |
+
+### 测量模式（`PCT4_SetFunction`）
+
+| 值 | 含义 |
+|---|---|
+| 0 | `MODE_REFERENCE` |
+| 1 | `MODE_DUT` |
+
+### 测量状态（`PCT4_GetMeasurementState`）
+
+| 值 | 含义 |
+|---|---|
+| 0 | `MEAS_INITIALIZING` |
+| 1 | `MEAS_IDLE` |
+| 2 | `MEAS_BUSY` |
+| 3 | `MEAS_FAULT` |
+| 4 | `MEAS_SYSTEM` |
+
+### Range（`PCT4_SetRange`）
+
+| 值 | 含义 |
+|---|---|
+| 0 | `RANGE_200M` |
+| 1 | `RANGE_500M` |
+| 2 | `RANGE_1KM` |
+| 3 | `RANGE_2KM` |
+| 4 | `RANGE_5KM` |
+| 5 | `RANGE_10KM` |
+
+### Path Group（`PCT4_SetChannel` / `PCT4_GetChannel`）
+
+| 值 | 含义 |
+|---|---|
+| 1 | `GROUP_MTJ1` |
+| 2 | `GROUP_MTJ2` |
+| 3 | `GROUP_RECEIVE` |
+
+### Connection Mode（`PCT4_SetConnection`）
+
+| 值 | 含义 |
+|---|---|
+| 1 | `CONN_SINGLE_MTJ` |
+| 2 | `CONN_DUAL_MTJ` |
+
+### 日志级别（`PCT4_SetLogCallback`）
+
+| 值 | 含义 |
+|---|---|
+| 0 | `LOG_DEBUG` |
+| 1 | `LOG_INFO` |
+| 2 | `LOG_WARNING` |
+| 3 | `LOG_ERROR` |
+
+---
+
+## 典型调用流程（C API）
+
+```c
+HANDLE h = PCT4_CreateDriver("viavi", "10.14.140.32", 8301, 0);
+if (!h) { /* handle error */ }
+
+if (!PCT4_Connect(h)) { /* handle error */ }
+if (!PCT4_Initialize(h)) { /* handle error */ }
+
 PCT4_SetSourceList(h, "1310,1550");
 PCT4_SetAveragingTime(h, 5);
 PCT4_SetRange(h, 2);
 
-// 3. 设置光路 (切换光开关)
-PCT4_SetPathList(h, 1, "1,2,3");    // SW1 通道列表
-PCT4_SetChannel(h, 1, 1);           // 切换到 SW1 通道 1
-
-// 4. 参考测量
-PCT4_SetFunction(h, 0);             // MODE_REFERENCE
+PCT4_SetFunction(h, 0);          // REFERENCE
 PCT4_StartMeasurement(h);
 PCT4_WaitForIdle(h, 60000);
 
-// 5. DUT 测量
-PCT4_SetFunction(h, 1);             // MODE_DUT
+PCT4_SetFunction(h, 1);          // DUT
 PCT4_StartMeasurement(h);
 PCT4_WaitForIdle(h, 60000);
 
-// 6. 停止测量（若需要中途停止）
-PCT4_StopMeasurement(h);
-
-// 7. 清理
 PCT4_Disconnect(h);
 PCT4_DestroyDriver(h);
 ```
+
+---
+
+## C++ 接口说明
+
+`IViaviPCT4AllDriver` 仍完整覆盖 Appendix A / Chapter 2~5 中的 SCPI 命令（`MEASure`、`PATH`、`PMAP`、`SENSe`、`SOURce`、Factory、System 等）。
+
+若 C 导出层暂未封装某些能力，可通过：
+
+- `PCT4_SendCommand`（Query）
+- `PCT4_SendWrite`（Write）
+
+直接透传 SCPI 指令。
