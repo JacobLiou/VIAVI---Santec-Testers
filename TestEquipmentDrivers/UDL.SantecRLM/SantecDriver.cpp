@@ -36,18 +36,18 @@ namespace SCPI {
 
     // 回波损耗测量 - 同步（表12）
     static const char* READ_RL      = "READ:RL?";           // READ:RL? <nm> -> RLA,RLB,RLTOTAL,长度
-    static const char* READ_IL      = "READ:IL";            // READ:IL:det#? <nm> -> 插入损耗值
+    static const char* READ_IL      = "READ:IL";            // READ:IL:DET#? <nm> -> 插入损耗值
 
     // 回波损耗参考（表12）
     static const char* REF_RL       = "REF:RL";             // REF:RL（自动测量）或 REF:RL #,[#]
     static const char* REF_RL_Q     = "REF:RL?";            // 返回 MTJ1 长度
-    static const char* REF_IL       = "REF:IL";             // REF:IL:det# <nm>,<值>
-    static const char* REF_IL_Q     = "REF:IL";             // REF:IL:det#? <nm>
+    static const char* REF_IL       = "REF:IL";             // REF:IL:DET# <nm>,<值> 或 REF:IL:DET# <nm>（自动归零）
+    static const char* REF_IL_Q     = "REF:IL";             // REF:IL:DET#? <nm> -> 归零值
 
     // 功率计（表12）
     static const char* POW_NUM_Q    = "POW:NUM?";
-    static const char* POW_INFO     = "POW";                // POW:det#:INFO?
-    static const char* READ_POW     = "READ:POW";           // READ:POW:det#? <nm>
+    static const char* POW_INFO     = "POW";                // POW:DET#:INFO?
+    static const char* READ_POW     = "READ:POW";           // READ:POW:DET#? <nm>
     static const char* READ_POW_MON = "READ:POW:MON?";      // READ:POW:MON? <nm>
 
     // 回波损耗灵敏度（表12）
@@ -849,7 +849,7 @@ int CSantecDriver::GetDetectorCount()
 std::string CSantecDriver::GetDetectorInfo(int detectorNum)
 {
     std::ostringstream cmd;
-    cmd << "POW:det" << detectorNum << ":INFO?";
+    cmd << "POW:DET" << detectorNum << ":INFO?";
     return Query(cmd.str());
 }
 
@@ -874,46 +874,87 @@ void CSantecDriver::ConfigureChannels(const std::vector<int>& channels)
 //
 // 回波损耗参考：REF:RL（自动测量测试跳线长度）
 //               REF:RL #,[#]（手动设置 MTJ1 和可选的 MTJ2 长度）
-// 插入损耗参考：REF:IL:det# <波长>,<值>
+// 插入损耗参考：REF:IL:DET# <nm>（自动归零）
+//               REF:IL:DET# <nm>,<值>（手动设置）
+// 归零值查询：  REF:RL? -> 参考长度
+//               REF:IL:DET#? <nm> -> IL 归零值
+//
+// 归零后 m_lastResults 中存储每个波长的参考值，
+// 可通过 GetResults() 读取用于归零值验证。
 // ---------------------------------------------------------------------------
 
 bool CSantecDriver::TakeReference(const ReferenceConfig& config)
 {
-    m_logger.Info("Taking reference (override=%s)...", config.useOverride ? "true" : "false");
+    m_logger.Info("Taking reference (override=%s, detector=%d)...",
+        config.useOverride ? "true" : "false", m_detectorNum);
     m_referenced = false;
+    m_lastResults.clear();
 
     try
     {
         if (config.useOverride)
         {
-            // 手动设置回波损耗参考的测试跳线长度
+            // RL reference: manually set test jumper length
             std::ostringstream cmd;
             cmd << SCPI::REF_RL << " " << config.lengthValue;
             WriteAndSync(cmd.str());
             m_logger.Info("RL reference set manually: MTJ1 = %.2f m", config.lengthValue);
 
-            // 为每个检测器/波长设置插入损耗参考
+            // IL reference: manually set for each wavelength on active detector
             for (size_t wi = 0; wi < m_wavelengths.size(); ++wi)
             {
+                int wavNm = static_cast<int>(m_wavelengths[wi]);
                 std::ostringstream ilCmd;
-                ilCmd << "REF:IL:det1 " << static_cast<int>(m_wavelengths[wi])
-                      << "," << config.ilValue;
+                ilCmd << "REF:IL:DET" << m_detectorNum << " "
+                      << wavNm << "," << config.ilValue;
                 WriteAndSync(ilCmd.str());
-                m_logger.Info("IL reference set: det1 @%d nm = %.4f dB",
-                    static_cast<int>(m_wavelengths[wi]), config.ilValue);
+                m_logger.Info("IL reference set: DET%d @%d nm = %.4f dB",
+                    m_detectorNum, wavNm, config.ilValue);
             }
         }
         else
         {
-            // 自动测量测试跳线长度（无参数的 REF:RL）
-            // 这是一个同步命令，用于测量 MTJ
+            // RL reference: auto-measure test jumper length
             WriteAndSync(SCPI::REF_RL);
             m_logger.Info("RL reference auto-measured.");
+
+            // IL reference: auto-zero for each wavelength on active detector
+            for (size_t wi = 0; wi < m_wavelengths.size(); ++wi)
+            {
+                int wavNm = static_cast<int>(m_wavelengths[wi]);
+                std::ostringstream ilCmd;
+                ilCmd << "REF:IL:DET" << m_detectorNum << " " << wavNm;
+                WriteAndSync(ilCmd.str());
+                m_logger.Info("IL reference auto-measured: DET%d @%d nm",
+                    m_detectorNum, wavNm);
+            }
         }
 
-        // 验证参考值是否已存储
+        // Read back RL reference value
         std::string refLen = Query(SCPI::REF_RL_Q);
         m_logger.Info("Stored RL reference length: %s", refLen.c_str());
+        double rlRefLength = atof(refLen.c_str());
+
+        // Read back IL reference values and store in m_lastResults for caller validation
+        for (size_t wi = 0; wi < m_wavelengths.size(); ++wi)
+        {
+            int wavNm = static_cast<int>(m_wavelengths[wi]);
+
+            std::ostringstream ilQuery;
+            ilQuery << "REF:IL:DET" << m_detectorNum << "? " << wavNm;
+            std::string ilRefResp = Query(ilQuery.str());
+            double ilRefValue = atof(ilRefResp.c_str());
+
+            m_logger.Info("Stored IL reference: DET%d @%d nm = %.4f dB (raw: %s)",
+                m_detectorNum, wavNm, ilRefValue, ilRefResp.c_str());
+
+            MeasurementResult refResult;
+            refResult.channel = (m_channels.empty() ? 1 : m_channels[0]);
+            refResult.wavelength = m_wavelengths[wi];
+            refResult.insertionLoss = ilRefValue;
+            refResult.dutLength = rlRefLength;
+            m_lastResults.push_back(refResult);
+        }
 
         if (!refLen.empty() && refLen != "0")
         {
@@ -943,7 +984,7 @@ bool CSantecDriver::TakeReference(const ReferenceConfig& config)
 }
 
 // ---------------------------------------------------------------------------
-// 测量 - 按照官方协议进行同步 READ:RL? / READ:IL:det#?
+// 测量 - 按照官方协议进行同步 READ:RL? / READ:IL:DET#?
 //
 // RL1 同步执行 SCPI 命令。READ:RL? 在一次调用中触发
 // 测量并返回结果，无需单独的触发/获取步骤。
@@ -980,7 +1021,7 @@ bool CSantecDriver::TakeMeasurement()
                 // 在此波长启用激光
                 EnableLaser(wavNm);
 
-                // READ:IL:det1? <nm> - 同步插入损耗读取
+                // READ:IL:DET#? <nm> - 同步插入损耗读取
                 try
                 {
                     result.insertionLoss = ReadIL(m_detectorNum, wavNm);
@@ -1093,7 +1134,7 @@ MeasurementResult CSantecDriver::ReadRL(int wavelengthNm, double refLenA, double
 double CSantecDriver::ReadIL(int detectorNum, int wavelengthNm)
 {
     std::ostringstream cmd;
-    cmd << "READ:IL:det" << detectorNum << "? " << wavelengthNm;
+    cmd << "READ:IL:DET" << detectorNum << "? " << wavelengthNm;
 
     std::string resp = QueryLong(cmd.str());
     if (resp.empty())
@@ -1105,7 +1146,7 @@ double CSantecDriver::ReadIL(int detectorNum, int wavelengthNm)
 double CSantecDriver::ReadPower(int detectorNum, int wavelengthNm)
 {
     std::ostringstream cmd;
-    cmd << "READ:POW:det" << detectorNum << "? " << wavelengthNm;
+    cmd << "READ:POW:DET" << detectorNum << "? " << wavelengthNm;
     std::string resp = Query(cmd.str());
     return atof(resp.c_str());
 }

@@ -357,7 +357,7 @@ BOOL WINAPI DriverGetDetectorInfo(HANDLE hDriver, int detectorNum,
 
 #### DriverTakeReference
 
-执行参考（归零）测量。
+执行参考（归零）测量。同时归零 RL（`REF:RL`）和 IL（`REF:IL:DET#`）。
 
 ```c
 BOOL WINAPI DriverTakeReference(HANDLE hDriver, BOOL bOverride,
@@ -367,12 +367,17 @@ BOOL WINAPI DriverTakeReference(HANDLE hDriver, BOOL bOverride,
 | 参数 | 类型 | 说明 |
 |---|---|---|
 | bOverride | `BOOL` | `TRUE`=使用覆盖值, `FALSE`=自动测量 |
-| ilValue | `double` | 覆盖 IL 值 (dB) |
-| lengthValue | `double` | 覆盖长度值 (m) |
+| ilValue | `double` | 覆盖 IL 值 (dB)，仅 `bOverride=TRUE` 时使用 |
+| lengthValue | `double` | 覆盖长度值 (m)，仅 `bOverride=TRUE` 时使用 |
 
 **返回值**: `TRUE` 参考测量成功，`FALSE` 失败。
 
 > 阻塞调用，直到测量完成或超时才返回。
+>
+> 归零完成后，归零值（IL 参考值和 RL 参考长度）存储在内部结果中，
+> 可通过 `DriverGetResults` 读取，用于归零值验证。
+> 每条结果的 `insertionLoss` 字段为该波长的 IL 归零值，
+> `dutLength` 字段为 RL 参考长度。
 
 #### DriverTakeMeasurement
 
