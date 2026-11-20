@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files"><UniqueIdentifier>{B1424A5E-E6FC-431B-9D9C-0EF072A108C8}</UniqueIdentifier></Filter>
+    <Filter Include="Header Files"><UniqueIdentifier>{D00AC3FC-EAB3-4DEB-B9A8-64B711CE4A0A}</UniqueIdentifier></Filter>
+    <Filter Include="Resource Files"><UniqueIdentifier>{A9D9BFBE-2579-4B05-9DC7-144676860BA3}</UniqueIdentifier></Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ScpiTcpClient.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="PolarityDriver.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="DriverExports.cpp"><Filter>Source Files</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ScpiTcpClient.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="PolarityDriver.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="SantecPolarityDriver.h"><Filter>Header Files</Filter></ClInclude>
+  </ItemGroup>
+</Project>

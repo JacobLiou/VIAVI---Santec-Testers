@@ -1,0 +1,16 @@
+LIBRARY "UDL.SantecPolarity.Driver"
+EXPORTS
+    SP_Create               @1
+    SP_Destroy              @2
+    SP_Connect              @3
+    SP_Disconnect           @4
+    SP_IsConnected          @5
+    SP_GetIdentity          @6
+    SP_Configure            @7
+    SP_StartTest            @8
+    SP_GetTestState         @9
+    SP_GetSummary           @10
+    SP_GetCoreResult        @11
+    SP_RunTest              @12
+    SP_Cancel               @13
+    SP_GetLastError         @14
