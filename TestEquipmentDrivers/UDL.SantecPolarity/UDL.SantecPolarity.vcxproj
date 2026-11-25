@@ -145,14 +145,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="PolarityCliLoader.h" />
     <ClInclude Include="PolaritySession.h" />
     <ClInclude Include="SPExports.h" />
     <ClInclude Include="SPTypes.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="..\Common\PolarityCliApi.h" />
+    <ClInclude Include="..\Common\SantecRlmDeviceLock.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="PolarityCliLoader.cpp" />
     <ClCompile Include="PolaritySession.cpp" />
     <ClCompile Include="SPExports.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -164,6 +168,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="UDL.SantecPolarity.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UDL.SantecPolarity.Cli\UDL.SantecPolarity.Cli.vcxproj">
+      <Project>{F1A2B3C4-D5E6-4789-A0B1-C2D3E4F5A6B7}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

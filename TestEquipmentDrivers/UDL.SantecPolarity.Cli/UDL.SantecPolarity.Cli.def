@@ -1,0 +1,14 @@
+LIBRARY "UDL.SantecPolarity.Cli"
+EXPORTS
+    SP_Cli_Create
+    SP_Cli_Destroy
+    SP_Cli_Open
+    SP_Cli_Close
+    SP_Cli_GetSnapshot
+    SP_Cli_RunMapping
+    SP_Cli_Cancel
+    SP_Cli_GetSummary
+    SP_Cli_GetFiberCount
+    SP_Cli_GetFibers
+    SP_Cli_GetDiagnosticPath
+    SP_Cli_GetLastError

@@ -1,11 +1,13 @@
 #pragma once
 
 #include "SPTypes.h"
+#include "PolarityCliLoader.h"
+#include "..\Common\SantecRlmDeviceLock.h"
 #include <string>
 #include <vector>
 
-// Session shell for RLM-100 + OSX-100 + RD-SP-100-SM orchestration.
-// Mapping backend is gated on vendor RD-SP SDK / Worker (see docs).
+// Pure-native shell: Host-facing SP_* session.
+// RD-SP Mapping is forwarded to UDL.SantecPolarity.Cli (C++/CLI -> Santec.Hardware).
 
 class CPolaritySession
 {
@@ -26,12 +28,21 @@ public:
 
 private:
     void SetError(const char* utf8);
+    void PullCliError();
     SP_STATUS CopyUtf8(const std::string& src, char* buffer, uint32_t capacity, uint32_t* required);
+    void BuildDefaultExpected(uint32_t fiberCount);
 
     bool m_opened;
     std::string m_lastError;
+    std::string m_rlmSerial;
+    uint32_t m_fiberCount;
+    std::vector<int32_t> m_expectedMap;
     SP_HARDWARE_SNAPSHOT m_snapshot;
     SP_RESULT_SUMMARY m_summary;
     std::vector<SP_FIBER_RESULT> m_fibers;
     std::vector<std::string> m_diagnosticPaths;
+
+    CPolarityCliLoader m_cli;
+    SP_CLI_HANDLE m_cliHandle;
+    SantecRlmLock::Guard m_rlmLock;
 };

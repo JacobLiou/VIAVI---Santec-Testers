@@ -401,6 +401,14 @@ bool CSantecDriver::Connect()
                 continue;
             }
 
+            if (!TryAcquireRlmStationLock())
+            {
+                m_logger.Error("RLM station lock busy (Global\\UDL_SANTEC_RLM100_*); polarity or another host owns this RLM.");
+                m_adapter->Close();
+                m_state = STATE_DISCONNECTED;
+                return false;
+            }
+
             m_logger.Info("Santec connected and validated.");
             return true;
         }
@@ -455,6 +463,14 @@ bool CSantecDriver::Connect()
                 continue;
             }
 
+            if (!TryAcquireRlmStationLock())
+            {
+                m_logger.Error("RLM 工位锁忙 (Global\\UDL_SANTEC_RLM100_*)；极性驱动或其它进程占用该 RLM。");
+                m_adapter->Close();
+                m_state = STATE_DISCONNECTED;
+                return false;
+            }
+
             m_logger.Info("Santec VISA 已连接并验证。");
             return true;
         }
@@ -492,6 +508,25 @@ void CSantecDriver::Disconnect()
     {
         CBaseEquipmentDriver::Disconnect();
     }
+    ReleaseRlmStationLock();
+}
+
+bool CSantecDriver::TryAcquireRlmStationLock()
+{
+    const char* serial = m_deviceInfo.serialNumber.empty()
+        ? m_config.ipAddress.c_str()
+        : m_deviceInfo.serialNumber.c_str();
+    if (!m_rlmStationLock.TryAcquire(serial, 0))
+        return false;
+    m_logger.Info("Acquired RLM station lock for '%s'", serial);
+    return true;
+}
+
+void CSantecDriver::ReleaseRlmStationLock()
+{
+    if (m_rlmStationLock.Owned())
+        m_logger.Info("Releasing RLM station lock");
+    m_rlmStationLock.Release();
 }
 
 bool CSantecDriver::IsConnected() const

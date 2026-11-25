@@ -423,3 +423,5 @@ Thumbs.db
 # Project-specific: ignore packaged runtime bundle directory
 /SOFTWARE2227_ITL_FTS_CD_V1.0.2.0/
 dist/ITL_CD_Config_Delivery_20260804.zip
+
+dist

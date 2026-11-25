@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BaseEquipmentDriver.h"
+#include "..\Common\SantecRlmDeviceLock.h"
 
 namespace SantecRLM {
 
@@ -220,6 +221,11 @@ private:
 
     // TakeMeasurement() 的缓存结果
     std::vector<MeasurementResult> m_lastResults;
+
+    // Cross-process lock shared with UDL.SantecPolarity (Global\UDL_SANTEC_RLM100_<serial>)
+    bool TryAcquireRlmStationLock();
+    void ReleaseRlmStationLock();
+    SantecRlmLock::Guard m_rlmStationLock;
 };
 
 } // namespace SantecRLM

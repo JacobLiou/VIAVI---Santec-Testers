@@ -1,28 +1,30 @@
-# UDL.SantecPolarity — production scaffold
+# UDL.SantecPolarity — production native shell
 
-Native C ABI DLL for company polarity baseline:
+Host-facing **pure Native** C ABI (`SP_*`) for company polarity baseline:
 
-`RLM-100-01-3500-S-09-FA-R` + `OSX-100-1A-024-09-FA-00B` + `RD-SP-100-SM`
+`RLM-100` + `OSX-100 1x24` + `RD-SP-100-SM`
 
-Design authority: `SantecPolarity/RLM100_OSX100_RDSP100SM_Polarity_Cpp_MFC_UDL_Final_Plan.md`.
+## Architecture
 
-## Current status
+| Layer | Role |
+|---|---|
+| This DLL | Native shell: handles, RLM station lock, LoadLibrary Cli |
+| `UDL.SantecPolarity.Cli` | C++/CLI → Santec.Hardware Mapping only |
+| `UDL.SantecRLM` | SCPI IL/RL; shares `Global\UDL_SANTEC_RLM100_<serial>` lock |
 
-Scaffold only. `SP_Open` / `SP_RunMapping` return `SP_E_BACKEND_NOT_SUPPORTED`
-until vendor RD-SP Mapping SDK (Gate A) or isolated Worker (Gate B) is integrated.
+MFC Host only `LoadLibrary` **this** DLL. Do not reference C# from Host.
 
-**Not** the frozen invented-`POLARITY:*` stub under `SantecPolarity/Driver/`.
-**Not** a substitute for standalone PTM (`UDL.SantecPTM`).
+## Deploy
 
-## Reuse plan (after SDK arrives)
+Build `UDL.SantecPolarity` (ProjectReference builds Cli). Ensure output folder contains:
 
-1. RLM laser / output / switch SCPI patterns from `UDL.SantecRLM` (TCP 5025 or VISA).
-2. OSX route validation patterns from `UDL.SantecOSX` (`SW1` CH1..24).
-3. Single global device lock; no dual-owner with IL/RL session.
-4. RD-SP Mapping only via official SDK — no self-built vision.
+- `UDL.SantecPolarity.dll`
+- `UDL.SantecPolarity.Cli.dll`
+- `Santec.Hardware.dll` (2.3.1.0 matching bitness)
+- `Santec.Core.dll`
 
-## Build
+## Notes
 
-Open `TestEquipmentDrivers.sln`, project `UDL.SantecPolarity`, preferred **Debug|x64**.
-
-API doc: `docs/UDL.SantecPolarity-API.md` and `../docs/UDL.SantecPolarity-API.md`.
+- Call `SP_RunMapping` from a **worker thread** (not UI).
+- Same RLM cannot be owned by polarity and IL/RL at once (device lock).
+- Not the frozen invented-`POLARITY:*` stub under `SantecPolarity/Driver/`.
