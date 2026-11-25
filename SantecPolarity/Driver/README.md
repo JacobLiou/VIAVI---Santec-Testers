@@ -1,6 +1,9 @@
-# UDL.SantecPolarity.Driver
+# UDL.SantecPolarity.Driver — FROZEN STUB
 
-Self-contained native C++ DLL for an integrated polarity tester controlled only by TCP/SCPI.
+**Not for production.** Speaks invented `POLARITY:*` SCPI only.
+Production polarity UDL lives in `TestEquipmentDrivers/UDL.SantecPolarity/`.
+
+Self-contained native C++ DLL for an assumed integrated polarity tester controlled only by TCP/SCPI.
 It does not include or reference files outside this directory.
 
 ## Build
@@ -13,3 +16,5 @@ The project uses toolset v140 and Windows 8.1 SDK.
 Include `SantecPolarityDriver.h`, link the generated import library, and use the `SP_*` C ABI.
 A normal sequence is `SP_Create`, `SP_Connect`, `SP_GetIdentity`, `SP_RunTest`, `SP_Disconnect`, `SP_Destroy`.
 The DLL always tries `LASER:DISABLE` before a normal disconnect.
+
+Do **not** load this DLL from the production Molex host.

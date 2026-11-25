@@ -34,7 +34,8 @@ TestEquipmentDrivers/
 ├── Common/VisaHelper.h           # 共享：仅头文件的 VISA 动态加载器（viOpen/viWrite/viRead…）
 ├── UDL.SantecRLM/                # 驱动 DLL：Santec RLM 回损计（参考实现）
 ├── UDL.SantecOSX/                # 驱动 DLL：Santec OSX-100 光开关
-├── UDL.SantecPTM/                # 驱动 DLL：Santec PTM 极性测试仪
+├── UDL.SantecPTM/                # 驱动 DLL：Santec PTM 极性测试仪（独立 PTM；当前 BOM 搁置）
+├── UDL.SantecPolarity/           # 驱动 DLL：RLM+OSX+RD-SP 极性 Mapping（量产方向；SDK 门禁中）
 ├── UDL.ViaviPCT/                 # 驱动 DLL：VIAVI MAP-PCT
 ├── UDL.ViaviPCT4All/             # 驱动 DLL：VIAVI PCT4All
 ├── UDL.ViaviOSW/                 # 驱动 DLL：VIAVI OSW 光开关

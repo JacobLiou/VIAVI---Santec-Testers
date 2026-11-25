@@ -1,6 +1,8 @@
-# UDL.SantecPolarity.Simulator
+# UDL.SantecPolarity.Simulator — FROZEN STUB
 
-A standalone TCP/SCPI simulator for the integrated polarity tester. It does not link to the driver and does not include files outside this directory.
+**Not a real-instrument emulator for RLM/OSX/RD-SP.** Implements invented `POLARITY:*` only.
+
+A standalone TCP/SCPI simulator for the assumed integrated polarity tester. It does not link to the driver and does not include files outside this directory.
 
 ## Run
 

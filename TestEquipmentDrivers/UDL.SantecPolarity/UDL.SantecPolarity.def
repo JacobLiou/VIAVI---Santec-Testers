@@ -1,0 +1,14 @@
+LIBRARY "UDL.SantecPolarity"
+EXPORTS
+    SP_Create
+    SP_Destroy
+    SP_Open
+    SP_GetHardwareSnapshot
+    SP_RunMapping
+    SP_Cancel
+    SP_GetSummary
+    SP_GetFiberResultCount
+    SP_GetFiberResults
+    SP_GetDiagnosticPathUtf8
+    SP_GetLastErrorUtf8
+    SP_Close

@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31410.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RLMSample", "RLMSample\RLMSample.csproj", "{A49DABEC-7F89-46B7-8857-27700C73233F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A49DABEC-7F89-46B7-8857-27700C73233F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A49DABEC-7F89-46B7-8857-27700C73233F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A49DABEC-7F89-46B7-8857-27700C73233F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A49DABEC-7F89-46B7-8857-27700C73233F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6EBD1F05-DC9B-4D3A-A001-AF6A2F3F93FC}
+	EndGlobalSection
+EndGlobal

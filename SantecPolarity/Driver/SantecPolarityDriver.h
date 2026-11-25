@@ -1,5 +1,9 @@
 #pragma once
 
+// FROZEN STUB ABI — invented POLARITY:* TCP contract only.
+// Do NOT load this DLL in production. Production path:
+// TestEquipmentDrivers/UDL.SantecPolarity (RLM-100 + OSX-100 + RD-SP-100-SM).
+//
 // Public C ABI. Callers do not need C++ runtime types.
 // All structures are caller-allocated and versioned by size.
 

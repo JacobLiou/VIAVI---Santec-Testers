@@ -1,4 +1,18 @@
-# Integrated polarity tester TCP/SCPI protocol
+# FROZEN — Invented POLARITY:* contract (simulator only)
+
+**This is NOT a Santec firmware protocol.**
+
+Production polarity uses `RLM-100 + OSX-100 + RD-SP-100-SM` with official Mapping
+SDK / XNS+Cable Assembly. RLM manuals have no polarity Mapping SCPI. The command
+tree below exists only so the local simulator and stub driver can talk to each
+other. Do not send these commands to real instruments. Do not accept this file
+as protocol evidence for production release.
+
+Retained below for historical simulator compatibility.
+
+---
+
+# Integrated polarity tester TCP/SCPI protocol (STUB)
 
 ## Transport
 
@@ -8,7 +22,7 @@
 - One outstanding query per connection. Maximum accepted line length: 64 KiB.
 - Recommended read timeout: at least 15000 ms.
 
-These transport choices follow the attached RLM manual: Ethernet control uses TCP port 5025, write commands require LF, operations are synchronous, and long reads may require at least a 15000 ms timeout. The manual has no polarity-specific SCPI commands, so the `POLARITY` command tree below is an explicit integration contract for the assumed all-in-one tester; it must be confirmed or mapped to production firmware before real-hardware release.
+These transport choices follow the attached RLM manual: Ethernet control uses TCP port 5025, write commands require LF, operations are synchronous, and long reads may require at least a 15000 ms timeout. The manual has no polarity-specific SCPI commands, so the `POLARITY` command tree below is an explicit integration contract for the assumed all-in-one tester; it must be confirmed or mapped to production firmware before real-hardware release. **(Cross-validation 2026-11: confirmed NOT present on production hardware path.)**
 
 ## Standard/compatibility commands
 
@@ -47,4 +61,4 @@ These transport choices follow the attached RLM manual: Ethernet control uses TC
 - `POLARITY:SIMULATOR:PROFILE?`
 - `POLARITY:SIMULATOR:LATENCY <0..60000>`
 
-Do not send simulator commands to production hardware. Select `DEVICE DEFAULT` in the test application for a real instrument.
+Do not send simulator commands to production hardware. Select `DEVICE DEFAULT` in the test application for a real instrument. **(No real instrument speaks this tree.)**

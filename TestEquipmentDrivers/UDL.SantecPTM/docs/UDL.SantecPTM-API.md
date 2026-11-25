@@ -1,5 +1,10 @@
 # UDL.SantecPTM 驱动接口文档
 
+> **BOM / 验收状态（2026-11）：搁置（非当前量产基线）**  
+> 公司当前极性硬件锁定为 `RLM-100 + OSX-100 + RD-SP-100-SM`（见 Final Plan 与 `docs/UDL.SantecPolarity-API.md`）。  
+> 本驱动仅适用于**独立 PTM** 产品线；在 BOM 未包含 PTM 前，**勿并入 RD-SP 产线验收**。  
+> 相对 PTM 手册 Table 8，命令流大体正确；`TEST:RESult?` 解析仍为暂定。
+
 ## 概述
 
 | 属性 | 值 |
@@ -14,6 +19,7 @@
 | 调用约定 | `__stdcall` (WINAPI) |
 | 加载方式 | `LoadLibrary` + `GetProcAddress` |
 | Factory type | `"ptm"` / `"santecptm"` |
+| 量产 BOM | **不含**（搁置；仅独立 PTM 时启用） |
 
 ---
 

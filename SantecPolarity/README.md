@@ -1,29 +1,35 @@
-# UDL.SantecPolarity - VS2015/v140 rewrite
+# SantecPolarity — FROZEN STUB (NOT production)
 
-This package is a clean implementation for one integrated polarity tester controlled only through TCP and line-oriented SCPI commands. It intentionally does not reuse the previous IL/RL/VISA/SDK architecture.
+**Status: FROZEN. Do not use for production acceptance or real-hardware polarity.**
 
-## Three independent projects
+This tree implements an **assumed** all-in-one polarity tester over invented
+`POLARITY:*` TCP/SCPI. Cross-check against supplier XNS/Cable Assembly materials
+and company Final Plan shows production polarity is:
 
-1. `Driver/UDL.SantecPolarity.Driver.sln` - native C ABI DLL.
-2. `Simulator/UDL.SantecPolarity.Simulator.sln` - standalone TCP/SCPI instrument simulator.
-3. `TestApp/UDL.SantecPolarity.TestApp.sln` - standalone native Win32 GUI test tool.
+`RLM-100 + OSX-100 + RD-SP-100-SM` (multi-instrument + official Mapping SDK)
 
-Every project contains its own source and headers. There are no shared include directories, project references, NuGet packages, MFC requirements, or vendor SDK dependencies. The root solution is only a convenience view and defines no project dependency.
+**Not** a single-chassis `POLARITY:*` instrument, and **not** covered by this stub.
 
-## Compatibility target
+| Path | Role |
+|---|---|
+| This folder (`Driver` / `Simulator` / `TestApp`) | Teaching / offline sim only |
+| `RLM100_OSX100_RDSP100SM_Polarity_Cpp_MFC_UDL_Final_Plan.md` | Company hardware baseline |
+| `CROSS_VALIDATION.md` | Cross-validation conclusion |
+| `../TestEquipmentDrivers/UDL.SantecPolarity/` | Production UDL scaffold (RLM+OSX+RD-SP) |
+| `../TestEquipmentDrivers/UDL.SantecPTM/` | Separate product line (standalone PTM only) |
 
-- Visual Studio 2015 Update 3
-- Platform toolset v140
-- Windows 8.1 SDK (`WindowsTargetPlatformVersion=8.1`)
-- Win32 and x64; Debug and Release
-- conservative VS2015-compatible C++ (no C++17, filesystem, optional, string_view, or newer language switches)
+## What this stub still does
 
-## Quick start
+Three VS2015/v140 projects for local sim exercises only:
 
-1. Open and build the simulator solution. Run it with no arguments to listen on TCP 5025.
-2. Open and build the test application solution. Connect to `127.0.0.1:5025`.
-3. Select 24 cores, Type A, and PASS; click Run Test.
-4. Repeat with CROSS, OPEN, SHORT, and REVERSE to verify failure reporting.
-5. Build the driver solution for integration into production software.
+1. `Driver/UDL.SantecPolarity.Driver.sln` — C ABI DLL speaking invented `POLARITY:*`
+2. `Simulator/UDL.SantecPolarity.Simulator.sln` — TCP server for that contract
+3. `TestApp/UDL.SantecPolarity.TestApp.sln` — Win32 GUI against the simulator
 
-See `SCPI_PROTOCOL.md` for the assumed integrated-instrument extension and the exact wire format.
+Do **not** integrate `UDL.SantecPolarity.Driver.dll` into the production host.
+Do **not** treat `SCPI_PROTOCOL.md` as a vendor protocol.
+
+## Production direction
+
+See Final Plan + `TestEquipmentDrivers/UDL.SantecPolarity/`. Obtain RD-SP SDK/API
+from the supplier before implementing Mapping (see `docs/RD-SP-SDK-供应商索取清单.md`).
