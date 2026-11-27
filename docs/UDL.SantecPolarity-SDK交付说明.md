@@ -37,8 +37,8 @@
 - [ ] Windows 10/11，位数与包一致（日常联调建议 **x64**）
 - [ ] .NET Framework **4.8**
 - [ ] VC++ 2015–2022 运行库（与包位数一致）
-- [ ] RD-SP USB 相机驱动 / Imaging Control（按 Santec 安装说明）
-- [ ] RLM / OSX 可达（网线 TCP 默认 **5025**，或已装 VISA 的 USB）
+- [ ] RD-SP：TIS / IC Imaging Control **相机驱动与运行时**（按 Santec 说明；详见 §3.3）
+- [ ] RLM / OSX 可达（网线 TCP 默认 **5025**；若 USB 则另装 VISA）
 - [ ] 解压 `dist/UDL.SantecPolarity-x64.zip`（或 Win32 包），**整份 `bin` 勿拆散**
 
 ### 2.2 用 PolarityTestApp 冒烟
@@ -112,7 +112,57 @@ powershell -ExecutionPolicy Bypass -File .\pack-polarity-dist.ps1
 
 原则：**`bin` 整目录拷贝到 Host EXE 同目录（或你们约定的驱动目录），保持相对关系。**
 
-### 3.3 若同事还要源码（次要）
+### 3.3 依赖分层：zip 带什么 / 工位还要装什么
+
+厂商极性 Mapping **只有 C# / Python 可编程面**（无独立 Native 底层 SDK）。本驱动对外仍是 C ABI，进程内通过 Cli 加载官方 `Santec.Hardware`。因此依赖分成两层——**拷贝不等于装机完成**。
+
+```text
+业务 Host / PolarityTestApp
+    └─ LoadLibrary → UDL.SantecPolarity.dll          ← zip 提供
+           └─ UDL.SantecPolarity.Cli.dll             ← zip 提供
+                  └─ Santec.Hardware / Santec.Core   ← zip 提供（钉死 2.3.1.0）
+                         ├─ TIS.Imaging.ICImagingControl35.dll  ← zip 提供（托管封装）
+                         │      └─ TIS 相机驱动 / Imaging Control 运行时  ← 工位安装
+                         ├─ OpenCvSharp* 等托管/原生 DLL              ← zip 提供
+                         └─ （可选）USB VISA 路径 → NI-VISA 等       ← 工位安装
+    运行时底座：.NET Framework 4.8、VC++ 红包、Windows            ← 工位安装
+```
+
+#### A. 交付 zip / `bin` 已包含（随包拷贝即可）
+
+| 类别 | 代表内容 | 说明 |
+|---|---|---|
+| 驱动与桥 | `UDL.SantecPolarity.dll`、`UDL.SantecPolarity.Cli.dll` | 唯一需要 `LoadLibrary` 的是前者 |
+| 官方托管库 | `Santec.Hardware.dll`、`Santec.Core.dll` | **勿换成** Samples / 其它版本 |
+| 相机托管封装 | `TIS.Imaging.ICImagingControl35.dll` | The Imaging Source（影像源）的 .NET 封装；被 Hardware **间接**使用，约 3MB，见 `MANIFEST.txt` |
+| 图像与其它托管依赖 | `OpenCvSharp*.dll`、`OpenCvSharpExtern.dll`、`opencv_videoio_ffmpeg*.dll`、Zeroconf、Nito.*、`System.Text.Json` 等 | 与 Hardware 同目录；**整目录保留，勿拆散、勿私自升级** |
+| 配置样例 | `Host.exe.config.sample`（及 TestApp 的 `.exe.config`） | 含 TIS / Json 等 `bindingRedirect` |
+| 头文件与文档 | `include/`、`docs/` | 集成与联调 |
+
+完整文件清单以包内 `MANIFEST.txt` 为准。
+
+#### B. 工位必须另行安装（zip 替代不了）
+
+| 组件 | 何时需要 | 说明 |
+|---|---|---|
+| **.NET Framework 4.8** | 始终 | Cli / Hardware 为托管；缺则加载或 Open 阶段类型初始化失败 |
+| **VC++ 2015–2022 可再发行组件** | 始终 | 与包位数一致（x64 或 x86）；Native / OpenCv 原生侧需要 |
+| **TIS / IC Imaging Control 相机驱动与运行时** | 接 RD-SP 真机 | zip 只带托管 DLL，**不包含**系统级驱动。按 Santec 或 The Imaging Source 说明安装；设备管理器应能识别相机 |
+| **NI-VISA（或厂商指定的 VISA）** | 仅当 RLM/OSX 走 **USB(VISA)** | 网口 TCP（如 5025）通常不依赖 VISA；包内若有 `Ivi.Visa.dll` 只是托管封装，**不能代替** VISA 运行时安装 |
+| Windows 10/11 | 始终 | 位数与交付包一致（Host / `bin` / 红包三者对齐） |
+
+#### C. 常见混淆
+
+| 现象 | 更可能原因 |
+|---|---|
+| `bin` 里已有 `TIS.Imaging…dll`，仍检测不到相机 / Open 失败 | **未装** TIS 驱动或运行时；USB 未识别；不是漏拷 DLL |
+| 缺程序集 / `FileNotFound` / 类型初始化 | `bin` 被拆散，或 Host 未合并 `.exe.config` 的 bindingRedirect |
+| TCP 设备正常、USB 仪器失败 | 查 VISA 是否安装、资源名是否正确 |
+| x64 Host 加载了 Win32 包（或相反） | 位数混用；整包按平台重拷 |
+
+工位装机检查可与 §2.1 勾选表对照：先装 B 层，再解压 A 层 `bin` 做 PolarityTestApp 冒烟。
+
+### 3.4 若同事还要源码（次要）
 
 一般业务集成**不需要**编驱动。若需要对照或二次打包，可额外给仓库路径：
 
@@ -127,18 +177,20 @@ powershell -ExecutionPolicy Bypass -File .\pack-polarity-dist.ps1
 
 构建基线：Visual Studio 2022，`Release|x64`（或 `Release|Win32`）。业务同事日常只需 zip，不必装整套 VS。
 
-### 3.4 交包时建议附带的一句话清单
+### 3.5 交包时建议附带的一句话清单
 
 发给同事时可复制：
 
 ```text
 附件：UDL.SantecPolarity-<x64|Win32>.zip
-1) 解压后把整个 bin 放到你们 Host EXE 同目录
+1) 解压后把整个 bin 放到你们 Host EXE 同目录（勿拆散）
 2) 只 LoadLibrary(UDL.SantecPolarity.dll)，头文件见 include/
 3) 把 bin/Host.exe.config.sample 的 assemblyBinding 合并进 YourApp.exe.config
 4) SP_RunMapping 必须工作线程；建议 SP_Open 传 rlmSerialUtf8
 5) 联调可先跑 bin/PolarityTestApp.exe；接口见 docs/UDL.SantecPolarity-API.md
-6) 运行时：.NET 4.8 + 对应位数 VC++ 红包 + RD-SP 相机驱动
+6) 工位另装：.NET 4.8 + 对应位数 VC++ 红包 + TIS/IC Imaging Control 相机驱动
+   （USB 仪器再加 NI-VISA）。zip 里的 TIS.Imaging*.dll 不能代替驱动安装
+7) 依赖分层详见同包 docs/UDL.SantecPolarity-SDK交付说明.md §3.3
 ```
 
 ---
@@ -232,3 +284,4 @@ PolarityTestApp 已自带同内容的 `PolarityTestApp.exe.config`，可作对�
 | 日期 | 说明 |
 |---|---|
 | 2026-11-25 | 初版：真机调试清单 + 二进制/依赖交付 + 同事集成要点；含 x64/Win32 与 PolarityTestApp |
+| 2026-11-27 | 新增 §3.3 依赖分层（zip 随包 DLL vs 工位安装：.NET 4.8 / VC++ / TIS 相机运行时 / VISA） |
